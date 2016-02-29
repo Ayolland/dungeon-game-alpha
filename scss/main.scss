@@ -1,0 +1,41 @@
+body{
+	background: black;
+
+	*{
+		-ms-interpolation-mode: nearest-neighbor; // IE 7+ (non-standard property)
+  	image-rendering: -webkit-optimize-contrast; // Safari 6, UC Browser 9.9
+  	image-rendering: -webkit-crisp-edges; // Safari 7+
+  	image-rendering: -moz-crisp-edges; // Firefox 3.6+
+  	image-rendering: -o-crisp-edges; // Opera 12
+  	image-rendering: pixelated; // Chrome 41+ and Opera 26+
+    
+  	font-family: 'VT323', sans-serif;
+    color: white;
+	}
+}
+
+.button{
+  font-size: 1.25em;
+  border: 1px solid white;
+  padding: 0.25em 0.5em 0.4em 0.5em;
+  &:hover{
+    color: black;
+    background-color: white;
+  }
+}
+
+section#display{
+  width: 160px;
+  height: 80px;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  &>img{ width: 100%;}
+}
+
+section#interface{
+  text-align: center;
+}
+
+
+@import 'partials/monsters';
