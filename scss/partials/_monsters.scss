@@ -13,6 +13,7 @@
 	overflow: hidden;
 	top: 4px;
 	left: 56px;
+	transition: opacity, 1.5s;
 
 	&>#monster-sprite{
 		position: relative;
@@ -20,5 +21,9 @@
 		height: 200%;
 		top: 0;
 		animation: monster-ready 1.5s steps(1, end) infinite;
+	}
+
+	&.dead{
+		opacity: 0;
 	}
 }

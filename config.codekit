@@ -103,7 +103,7 @@
 		"decimalPrecision": 10,
 		"fileType": 4,
 		"ignore": 0,
-		"ignoreWasSetByUser": 0,
+		"ignoreWasSetByUser": 1,
 		"inputAbbreviatedPath": "\/scss\/main.scss",
 		"outputAbbreviatedPath": "\/main.css",
 		"outputPathIsOutsideProject": 0,

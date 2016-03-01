@@ -34,6 +34,7 @@ Displayable.prototype.draw = function(){
 };
 
 function Monster(){
+	this.div = document.getElementById('monster');
 	this.canvas = document.getElementById('monster-sprite').getContext('2d');
 	this.shortName = ""
 }
@@ -52,17 +53,10 @@ Monster.prototype.announce = function(){
 	}
 	var message = "It's " + article + this.displayName + '!';
 	gameLog.add(message);
-	if (this.shortName !== ""){
-		headsUpMonsterName.innerHTML = this.shortName;
-	} else {
-		headsUpMonsterName.innerHTML = this.displayName;
-	}
-	
-};
-
-Monster.prototype.updateHP = function(){
-	headsUpMonsterHPText.innerHTML = this.HP + "/" + this.initialHP;
-	headsUpMonsterHPBar.style.width = Math.floor((this.HP / this.initialHP)*100) + "%";
+	if (this.shortName === ""){
+		this.shortName = this.displayName;
+	} 
+	headsUpMonsterName.innerHTML = this.shortName;
 };
 
 Monster.prototype.appear = function(){
@@ -71,6 +65,27 @@ Monster.prototype.appear = function(){
 	this.HP = this.initialHP;
 	this.updateHP();
 };
+
+Monster.prototype.updateHP = function(){
+	if (this.HP < 1){
+		this.HP = 0;
+	}
+	headsUpMonsterHPText.innerHTML = this.HP + "/" + this.initialHP;
+	headsUpMonsterHPBar.style.width = Math.floor((this.HP / this.initialHP)*100) + "%";
+	if (this.HP === 0){
+		this.die();
+	}
+};
+
+Monster.prototype.addClass = function(classStr){
+	this.div.classList.add(classStr);
+}
+
+Monster.prototype.die = function(){
+	this.addClass('dead');
+	gameLog.add('You slayed the ' + this.shortName + '.');
+	setTimeout(switchMonster, 2000);
+}
 
 // Types of Monsters
 
@@ -179,6 +194,7 @@ function enterMonster(monsterType){
 	}
 	previousMonsterName = currentMonster.displayName;
 	var newMonster = new window[monsterType[0]](monsterType[1]);
+	newMonster.div.className = "";
 	newMonster.appear();
 	currentMonster = newMonster;
 }
@@ -188,8 +204,21 @@ function switchMonster(){
 	enterMonster(monsterType);
 }
 
+function smack(){
+	var atkVal = Math.floor(Math.random()*4);
+	currentMonster.HP -= atkVal;
+	currentMonster.updateHP();
+}
+
 // event Listeners
 
-document.getElementById('switchMonster').addEventListener("click", switchMonster);
+function loadButtons(){
+	var buttons = document.getElementsByClassName("button");
+	for (var i=0; i < buttons.length; i+=1){
+		var fnName = buttons[i].id;
+		buttons[i].addEventListener("click", function(){window[fnName]();});
+	}
+}
 
+loadButtons();
 switchMonster();
