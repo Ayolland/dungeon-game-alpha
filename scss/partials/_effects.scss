@@ -1,0 +1,19 @@
+@import 'shake';
+
+// Monster and Player effects
+
+#monster{
+
+	&.dead{
+		animation: dead 1.5s forwards;
+	}
+
+	@keyframes dead {
+		0% { opacity: 1;}
+		100% { opacity: 0;}
+	}
+}
+
+.hit-test{
+	@include do-shake('hit-test', 8, 8, 15, 1.5s, $q: 1);
+}

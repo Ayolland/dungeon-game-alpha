@@ -113,6 +113,22 @@
 		"shouldRunBless": 0,
 		"useLibsass": 0
 		},
+	"\/scss\/partials\/_effects.scss": {
+		"createSourceMap": 0,
+		"debugStyle": 0,
+		"decimalPrecision": 10,
+		"fileType": 4,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/scss\/partials\/_effects.scss",
+		"outputAbbreviatedPath": "\/scss\/css\/_effects.css",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0,
+		"outputStyle": 0,
+		"shouldRunAutoprefixer": 0,
+		"shouldRunBless": 0,
+		"useLibsass": 0
+		},
 	"\/scss\/partials\/_font.scss": {
 		"createSourceMap": 0,
 		"debugStyle": 0,
@@ -145,15 +161,31 @@
 		"shouldRunBless": 0,
 		"useLibsass": 0
 		},
-	"\/scss\/partials\/VT323.scss": {
+	"\/scss\/partials\/_shake.scss": {
 		"createSourceMap": 0,
 		"debugStyle": 0,
 		"decimalPrecision": 10,
 		"fileType": 4,
 		"ignore": 1,
 		"ignoreWasSetByUser": 0,
-		"inputAbbreviatedPath": "\/scss\/partials\/VT323.scss",
-		"outputAbbreviatedPath": "\/scss\/css\/VT323.css",
+		"inputAbbreviatedPath": "\/scss\/partials\/_shake.scss",
+		"outputAbbreviatedPath": "\/scss\/css\/_shake.css",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0,
+		"outputStyle": 0,
+		"shouldRunAutoprefixer": 0,
+		"shouldRunBless": 0,
+		"useLibsass": 0
+		},
+	"\/scss\/partials\/_VT323.scss": {
+		"createSourceMap": 0,
+		"debugStyle": 0,
+		"decimalPrecision": 10,
+		"fileType": 4,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/scss\/partials\/_VT323.scss",
+		"outputAbbreviatedPath": "\/scss\/css\/_VT323.css",
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 0,
 		"outputStyle": 0,
