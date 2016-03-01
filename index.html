@@ -4,16 +4,21 @@
 		<link rel="stylesheet" type="text/css" href="main.css">
 	</head>
 	<body>
+		<section id="headsup">
+			<p id="monster-name"></p>
+			<p id="monster-hp-text">56</p>
+			<div id="monster-hp-bar"></div>
+		</section><!-- /#headsup-->
 		<section id="display">
 			<img src="bg.png">
 			<div id="monster" class="monster">
 				<canvas id="monster-sprite" width="16" height="48"></canvas>
 			</div>
-		</section><!-- /.display-->
+		</section><!-- /#display-->
 		<section id="interface">
 			<p id="gameLog"></p>
 			<a class="button" id="switchMonster">New Monster</a>
-		</section><!-- /.interface-->
+		</section><!-- /#interface-->
 		<script src="binhex.js"></script>
 		<script src="lz-string.min.js"></script>
 		<script src="game.js"></script>

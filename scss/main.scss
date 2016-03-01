@@ -20,9 +20,27 @@ body{
   font-size: 1.25em;
   border: 1px solid white;
   padding: 0.25em 0.5em 0.4em 0.5em;
-  &:hover{
+  &:active{
     color: black;
     background-color: white;
+  }
+}
+
+section#headsup{
+  margin: 0 auto;
+  width: 160px;
+  overflow: hidden;
+
+  p{ margin: 0; white-space: nowrap;}
+
+  #monster-hp-text::before{ content: "HP: "}
+
+  #monster-hp-bar{
+    background: white;
+    width: 100%;
+    height: 1px;
+    margin-bottom: 3px;
+    transition: width 0.5s;
   }
 }
 
@@ -37,6 +55,13 @@ section#display{
 
 section#interface{
   text-align: center;
+
+  #gameLog{
+    height: 1em;
+    line-height: 1.1em;
+    overflow-y: scroll;
+  }
+  
 }
 
 
