@@ -135,18 +135,18 @@ function Skele (type) {
 		case "Monk":
 			this.spriteCompressed = "16x48|00000000000000000100810082C047E045302BD02808118813C80A400A40062004200420041000000000000000000000000000000000000000804080416023F0229815E8140408C409E405200720022004200410041";
 			this.displayName = "Wise, Old Skelebones";
-			this.shortName = "Skelebones Mage"
+			this.shortName = "Skelebones Mage";
 			break;
 		case "Knight":
 			this.initialHP = 16;
 			this.spriteCompressed = "16x48|00000000000004400380810082C0C7E045302BD4280E118E13CE02440240042004200420041000000000000000000000000000000000022001C04080416063F0229815EA140708C709E701220220022004200410041";
 			this.displayName = "Skelebones who thinks he's a badass";
-			this.shortName = "Skelebones Bruiser"
+			this.shortName = "Skelebones Bruiser";
 			break;
 		case "Flaming":
 			this.spriteCompressed = "16x48|010001A003C00AC0056005200AD007E005300BD00808118813C80240024004200420042004100000000000000000000000A000C005C0036002B00290056803F0029805E8040408C409E401200220022004200410041";
 			this.displayName = "Skelebones who is on fire";
-			this.shortName = "Flaming Skelebones"
+			this.shortName = "Flaming Skelebones";
 			this.color = "#ff5000";
 			break;
 		default:
@@ -206,8 +206,16 @@ function switchMonster(){
 
 function smack(){
 	var atkVal = Math.floor(Math.random()*4);
-	currentMonster.HP -= atkVal;
-	currentMonster.updateHP();
+	if (currentMonster.HP > 0){
+		if (atkVal > 0){
+			currentMonster.HP -= atkVal;
+			gameLog.add('You hit the ' + currentMonster.shortName + ' for ' + atkVal + 'HP.');
+			currentMonster.updateHP();
+		} else {
+			gameLog.add('You miss the ' + currentMonster.shortName + '.');
+		}
+		
+	}
 }
 
 // event Listeners

@@ -12,8 +12,17 @@
 		0% { opacity: 1;}
 		100% { opacity: 0;}
 	}
+
+	&.hit{
+		@include do-shake('hit', 8, 8, 15, 0.5s, $precision: 20, $q: 1);
+	}
+
+	&.dodge{
+		@include do-shake('dodge', 24, 0, 0, 1s, $precision: 50, $q: 1);
+	}
+
+	&.floating{
+		@include do-shake('floating', 0, 16, 0, 4s, $precision: 30, $q: infinite);
+	}
 }
 
-.hit-test{
-	@include do-shake('hit-test', 8, 8, 15, 1.5s, $q: 1);
-}
