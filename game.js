@@ -6,14 +6,13 @@ var gameLog = {
 		this.element.innerHTML += (message + '<br />');
 		this.element.scrollTop = this.element.scrollHeight;
 	}
-}
-var headsUpMonsterName = document.getElementById('monster-name');
-var headsUpMonsterHPText = document.getElementById('monster-hp-text');
-var headsUpMonsterHPBar = document.getElementById('monster-hp-bar');
+};
 
 var currentMonster = new Monster();
 var previousMonsterName = "";
 
+
+// A Displayable is an object with an associated canvas for drawing sprites
 function Displayable (){
 }
 
@@ -33,13 +32,38 @@ Displayable.prototype.draw = function(){
     }
 };
 
+// A Character is either a Monster (NPC) or the player Character
+function Character (){	
+}
+
+Character.prototype = new Displayable ();
+Character.prototype.constructor = Character;
+
+Character.prototype.updateHP = function(){
+	if (this.HP < 1){
+		this.HP = 0;
+	}
+	this.displayElement.hpText.innerHTML = this.HP + "/" + this.initialHP;
+	this.displayElement.hpBar.style.width = Math.floor((this.HP / this.initialHP)*100) + "%";
+	if (this.HP === 0){
+		this.die();
+	}
+};
+
+// A Monster is an enemy the PlayerCharacter fights one at a time
+
 function Monster(){
 	this.div = document.getElementById('monster');
 	this.canvas = document.getElementById('monster-sprite').getContext('2d');
-	this.shortName = ""
+	this.shortName = "";
+	this.displayElement = {
+		hpText: document.getElementById('monster-hp-text'),
+		hpBar: document.getElementById('monster-hp-bar'),
+		name: document.getElementById('monster-name')
+	};
 }
 
-Monster.prototype = new Displayable ();
+Monster.prototype = new Character ();
 Monster.prototype.constructor = Monster;
 
 Monster.prototype.announce = function(){
@@ -56,7 +80,7 @@ Monster.prototype.announce = function(){
 	if (this.shortName === ""){
 		this.shortName = this.displayName;
 	} 
-	headsUpMonsterName.innerHTML = this.shortName;
+	this.displayElement.name.innerHTML = this.shortName;
 };
 
 Monster.prototype.appear = function(){
@@ -66,26 +90,15 @@ Monster.prototype.appear = function(){
 	this.updateHP();
 };
 
-Monster.prototype.updateHP = function(){
-	if (this.HP < 1){
-		this.HP = 0;
-	}
-	headsUpMonsterHPText.innerHTML = this.HP + "/" + this.initialHP;
-	headsUpMonsterHPBar.style.width = Math.floor((this.HP / this.initialHP)*100) + "%";
-	if (this.HP === 0){
-		this.die();
-	}
-};
-
 Monster.prototype.addClass = function(classStr){
 	this.div.classList.add(classStr);
-}
+};
 
 Monster.prototype.die = function(){
 	this.addClass('dead');
 	gameLog.add('You slayed the ' + this.shortName + '.');
 	setTimeout(switchMonster, 2000);
-}
+};
 
 // Types of Monsters
 

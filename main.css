@@ -17,24 +17,31 @@ body {
     font-family: 'VT323', sans-serif;
     color: white; }
 
+.wrapper {
+  width: 320px;
+  margin: 0 auto; }
+
 .button {
+  display: inline-block;
   font-size: 1.25em;
   border: 1px solid white;
-  padding: 0.25em 0.5em 0.4em 0.5em; }
+  padding: 0.25em 0.5em 0.4em 0.5em;
+  margin: 0.25em; }
   .button:active {
     color: black;
     background-color: white; }
 
-section#headsup {
+section#headsup, section#headsdown {
   margin: 0 auto;
-  width: 160px;
-  overflow: hidden; }
-  section#headsup p {
+  width: 100%;
+  overflow: hidden;
+  text-align: left; }
+  section#headsup p, section#headsdown p {
     margin: 0;
     white-space: nowrap; }
-  section#headsup #monster-hp-text::before {
+  section#headsup .hp-text::before, section#headsdown .hp-text::before {
     content: "HP: "; }
-  section#headsup #monster-hp-bar {
+  section#headsup .hp-bar, section#headsdown .hp-bar {
     background: white;
     width: 100%;
     height: 1px;
@@ -42,8 +49,8 @@ section#headsup {
     transition: width 0.5s; }
 
 section#display {
-  width: 160px;
-  height: 80px;
+  width: 320px;
+  height: 200px;
   margin: 0 auto;
   padding: 0;
   position: relative; }
@@ -55,7 +62,8 @@ section#interface {
   section#interface #gameLog {
     height: 1em;
     line-height: 1.1em;
-    overflow-y: scroll; }
+    overflow-y: scroll;
+    margin: 0.5em 0 0; }
 
 @keyframes monster-ready {
   0% {
@@ -66,13 +74,12 @@ section#interface {
     top: 0%; } }
 #monster {
   display: block;
-  width: 48px;
-  height: 72px;
+  width: 30%;
+  height: 72%;
   position: absolute;
   overflow: hidden;
-  top: 4px;
-  left: 56px;
-  transition: opacity 1s; }
+  bottom: 5%;
+  left: 35%; }
   #monster > #monster-sprite {
     position: relative;
     width: 100%;
@@ -95,68 +102,68 @@ section#interface {
   animation: hit 0.5s ease-in-out 1; }
 @keyframes hit {
   10% {
-    transform: translate(1px, 4px) rotate(7.5deg); }
+    transform: translate(-2px, -3px) rotate(-5.5deg); }
   20% {
-    transform: translate(4px, 4px) rotate(3.5deg); }
+    transform: translate(1px, 1px) rotate(3.5deg); }
   30% {
-    transform: translate(2px, 1px) rotate(-1.5deg); }
+    transform: translate(2px, -1px) rotate(3.5deg); }
   40% {
-    transform: translate(3px, 1px) rotate(-5.5deg); }
+    transform: translate(-1px, -1px) rotate(-4.5deg); }
   50% {
-    transform: translate(-2px, 2px) rotate(0.5deg); }
+    transform: translate(-2px, 3px) rotate(-1.5deg); }
   60% {
-    transform: translate(2px, -1px) rotate(-3.5deg); }
+    transform: translate(-2px, -3px) rotate(7.5deg); }
   70% {
-    transform: translate(3px, 0px) rotate(-3.5deg); }
+    transform: translate(-1px, 2px) rotate(0.5deg); }
   80% {
-    transform: translate(1px, 1px) rotate(1.5deg); }
+    transform: translate(-3px, 3px) rotate(-0.5deg); }
   90% {
-    transform: translate(4px, 1px) rotate(-3.5deg); }
+    transform: translate(4px, 3px) rotate(-5.5deg); }
   0%, 100% {
     transform: translate(0, 0) rotate(0); } }
 #monster.dodge {
   animation: dodge 1s ease-in-out 1; }
 @keyframes dodge {
   10% {
-    transform: translate(-2px, 0) rotate(0); }
+    transform: translate(10px, 0) rotate(0); }
   20% {
-    transform: translate(-3px, 0) rotate(0); }
+    transform: translate(4px, 0) rotate(0); }
   30% {
-    transform: translate(-11px, 0) rotate(0); }
+    transform: translate(6px, 0) rotate(0); }
   40% {
-    transform: translate(-5px, 0) rotate(0); }
+    transform: translate(7px, 0) rotate(0); }
   50% {
-    transform: translate(-1px, 0) rotate(0); }
+    transform: translate(-2px, 0) rotate(0); }
   60% {
-    transform: translate(-4px, 0) rotate(0); }
+    transform: translate(6px, 0) rotate(0); }
   70% {
-    transform: translate(-5px, 0) rotate(0); }
+    transform: translate(0px, 0) rotate(0); }
   80% {
-    transform: translate(8px, 0) rotate(0); }
+    transform: translate(-8px, 0) rotate(0); }
   90% {
-    transform: translate(-10px, 0) rotate(0); }
+    transform: translate(11px, 0) rotate(0); }
   0%, 100% {
     transform: translate(0, 0) rotate(0); } }
 #monster.floating {
   animation: floating 4s ease-in-out infinite; }
 @keyframes floating {
   10% {
-    transform: translate(0, -5px) rotate(0); }
+    transform: translate(0, -2px) rotate(0); }
   20% {
-    transform: translate(0, 6px) rotate(0); }
+    transform: translate(0, 0px) rotate(0); }
   30% {
-    transform: translate(0, 1px) rotate(0); }
-  40% {
-    transform: translate(0, -6px) rotate(0); }
-  50% {
     transform: translate(0, 4px) rotate(0); }
-  60% {
-    transform: translate(0, -6px) rotate(0); }
-  70% {
-    transform: translate(0, 1px) rotate(0); }
-  80% {
+  40% {
     transform: translate(0, -1px) rotate(0); }
+  50% {
+    transform: translate(0, 2px) rotate(0); }
+  60% {
+    transform: translate(0, 4px) rotate(0); }
+  70% {
+    transform: translate(0, 4px) rotate(0); }
+  80% {
+    transform: translate(0, 4px) rotate(0); }
   90% {
-    transform: translate(0, 8px) rotate(0); }
+    transform: translate(0, 6px) rotate(0); }
   0%, 100% {
     transform: translate(0, 0) rotate(0); } }

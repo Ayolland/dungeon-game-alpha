@@ -1,5 +1,7 @@
 @import 'partials/font';
 
+$small-width: 320px;
+
 body{
 	background: black;
 
@@ -16,26 +18,34 @@ body{
 	}
 }
 
+.wrapper{
+  width: $small-width;
+  margin: 0 auto;
+}
+
 .button{
+  display: inline-block;
   font-size: 1.25em;
   border: 1px solid white;
   padding: 0.25em 0.5em 0.4em 0.5em;
+  margin: 0.25em;
   &:active{
     color: black;
     background-color: white;
   }
 }
 
-section#headsup{
+section#headsup, section#headsdown{
   margin: 0 auto;
-  width: 160px;
+  width: 100%;
   overflow: hidden;
+  text-align: left;
 
   p{ margin: 0; white-space: nowrap;}
 
-  #monster-hp-text::before{ content: "HP: "}
+  .hp-text::before{ content: "HP: "}
 
-  #monster-hp-bar{
+  .hp-bar{
     background: white;
     width: 100%;
     height: 1px;
@@ -45,8 +55,8 @@ section#headsup{
 }
 
 section#display{
-  width: 160px;
-  height: 80px;
+  width: $small-width;
+  height: ($small-width * 0.625);
   margin: 0 auto;
   padding: 0;
   position: relative;
@@ -60,6 +70,7 @@ section#interface{
     height: 1em;
     line-height: 1.1em;
     overflow-y: scroll;
+    margin: 0.5em 0 0;
   }
   
 }

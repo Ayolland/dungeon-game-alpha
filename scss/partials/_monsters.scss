@@ -7,13 +7,12 @@
 
 #monster{
 	display: block;
-	width: 48px;
-	height: 72px;
+	width: 30%;
+	height: 72%;
 	position: absolute;
 	overflow: hidden;
-	top: 4px;
-	left: 56px;
-	transition: opacity 1s;
+	bottom: 5%;
+	left: 35%;
 
 	&>#monster-sprite{
 		position: relative;
