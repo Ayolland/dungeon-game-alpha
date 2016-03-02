@@ -24,6 +24,15 @@
 		"outputStyle": 1,
 		"syntaxCheckerStyle": 1
 		},
+	"\/css\/main.css": {
+		"fileType": 16,
+		"ignore": 0,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/css\/main.css",
+		"outputAbbreviatedPath": "No Output Path",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0
+		},
 	"\/game.js": {
 		"fileType": 64,
 		"ignore": 0,
@@ -103,7 +112,7 @@
 		"decimalPrecision": 10,
 		"fileType": 4,
 		"ignore": 0,
-		"ignoreWasSetByUser": 1,
+		"ignoreWasSetByUser": 0,
 		"inputAbbreviatedPath": "\/scss\/main.scss",
 		"outputAbbreviatedPath": "\/main.css",
 		"outputPathIsOutsideProject": 0,
@@ -151,7 +160,7 @@
 		"decimalPrecision": 10,
 		"fileType": 4,
 		"ignore": 1,
-		"ignoreWasSetByUser": 1,
+		"ignoreWasSetByUser": 0,
 		"inputAbbreviatedPath": "\/scss\/partials\/_monsters.scss",
 		"outputAbbreviatedPath": "\/scss\/css\/_monsters.css",
 		"outputPathIsOutsideProject": 0,

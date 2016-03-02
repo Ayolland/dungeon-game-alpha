@@ -5,20 +5,32 @@
 	100% { top: 0%;}
 }
 
-#monster{
+#hero, #monster{
 	display: block;
-	width: 30%;
-	height: 72%;
 	position: absolute;
 	overflow: hidden;
-	bottom: 5%;
-	left: 35%;
+	width: 30%;
+	height: 72%;
 
-	&>#monster-sprite{
+	&>.main-sprite{
 		position: relative;
 		width: 100%;
 		height: 200%;
 		top: 0;
 		animation: monster-ready 1.5s steps(1, end) infinite;
 	}
+}
+
+#monster{
+	width: 30%;
+	height: 72%;
+	bottom: 5%;
+	left: 35%;
+}
+
+#hero{
+	width: 35%;
+	height: 84%;
+	bottom: -10%;
+	left: -3%;
 }

@@ -32,7 +32,7 @@ Displayable.prototype.draw = function(){
     }
 };
 
-// A Character is either a Monster (NPC) or the player Character
+// A Character is either a Monster (NPC) or the Hero
 function Character (){	
 }
 
@@ -49,6 +49,24 @@ Character.prototype.updateHP = function(){
 		this.die();
 	}
 };
+
+// A hero is the PlayerCharacter Object
+
+function Hero(name){
+	this.div = document.getElementById('hero');
+	this.canvas = document.getElementById('hero-sprite').getContext('2d');
+	this.heroName = name;
+	this.displayElement = {
+		hpText: document.getElementById('hero-hp-text'),
+		hpBar: document.getElementById('hero-hp-bar'),
+		name: document.getElementById('hero-name')
+	}; 
+	this.spriteCompressed = "16x48|000000000000000000000180018003C007E007F00BF809CE11C003E003E003600630063004100C1800000000000000000000000000000000000000000180018003C007E007F00BF809CE13E003E003600630063004100C18";
+	this.color = "white";
+}
+
+Hero.prototype = new Character ();
+Hero.prototype.constructor = Hero;
 
 // A Monster is an enemy the PlayerCharacter fights one at a time
 
@@ -242,4 +260,7 @@ function loadButtons(){
 }
 
 loadButtons();
+
+var tempHero = new Hero();
+tempHero.draw();
 switchMonster();

@@ -75,9 +75,7 @@ section#interface {
 #hero, #monster {
   display: block;
   position: absolute;
-  overflow: hidden;
-  width: 30%;
-  height: 72%; }
+  overflow: hidden; }
   #hero > .main-sprite, #monster > .main-sprite {
     position: relative;
     width: 100%;
@@ -90,12 +88,6 @@ section#interface {
   height: 72%;
   bottom: 5%;
   left: 35%; }
-
-#hero {
-  width: 35%;
-  height: 84%;
-  bottom: -10%;
-  left: -3%; }
 
 #monster.hit, #monster.dodge, #monster.floating {
   display: inline-block;
@@ -112,68 +104,68 @@ section#interface {
   animation: hit 0.5s ease-in-out 1; }
 @keyframes hit {
   10% {
-    transform: translate(0px, -1px) rotate(6.5deg); }
+    transform: translate(-3px, 3px) rotate(4.5deg); }
   20% {
-    transform: translate(0px, 3px) rotate(-6.5deg); }
+    transform: translate(2px, 3px) rotate(-5.5deg); }
   30% {
-    transform: translate(2px, -1px) rotate(5.5deg); }
+    transform: translate(0px, -1px) rotate(2.5deg); }
   40% {
-    transform: translate(-3px, -1px) rotate(2.5deg); }
+    transform: translate(-3px, -3px) rotate(-5.5deg); }
   50% {
-    transform: translate(-2px, -1px) rotate(2.5deg); }
+    transform: translate(3px, 4px) rotate(-6.5deg); }
   60% {
-    transform: translate(0px, -2px) rotate(5.5deg); }
+    transform: translate(0px, 4px) rotate(5.5deg); }
   70% {
-    transform: translate(2px, -3px) rotate(-6.5deg); }
+    transform: translate(0px, -1px) rotate(-3.5deg); }
   80% {
-    transform: translate(0px, 1px) rotate(0.5deg); }
+    transform: translate(3px, 0px) rotate(-6.5deg); }
   90% {
-    transform: translate(3px, 3px) rotate(-4.5deg); }
+    transform: translate(1px, 3px) rotate(3.5deg); }
   0%, 100% {
     transform: translate(0, 0) rotate(0); } }
 #monster.dodge {
   animation: dodge 1s ease-in-out 1; }
 @keyframes dodge {
   10% {
-    transform: translate(-7px, 0) rotate(0); }
-  20% {
-    transform: translate(-4px, 0) rotate(0); }
-  30% {
-    transform: translate(3px, 0) rotate(0); }
-  40% {
-    transform: translate(-1px, 0) rotate(0); }
-  50% {
-    transform: translate(-11px, 0) rotate(0); }
-  60% {
-    transform: translate(-9px, 0) rotate(0); }
-  70% {
-    transform: translate(4px, 0) rotate(0); }
-  80% {
     transform: translate(-6px, 0) rotate(0); }
+  20% {
+    transform: translate(8px, 0) rotate(0); }
+  30% {
+    transform: translate(5px, 0) rotate(0); }
+  40% {
+    transform: translate(-8px, 0) rotate(0); }
+  50% {
+    transform: translate(-2px, 0) rotate(0); }
+  60% {
+    transform: translate(2px, 0) rotate(0); }
+  70% {
+    transform: translate(-1px, 0) rotate(0); }
+  80% {
+    transform: translate(4px, 0) rotate(0); }
   90% {
-    transform: translate(6px, 0) rotate(0); }
+    transform: translate(10px, 0) rotate(0); }
   0%, 100% {
     transform: translate(0, 0) rotate(0); } }
 #monster.floating {
   animation: floating 4s ease-in-out infinite; }
 @keyframes floating {
   10% {
-    transform: translate(0, -3px) rotate(0); }
+    transform: translate(0, 7px) rotate(0); }
   20% {
-    transform: translate(0, -3px) rotate(0); }
-  30% {
-    transform: translate(0, 2px) rotate(0); }
-  40% {
-    transform: translate(0, 8px) rotate(0); }
-  50% {
-    transform: translate(0, -7px) rotate(0); }
-  60% {
-    transform: translate(0, -4px) rotate(0); }
-  70% {
     transform: translate(0, -2px) rotate(0); }
+  30% {
+    transform: translate(0, -5px) rotate(0); }
+  40% {
+    transform: translate(0, 5px) rotate(0); }
+  50% {
+    transform: translate(0, 2px) rotate(0); }
+  60% {
+    transform: translate(0, 2px) rotate(0); }
+  70% {
+    transform: translate(0, 5px) rotate(0); }
   80% {
-    transform: translate(0, 3px) rotate(0); }
+    transform: translate(0, 5px) rotate(0); }
   90% {
-    transform: translate(0, 1px) rotate(0); }
+    transform: translate(0, 8px) rotate(0); }
   0%, 100% {
     transform: translate(0, 0) rotate(0); } }
