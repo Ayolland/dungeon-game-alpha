@@ -1,16 +1,70 @@
 
-// Global Variables
-var gameLog = {
-	element: document.getElementById('gameLog'),
-	add: function(message){
-		this.element.innerHTML += (message + '<br />');
-		this.element.scrollTop = this.element.scrollHeight;
-	}
+// Helper functions
+
+
+// Returns a random element from an array
+function randomEntry(array){
+	return array[Math.floor(Math.random()*array.length)];
+}
+
+// Copied from MDN
+// Enable the passage of the 'this' object through the JavaScript timers
+ 
+var __nativeST__ = window.setTimeout;
+ 
+window.setTimeout = function (vCallback, nDelay /*, argumentToPass1, argumentToPass2, etc. */) {
+  var oThis = this, aArgs = Array.prototype.slice.call(arguments, 2);
+  return __nativeST__(vCallback instanceof Function ? function () {
+    vCallback.apply(oThis, aArgs);
+  } : vCallback, nDelay);
 };
 
-var currentMonster = new Monster();
-var previousMonsterName = "";
+// Global Variables
 
+var currentGame = new Game();
+
+function Game (){
+	this.log = {
+		element: document.getElementById('gameLog'),
+		add: function(message){
+			this.element.innerHTML += (message + '<br />');
+			this.element.scrollTop = this.element.scrollHeight;
+		}
+	};
+
+	this.playerHero = new Hero('TEMP');
+	this.currentMonster = new Monster();
+	this.previousMonsterName = "";
+
+	this.initialize = function(){
+		this.playerHero.draw();
+		this.switchMonster();
+	};
+
+	this.enterMonster = function(monsterType){
+		this.previousMonsterName = this.currentMonster.displayName;
+		var newMonster = new window[monsterType];
+		newMonster.div.className = "";
+		newMonster.appear();
+		this.currentMonster = newMonster;
+	};
+	this.switchMonster = function(){
+		var monsterType = randomEntry(["Axedude","Balltype","Scamp","Skele","Snek","Werebeing","Mage"]);
+		currentGame.enterMonster(monsterType);
+	};
+	this.attack = function(){
+		var atkVal = Math.floor(Math.random()*4);
+		if (this.currentMonster.HP > 0){
+			if (atkVal > 0){
+				this.currentMonster.hit(atkVal);
+			} else {
+				this.currentMonster.dodge();
+			}
+			
+		}
+	};
+
+}
 
 // A Displayable is an object with an associated canvas for drawing sprites
 function Displayable (){
@@ -33,6 +87,7 @@ Displayable.prototype.draw = function(){
 };
 
 // A Character is either a Monster (NPC) or the Hero
+
 function Character (){	
 }
 
@@ -44,10 +99,18 @@ Character.prototype.updateHP = function(){
 		this.HP = 0;
 	}
 	this.displayElement.hpText.innerHTML = this.HP + "/" + this.initialHP;
-	this.displayElement.hpBar.style.width = Math.floor((this.HP / this.initialHP)*100) + "%";
+	var percentage = Math.floor((this.HP / this.initialHP)*100);
+	this.displayElement.hpBar.style.width = percentage + "%";
+	this.displayElement.hpBar.className = "hp-bar hp-" + (Math.round(percentage / 10)*10);
 	if (this.HP === 0){
 		this.die();
 	}
+};
+
+Character.prototype.wiggle = function(tempClass, time){
+	this.div.classList.add(tempClass);
+	var thisCharacter = this;
+	setTimeout(function(){thisCharacter.div.classList.remove(tempClass);}, time);
 };
 
 // A hero is the PlayerCharacter Object
@@ -86,7 +149,7 @@ Monster.prototype.constructor = Monster;
 
 Monster.prototype.announce = function(){
 	var article = "";
-	if (previousMonsterName === this.displayName){
+	if (currentGame.previousMonsterName === this.displayName){
 		article = 'another ';
 	} else if ('AEIOU'.indexOf(this.displayName.slice(0,1)) !== -1){
 		article = 'an ';
@@ -94,7 +157,7 @@ Monster.prototype.announce = function(){
 		article = 'a ';
 	}
 	var message = "It's " + article + this.displayName + '!';
-	gameLog.add(message);
+	currentGame.log.add(message);
 	if (this.shortName === ""){
 		this.shortName = this.displayName;
 	} 
@@ -114,8 +177,20 @@ Monster.prototype.addClass = function(classStr){
 
 Monster.prototype.die = function(){
 	this.addClass('dead');
-	gameLog.add('You slayed the ' + this.shortName + '.');
-	setTimeout(switchMonster, 2000);
+	currentGame.log.add('You slayed the ' + this.shortName + '.');
+	setTimeout(currentGame.switchMonster, 2000);
+};
+
+Monster.prototype.hit = function(atkVal){
+	this.HP -= atkVal;
+	this.wiggle('hit', 250);
+	currentGame.log.add('You hit the ' + this.shortName + ' for ' + atkVal + 'HP.');
+	this.updateHP();
+};
+
+Monster.prototype.dodge = function(){
+	this.wiggle('dodge', 500);
+	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
 };
 
 // Types of Monsters
@@ -215,52 +290,25 @@ function Mage (type) {
 }
 Mage.prototype = new Monster();
 
-function randomEntry(array){
-	return array[Math.floor(Math.random()*array.length)];
-}
 
-function enterMonster(monsterType){
-	if (monsterType[0].length === 1){
-		monsterType = [monsterType,""];
-	}
-	previousMonsterName = currentMonster.displayName;
-	var newMonster = new window[monsterType[0]](monsterType[1]);
-	newMonster.div.className = "";
-	newMonster.appear();
-	currentMonster = newMonster;
-}
-
-function switchMonster(){
-	var monsterType = randomEntry(["Axedude","Balltype","Scamp","Skele","Snek","Werebeing","Mage"]);
-	enterMonster(monsterType);
-}
-
-function smack(){
-	var atkVal = Math.floor(Math.random()*4);
-	if (currentMonster.HP > 0){
-		if (atkVal > 0){
-			currentMonster.HP -= atkVal;
-			gameLog.add('You hit the ' + currentMonster.shortName + ' for ' + atkVal + 'HP.');
-			currentMonster.updateHP();
-		} else {
-			gameLog.add('You miss the ' + currentMonster.shortName + '.');
-		}
-		
-	}
-}
 
 // event Listeners
 
 function loadButtons(){
 	var buttons = document.getElementsByClassName("button");
 	for (var i=0; i < buttons.length; i+=1){
-		var fnName = buttons[i].id;
-		buttons[i].addEventListener("click", function(){window[fnName]();});
+		var fnName = buttons[i].getAttribute('click-data');
+		buttons[i].addEventListener("click", function(){currentGame[fnName]();});
 	}
 }
 
 loadButtons();
 
-var tempHero = new Hero();
-tempHero.draw();
-switchMonster();
+// var tempHero = new Hero();
+// tempHero.draw();
+// switchMonster();
+currentGame.playerHero = new Hero('Sandra');
+currentGame.currentMonster = new Monster();
+currentGame.previousMonsterName = "";
+
+currentGame.initialize();

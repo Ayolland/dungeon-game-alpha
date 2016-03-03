@@ -42,11 +42,10 @@ section#headsup, section#headsdown {
   section#headsup .hp-text::before, section#headsdown .hp-text::before {
     content: "HP: "; }
   section#headsup .hp-bar, section#headsdown .hp-bar {
-    background: white;
     width: 100%;
     height: 1px;
     margin-bottom: 3px;
-    transition: width 0.5s; }
+    transition: width 0.5s, background-color 0.5s; }
 
 section#display {
   width: 320px;
@@ -97,10 +96,6 @@ section#interface {
   bottom: -10%;
   left: -3%; }
 
-#monster.hit, #monster.dodge, #monster.floating {
-  display: inline-block;
-  transform-origin: center center; }
-
 #monster.dead {
   animation: dead 1.5s forwards; }
 @keyframes dead {
@@ -109,71 +104,65 @@ section#interface {
   100% {
     opacity: 0; } }
 #monster.hit {
-  animation: hit 0.5s ease-in-out 1; }
+  animation: hit 0.25s infinite ease-in-out; }
 @keyframes hit {
-  10% {
-    transform: translate(0px, -1px) rotate(6.5deg); }
-  20% {
-    transform: translate(0px, 3px) rotate(-6.5deg); }
-  30% {
-    transform: translate(2px, -1px) rotate(5.5deg); }
-  40% {
-    transform: translate(-3px, -1px) rotate(2.5deg); }
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1; }
+  25% {
+    transform: translate(10%, -5%) rotate(5deg);
+    opacity: 1; }
   50% {
-    transform: translate(-2px, -1px) rotate(2.5deg); }
-  60% {
-    transform: translate(0px, -2px) rotate(5.5deg); }
-  70% {
-    transform: translate(2px, -3px) rotate(-6.5deg); }
-  80% {
-    transform: translate(0px, 1px) rotate(0.5deg); }
-  90% {
-    transform: translate(3px, 3px) rotate(-4.5deg); }
-  0%, 100% {
-    transform: translate(0, 0) rotate(0); } }
+    transform: translate(0, 0) rotate(0);
+    opacity: 1; }
+  75% {
+    transform: translate(-10%, -5%) rotate(-5deg);
+    opacity: 1; }
+  100% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1; } }
 #monster.dodge {
-  animation: dodge 1s ease-in-out 1; }
+  animation: dodge 0.5s infinite ease-in-out; }
 @keyframes dodge {
-  10% {
-    transform: translate(-7px, 0) rotate(0); }
-  20% {
-    transform: translate(-4px, 0) rotate(0); }
-  30% {
-    transform: translate(3px, 0) rotate(0); }
-  40% {
-    transform: translate(-1px, 0) rotate(0); }
-  50% {
-    transform: translate(-11px, 0) rotate(0); }
-  60% {
-    transform: translate(-9px, 0) rotate(0); }
-  70% {
-    transform: translate(4px, 0) rotate(0); }
-  80% {
-    transform: translate(-6px, 0) rotate(0); }
-  90% {
-    transform: translate(6px, 0) rotate(0); }
-  0%, 100% {
-    transform: translate(0, 0) rotate(0); } }
-#monster.floating {
-  animation: floating 4s ease-in-out infinite; }
-@keyframes floating {
-  10% {
-    transform: translate(0, -3px) rotate(0); }
-  20% {
-    transform: translate(0, -3px) rotate(0); }
-  30% {
-    transform: translate(0, 2px) rotate(0); }
-  40% {
-    transform: translate(0, 8px) rotate(0); }
-  50% {
-    transform: translate(0, -7px) rotate(0); }
-  60% {
-    transform: translate(0, -4px) rotate(0); }
-  70% {
-    transform: translate(0, -2px) rotate(0); }
-  80% {
-    transform: translate(0, 3px) rotate(0); }
-  90% {
-    transform: translate(0, 1px) rotate(0); }
-  0%, 100% {
-    transform: translate(0, 0) rotate(0); } }
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1; }
+  25% {
+    transform: translate(25%, 0%) rotate(0);
+    opacity: 1; }
+  75% {
+    transform: translate(-25%, 0%) rotate(0);
+    opacity: 1; }
+  89% {
+    transform: translate(10%, 0%) rotate(0);
+    opacity: 1; }
+  96% {
+    transform: translate(-5%, 0%) rotate(0);
+    opacity: 1; }
+  100% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1; } }
+.hp-bar {
+  background: white; }
+  .hp-bar.hp-0 {
+    background: red; }
+  .hp-bar.hp-10 {
+    background: #ff3300; }
+  .hp-bar.hp-20 {
+    background: #ff6600; }
+  .hp-bar.hp-30 {
+    background: #ff9900; }
+  .hp-bar.hp-40 {
+    background: #ffcc00; }
+  .hp-bar.hp-50 {
+    background: yellow; }
+  .hp-bar.hp-60 {
+    background: #ffff33; }
+  .hp-bar.hp-70 {
+    background: #ffff66; }
+  .hp-bar.hp-80 {
+    background: #ffff99; }
+  .hp-bar.hp-90 {
+    background: #ffffcc; }
+  .hp-bar.hp-100 {
+    background: white; }

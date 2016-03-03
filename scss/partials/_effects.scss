@@ -1,28 +1,69 @@
-@import 'shake';
+@mixin bounce-it(
+	$name: 'effect',
+	$bounce: true,
+	$x-perc-1: 0,
+	$y-perc-1: 0,
+	$angle-1: 0,
+	$opacity-1: 1,
+	$x-perc-2: 0,
+	$y-perc-2: 0,
+	$angle-2: 0,
+	$opacity-2: 1,
+	$duration: 1s,
+	$iterations: 1) {
+	@at-root{
+		@keyframes #{$name} {
+			0%{transform: translate(0, 0) rotate(0); opacity: 1;}
+			25%{transform: translate($x-perc-1, $y-perc-1) rotate($angle-1); opacity: $opacity-1;}
+			@if ($bounce != true){ 50%{transform: translate(0, 0) rotate(0); opacity: 1;} }
+			75%{transform: translate($x-perc-2, $y-perc-2) rotate($angle-2); opacity: $opacity-2;}
+			@if $bounce { 
+				89%{transform: translate($x-perc-1*.4, $y-perc-1*.4) rotate($angle-1*.4); opacity: 1;}
+				96%{transform: translate($x-perc-2*.2, $y-perc-2*.2) rotate($angle-2*.2); opacity: 1;}
+			}
+			100%{transform: translate(0, 0) rotate(0); opacity: 1;}
+		}
+	}
+	animation: $name $duration $iterations ease-in-out;
+
+}
 
 // Monster and Player effects
 
 #monster{
 
 	&.dead{
+		@at-root{
+			@keyframes dead {
+				0% { opacity: 1;}
+				100% { opacity: 0;}
+			}
+		}
 		animation: dead 1.5s forwards;
 	}
 
-	@keyframes dead {
-		0% { opacity: 1;}
-		100% { opacity: 0;}
-	}
-
 	&.hit{
-		@include do-shake('hit', 8, 8, 15, 0.5s, $precision: 20, $q: 1);
+		@include bounce-it(hit, false, 10%, -5%, 5deg, 1, -10%, -5%, -5deg, 1, 0.25s, infinite)
 	}
 
 	&.dodge{
-		@include do-shake('dodge', 24, 0, 0, 1s, $precision: 50, $q: 1);
+		@include bounce-it(dodge, true, 25%, 0%, 0, 1, -25%, 0%, 0, 1, 0.5s, infinite)
 	}
 
-	&.floating{
-		@include do-shake('floating', 0, 16, 0, 4s, $precision: 30, $q: infinite);
-	}
 }
 
+.hp-bar{
+	background: white;
+	@for $i from 0 through 10{
+		&.hp-#{$i * 10}{
+			@if ($i < 6){
+				$percent: ($i * 20%);
+				background: mix(yellow, red, $percent);
+			} @else {
+				$percent: (($i - 5) * 20%);
+				background: mix(white, yellow, $percent);
+			}
+		}
+	}
+
+}
