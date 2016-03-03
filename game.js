@@ -38,6 +38,7 @@ function Game (){
 
 	this.initialize = function(){
 		this.playerHero.draw();
+		this.playerHero.updateHP();
 		this.switchMonster();
 	};
 
@@ -53,15 +54,25 @@ function Game (){
 		currentGame.enterMonster(monsterType);
 	};
 	this.attack = function(){
-		var atkVal = Math.floor(Math.random()*4);
-		if (this.currentMonster.HP > 0){
-			if (atkVal > 0){
-				this.currentMonster.hit(atkVal);
+		var heroAtkVal = Math.floor(Math.random()*4);
+		var monsterAtkVal = Math.floor(Math.random()*4);
+		if ((this.currentMonster.HP > 0)&&(this.playerHero.HP > 0)){
+			if (heroAtkVal > 0){
+				this.currentMonster.hit(heroAtkVal);
 			} else {
 				this.currentMonster.dodge();
 			}
-			
 		}
+		if ((this.currentMonster.HP > 0)&&(this.playerHero.HP > 0)){
+			setTimeout(function(){
+				if (monsterAtkVal > 0){
+					currentGame.playerHero.hit(monsterAtkVal);
+				} else {
+					currentGame.playerHero.dodge();
+				}
+			},2000);
+		}	
+
 	};
 
 }
@@ -98,13 +109,17 @@ Character.prototype.updateHP = function(){
 	if (this.HP < 1){
 		this.HP = 0;
 	}
-	this.displayElement.hpText.innerHTML = this.HP + "/" + this.initialHP;
-	var percentage = Math.floor((this.HP / this.initialHP)*100);
+	this.displayElement.hpText.innerHTML = this.HP + "/" + this.maxHP;
+	var percentage = Math.floor((this.HP / this.maxHP)*100);
 	this.displayElement.hpBar.style.width = percentage + "%";
 	this.displayElement.hpBar.className = "hp-bar hp-" + (Math.round(percentage / 10)*10);
 	if (this.HP === 0){
 		this.die();
 	}
+};
+
+Character.prototype.addClass = function(classStr){
+	this.div.classList.add(classStr);
 };
 
 Character.prototype.wiggle = function(tempClass, time){
@@ -123,13 +138,37 @@ function Hero(name){
 		hpText: document.getElementById('hero-hp-text'),
 		hpBar: document.getElementById('hero-hp-bar'),
 		name: document.getElementById('hero-name')
-	}; 
+	};
+	this.displayElement.name.innerHTML = name;
+	this.maxHP = 50;
+	this.HP = this.maxHP;
+	this.kills = 0;
 	this.spriteCompressed = "16x48|000000000000000000000180018003C007E007F00BF809CE11C003E003E003600630063004100C1800000000000000000000000000000000000000000180018003C007E007F00BF809CE13E003E003600630063004100C18";
 	this.color = "white";
 }
 
 Hero.prototype = new Character ();
 Hero.prototype.constructor = Hero;
+
+Hero.prototype.hit = function(atkVal){
+	this.HP -= atkVal;
+	this.wiggle('hit', 250);
+	currentGame.log.add('The '+ currentGame.currentMonster.shortName +' hit you for ' + atkVal + 'HP.');
+	this.updateHP();
+};
+
+Hero.prototype.dodge = function(){
+	this.wiggle('dodge', 500);
+	currentGame.log.add("You dodge the "+ currentGame.currentMonster.shortName +"'s attack.");
+};
+
+Hero.prototype.die = function(){
+	this.addClass('dead');
+	currentGame.log.add('You were slain by the ' + currentGame.currentMonster.shortName + '.');
+	setTimeout(function(){
+		currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters before perishing.');
+	},2000);
+};
 
 // A Monster is an enemy the PlayerCharacter fights one at a time
 
@@ -167,17 +206,14 @@ Monster.prototype.announce = function(){
 Monster.prototype.appear = function(){
 	this.announce();
 	this.draw();
-	this.HP = this.initialHP;
+	this.HP = this.maxHP;
 	this.updateHP();
-};
-
-Monster.prototype.addClass = function(classStr){
-	this.div.classList.add(classStr);
 };
 
 Monster.prototype.die = function(){
 	this.addClass('dead');
 	currentGame.log.add('You slayed the ' + this.shortName + '.');
+	currentGame.playerHero.kills ++;
 	setTimeout(currentGame.switchMonster, 2000);
 };
 
@@ -196,7 +232,7 @@ Monster.prototype.dodge = function(){
 // Types of Monsters
 
 function Axedude (type) {
-	this.initialHP = 20;
+	this.maxHP = 20;
 	this.spriteCompressed = "16x48|000000000000001E085E078A05081FE83FE83FF81FDC07880F880FC01FE03DD018C818601860102030300000000000000000000000000000001E085E078A05081FE83FE83FF81FDC07880F880FC01FE03DD018E8186010203030000000000000";
 	this.displayName = "Axedude";
 	this.color = 'yellow';
@@ -205,7 +241,7 @@ Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
 
 function Balltype (type) {
-	this.initialHP = 15;
+	this.maxHP = 15;
 	this.spriteCompressed = "16x48|0000000000000000000003800FE01FF03D783AB87C7C7ABC6D742FF427E405A001200100010000000000000000000000000000000000000003800FE01FF03FF83EF87D7C7EFC6FF42FF427E405A0012001000100000000000000000000000000";
 	this.displayName = "Gooball";
 	this.color = 'purple';
@@ -214,7 +250,7 @@ Balltype.prototype = new Monster();
 Balltype.prototype.constructor = Balltype;
 
 function Scamp (type) {
-	this.initialHP = 10;
+	this.maxHP = 10;
 	this.spriteCompressed = "16x48|000000000000000000000300018003C007E0018007E00FF013C803C007E0076006200820000000000000000000000000000000000000000000000600030007800FC003000FC01FE0279003C007E0076006200820000000000000000000000000";
 	this.displayName = "Scamp";
 	this.color = 'darkgreen';
@@ -223,14 +259,14 @@ Scamp.prototype = new Monster();
 Scamp.prototype.constructor = Scamp;
 
 function Skele (type) {
-	this.initialHP = 12;
+	this.maxHP = 12;
 	if ( type === ""){
 		type = randomEntry(["Footman","Archer","Monk","Knight","Flaming"]);
 	}
 	this.color = 'white';
 	switch (type){
 		case "Footman":
-			this.initialHP = 14;
+			this.maxHP = 14;
 			this.spriteCompressed = "16x48|00000000000000000100810082C0C7E045302BD4280E118E13CE02440240042004200420041000000000000000000000000000000000000000804080416063F0229815EA140708C709E701220220022004200410041";
 			this.displayName = "Skelebones Footman";
 			break;
@@ -244,7 +280,7 @@ function Skele (type) {
 			this.shortName = "Skelebones Mage";
 			break;
 		case "Knight":
-			this.initialHP = 16;
+			this.maxHP = 16;
 			this.spriteCompressed = "16x48|00000000000004400380810082C0C7E045302BD4280E118E13CE02440240042004200420041000000000000000000000000000000000022001C04080416063F0229815EA140708C709E701220220022004200410041";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
@@ -264,7 +300,7 @@ Skele.prototype = new Monster();
 Skele.prototype.constructor = Skele;
 
 function Snek (type) {
-	this.initialHP = 10;
+	this.maxHP = 10;
 	this.spriteCompressed = "16x48|000000000000000003C00FE008701FD010401F8008800F800480034021C040E043FC6FFE3FFC00000000000000000000000000000000000003C00FE008701FD010401F8008800F800480034081C040E043FC6FFE3FFC00000000000000000000";
 	this.displayName = "Snek";
 	this.color = 'green';
@@ -274,7 +310,7 @@ Snek.prototype.constructor = Snek;
 
 
 function Werebeing (type) {
-	this.initialHP = 20;
+	this.maxHP = 20;
 	this.spriteCompressed = "16x48|0000000000800B0014001F803FE07FF01FF01FF817EC33C423CC31E423E007E00670023001080208040800000000000000000000000000800B0014001F803FE07FF01FF01FF817EC33C421EC33E427E006700230010802080408000000000000";
 	this.displayName = "Werebeing";
 	this.color = 'lightgray';
@@ -283,7 +319,7 @@ Werebeing.prototype = new Monster();
 Werebeing.prototype.constructor = Werebeing;
 
 function Mage (type) {
-	this.initialHP = 12;
+	this.maxHP = 12;
 	this.spriteCompressed = "16x48|000000000000020002000F8002100D281F901FD02FD02738201045100D900A900DD01FD01FF03FF000000000000000000000000000000100010007C8011406880FC80FE817FC1388100825880D880A880DC81FC81FE83FF00000000000000000";
 	this.displayName = "Wiz";
 	this.color = 'blue';

@@ -96,14 +96,14 @@ section#interface {
   bottom: -10%;
   left: -3%; }
 
-#monster.dead {
+#monster.dead, #hero.dead {
   animation: dead 1.5s forwards; }
 @keyframes dead {
   0% {
     opacity: 1; }
   100% {
     opacity: 0; } }
-#monster.hit {
+#monster.hit, #hero.hit {
   animation: hit 0.25s infinite ease-in-out; }
 @keyframes hit {
   0% {
@@ -121,7 +121,7 @@ section#interface {
   100% {
     transform: translate(0, 0) rotate(0);
     opacity: 1; } }
-#monster.dodge {
+#monster.dodge, #hero.dodge {
   animation: dodge 0.5s infinite ease-in-out; }
 @keyframes dodge {
   0% {

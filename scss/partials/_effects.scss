@@ -30,7 +30,7 @@
 
 // Monster and Player effects
 
-#monster{
+#monster, #hero{
 
 	&.dead{
 		@at-root{
