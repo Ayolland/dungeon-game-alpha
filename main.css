@@ -23,6 +23,7 @@ body {
 
 .button {
   display: inline-block;
+  position: relative;
   font-size: 1.25em;
   border: 1px solid white;
   padding: 0.25em 0.5em 0.4em 0.5em;
@@ -57,12 +58,32 @@ section#display {
     width: 100%; }
 
 section#interface {
-  text-align: center; }
+  text-align: center;
+  position: relative; }
   section#interface #gameLog {
     height: 1em;
     line-height: 1.1em;
     overflow-y: scroll;
     margin: 0.5em 0 0; }
+  section#interface.wait::before {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10; }
+  section#interface.wait .button.action {
+    color: gray;
+    border-color: gray; }
+    section#interface.wait .button.action::before {
+      content: "...";
+      background-color: black;
+      line-height: 1.5em;
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 4; }
 
 @keyframes monster-ready {
   0% {
