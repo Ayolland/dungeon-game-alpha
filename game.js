@@ -86,9 +86,10 @@ function Displayable (){
 Displayable.prototype.constructor = Displayable;
 
 Displayable.prototype.draw = function(){
-    var binary = binhex.convertHexadecimalToBinary(this.spriteCompressed.slice( this.spriteCompressed.indexOf('|') + 1));
-    var spriteWidth = this.spriteCompressed.slice( 0, this.spriteCompressed.indexOf('x'));
-    var spriteHeight = this.spriteCompressed.slice( this.spriteCompressed.indexOf('x') + 1 , this.spriteCompressed.indexOf('|') );
+	var rawStr = LZString.decompressFromBase64(this.spriteCompressed);
+    var binary = (rawStr.slice( rawStr.indexOf('|') + 1));
+    var spriteWidth = rawStr.slice( 0, rawStr.indexOf('x'));
+    var spriteHeight = rawStr.slice( rawStr.indexOf('x') + 1 , rawStr.indexOf('|') );
     this.canvas.clearRect(0,0,spriteWidth,spriteHeight);
     this.canvas.fillStyle = this.color;
     for (var i=0; i < binary.length; i+=1){
@@ -145,7 +146,7 @@ function Hero(name){
 	this.maxHP = 50;
 	this.HP = this.maxHP;
 	this.kills = 0;
-	this.spriteCompressed = "16x48|000000000000000000000180018003C007E007F00BF809CE11C003E003E003600630063004100C1800000000000000000000000000000000000000000180018003C007E007F00BF809CE13E003E003600630063004100C18";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNfcY267a6EbHGlkkp6VVJ4EnmIOOs5maVc3vWt1kVQfSFpBI/FOkzZc+QsUJJqFUOYdOmrdTY7RbZXQbcKG8bwos+9ATZZjVfKkA===";
 	this.color = "white";
 }
 
@@ -235,7 +236,7 @@ Monster.prototype.dodge = function(){
 
 function Axedude (type) {
 	this.maxHP = 20;
-	this.spriteCompressed = "16x48|000000000000001E085E078A05081FE83FE83FF81FDC07880F880FC01FE03DD018C818601860102030300000000000000000000000000000001E085E078A05081FE83FE83FF81FDC07880F880FC01FE03DD018E8186010203030000000000000";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
 	this.displayName = "Axedude";
 	this.color = 'yellow';
 }
@@ -244,7 +245,7 @@ Axedude.prototype.constructor = Axedude;
 
 function Balltype (type) {
 	this.maxHP = 15;
-	this.spriteCompressed = "16x48|0000000000000000000003800FE01FF03D783AB87C7C7ABC6D742FF427E405A001200100010000000000000000000000000000000000000003800FE01FF03FF83EF87D7C7EFC6FF42FF427E405A0012001000100000000000000000000000000";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcXncF6qEkqFzAUHLWV1EKmPnN51UNvu1L0nuJKHahWJVR+RliHYZ2eQsVLlK1Wtb5+Ofg0E6Re2i1ZthMrVuZmeg66dvWpZcXJxOMrj+u8/fGIA==";
 	this.displayName = "Gooball";
 	this.color = 'purple';
 }
@@ -253,7 +254,7 @@ Balltype.prototype.constructor = Balltype;
 
 function Scamp (type) {
 	this.maxHP = 10;
-	this.spriteCompressed = "16x48|000000000000000000000300018003C007E0018007E00FF013C803C007E0076006200820000000000000000000000000000000000000000000000600030007800FC003000FC01FE0279003C007E0076006200820000000000000000000000000";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
 	this.displayName = "Scamp";
 	this.color = 'darkgreen';
 }
@@ -269,32 +270,32 @@ function Skele (type) {
 	switch (type){
 		case "Footman":
 			this.maxHP = 14;
-			this.spriteCompressed = "16x48|00000000000000000100810082C0C7E045302BD4280E118E13CE02440240042004200420041000000000000000000000000000000000000000804080416063F0229815EA140708C709E701220220022004200410041";
+			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
 			break;
 		case "Archer":
-			this.spriteCompressed = "16x48|00000000080014001240214020B07FFC214820F02100126014F0089000900108010801080104000000000000000000000000000004000A00092010A010583FFE10A41078108009300A78044800880088010801040104";
+			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW4aUY5xP/pLaFFzA57lXVWl5kIWPLVZ2YFlOn62oWdcgksw7t+4tpNwzZc+QsVKps4qtHd69TaO3caB8uLX6WfYzM5GJvayuETdInVqcq3knEA";
 			this.displayName = "Skelebones Archer";
 			break;
 		case "Monk":
-			this.spriteCompressed = "16x48|00000000000000000100810082C047E045302BD02808118813C80A400A40062004200420041000000000000000000000000000000000000000804080416023F0229815E8140408C409E405200720022004200410041";
+			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Mage";
 			break;
 		case "Knight":
 			this.maxHP = 16;
-			this.spriteCompressed = "16x48|00000000000004400380810082C0C7E045302BD4280E118E13CE02440240042004200420041000000000000000000000000000000000022001C04080416063F0229815EA140708C709E701220220022004200410041";
+			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
 			break;
 		case "Flaming":
-			this.spriteCompressed = "16x48|010001A003C00AC0056005200AD007E005300BD00808118813C80240024004200420042004100000000000000000000000A000C005C0036002B00290056803F0029805E8040408C409E401200220022004200410041";
+			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GbJb7Kl4mGn6F7Hq7nVWOqa5XrZ0LGPfPsOnIUxHCeJIfxwyKrSQsVLlK1WSUsuRaazYKaOiVkMGxBBofVEmDM2f69ew23eb6C7iXI/efWnEA=";
 			this.displayName = "Skelebones who is on fire";
 			this.shortName = "Flaming Skelebones";
 			this.color = "#ff5000";
 			break;
 		default:
-			this.spriteCompressed = "16x48|00000000000000000100010002C007E005300BD00808118813C802400240042004200420041000000000000000000000000000000000000000800080016003F0029805E8040408C409E401200220022004200410041";
+			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOFxPc7D7pGnGqEJFqGlzlINUrHXPZV30nsb5Mc8fRsKE8RuSVOkzZc+Qt5YBFeirxl13fitrVdqwWrESySwVu7mWJw9Ym2jVIA";
 			this.displayName = "Skelebones";	
 	}
 }
@@ -303,7 +304,7 @@ Skele.prototype.constructor = Skele;
 
 function Snek (type) {
 	this.maxHP = 10;
-	this.spriteCompressed = "16x48|000000000000000003C00FE008701FD010401F8008800F800480034021C040E043FC6FFE3FFC00000000000000000000000000000000000003C00FE008701FD010401F8008800F800480034081C040E043FC6FFE3FFC00000000000000000000";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNOD4HcHp6K6oGnHKULVXmaW0r0M1Zw4drWnPOdVs5ARzzCWo8b3YzZc+QsVKFhIsKJCmkwltpaaE7iQar8bLJyZWR2flc0TLUkc+nL3H9kA";
 	this.displayName = "Snek";
 	this.color = 'green';
 }
@@ -313,7 +314,7 @@ Snek.prototype.constructor = Snek;
 
 function Werebeing (type) {
 	this.maxHP = 20;
-	this.spriteCompressed = "16x48|0000000000800B0014001F803FE07FF01FF01FF817EC33C423CC31E423E007E00670023001080208040800000000000000000000000000800B0014001F803FE07FF01FF01FF817EC33C421EC33E427E006700230010802080408000000000000";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktWpx0M8TWdaK7F6onkrlVlW422lFzV1F4lOfPHaOves+bHumqj2/Mm0JC0jZnMqFlK1WvUbRM7tvlyK+2pQaThY5Cb04KkwSIVcB1jBJGzzNXnozT8Pxf5KFpohqkA=";
 	this.displayName = "Werebeing";
 	this.color = 'lightgray';
 }
@@ -322,7 +323,7 @@ Werebeing.prototype.constructor = Werebeing;
 
 function Mage (type) {
 	this.maxHP = 12;
-	this.spriteCompressed = "16x48|000000000000020002000F8002100D281F901FD02FD02738201045100D900A900DD01FD01FF03FF000000000000000000000000000000100010007C8011406880FC80FE817FC1388100825880D880A880DC81FC81FE83FF00000000000000000";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW97geV7dgEF75K4pG5ZmKGELU20Xn5Mk71GsMM0f3tBOKpTRV2vTtyGM2kprXIK6xVWvUbNWjJLHE2M/iXniBSxYe6LeI5fxWHdPAV0sUy843yXTHCs6R2PMqu2mHhCEA=";
 	this.displayName = "Wiz";
 	this.color = 'blue';
 }
