@@ -7,8 +7,18 @@ function randomEntry(array){
 	return array[Math.floor(Math.random()*array.length)];
 }
 
+function roll(diceStr){
+	var diceNum = diceStr.slice(0,diceStr.indexOf("d"));
+	var diceSides = diceStr.slice(diceStr.indexOf("d")+1);
+	var totalRoll = 0;
+	for (var i = diceNum - 1; i >= 0; i--) {
+		totalRoll += (Math.floor(Math.random()*diceSides)+1);
+	}
+	return totalRoll;
+}
+
 // Copied from MDN
-// Enable the passage of the 'this' object through the JavaScript timers
+// Hypothetically Enable the passage of the 'this' object through the JavaScript timers
  
 var __nativeST__ = window.setTimeout;
  
@@ -55,21 +65,21 @@ function Game (){
 	};
 	this.attack = function(){
 		document.getElementById('interface').className = "wait";
-		var heroAtkVal = Math.floor(Math.random()*4);
-		var monsterAtkVal = Math.floor(Math.random()*4);
+		var heroAtkVal = Math.floor(Math.random()*4) + 1;
+		var monsterAtkVal = Math.floor(Math.random()*4) + 1;
 		if ((this.currentMonster.HP > 0)&&(this.playerHero.HP > 0)){
-			if (heroAtkVal > 0){
-				this.currentMonster.hit(heroAtkVal);
-			} else {
+			if ( (roll('1d20') + this.currentMonster.stats.agi - this.playerHero.stats.agi) >= 20){
 				this.currentMonster.dodge();
+			} else {
+				this.currentMonster.hit(heroAtkVal);
 			}
 		}
 		if ((this.currentMonster.HP > 0)&&(this.playerHero.HP > 0)){
 			setTimeout(function(){
-				if (monsterAtkVal > 0){
-					currentGame.playerHero.hit(monsterAtkVal);
-				} else {
+				if ( (roll('1d20') + currentGame.playerHero.stats.agi - currentGame.currentMonster.stats.agi) >= 20){
 					currentGame.playerHero.dodge();
+				} else {
+					currentGame.playerHero.hit(monsterAtkVal);
 				}
 			},1500);
 		}
@@ -145,6 +155,12 @@ function Hero(name){
 	this.displayElement.name.innerHTML = name;
 	this.maxHP = 50;
 	this.HP = this.maxHP;
+	this.stats = {
+		str: 8,
+		agi: 8,
+		int: 8,
+		cha: 8
+	};
 	this.kills = 0;
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNfcY267a6EbHGlkkp6VVJ4EnmIOOs5maVc3vWt1kVQfSFpBI/FOkzZc+QsUJJqFUOYdOmrdTY7RbZXQbcKG8bwos+9ATZZjVfKkA===";
 	this.color = "white";
@@ -236,6 +252,12 @@ Monster.prototype.dodge = function(){
 
 function Axedude (type) {
 	this.maxHP = 20;
+	this.stats = {
+		str: 10,
+		agi: 5,
+		int: 5,
+		cha: 2
+	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
 	this.displayName = "Axedude";
 	this.color = 'yellow';
@@ -245,6 +267,12 @@ Axedude.prototype.constructor = Axedude;
 
 function Balltype (type) {
 	this.maxHP = 15;
+	this.stats = {
+		str: 7,
+		agi: 7,
+		int: 1,
+		cha: 1
+	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcXncF6qEkqFzAUHLWV1EKmPnN51UNvu1L0nuJKHahWJVR+RliHYZ2eQsVLlK1Wtb5+Ofg0E6Re2i1ZthMrVuZmeg66dvWpZcXJxOMrj+u8/fGIA==";
 	this.displayName = "Gooball";
 	this.color = 'purple';
@@ -254,6 +282,12 @@ Balltype.prototype.constructor = Balltype;
 
 function Scamp (type) {
 	this.maxHP = 10;
+	this.stats = {
+		str: 2,
+		agi: 12,
+		int: 10,
+		cha: 8
+	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
 	this.displayName = "Scamp";
 	this.color = 'darkgreen';
@@ -263,27 +297,37 @@ Scamp.prototype.constructor = Scamp;
 
 function Skele (type) {
 	this.maxHP = 12;
+	this.stats = {
+		str: 6,
+		agi: 6,
+		int: 6,
+		cha: 2
+	};
 	if ( type === ""){
-		type = randomEntry(["Footman","Archer","Monk","Knight","Flaming"]);
+		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming"]);
 	}
 	this.color = 'white';
 	switch (type){
 		case "Footman":
 			this.maxHP = 14;
+			this.stats.str = 8;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
 			break;
 		case "Archer":
+			this.stats.agi = 9;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW4aUY5xP/pLaFFzA57lXVWl5kIWPLVZ2YFlOn62oWdcgksw7t+4tpNwzZc+QsVKps4qtHd69TaO3caB8uLX6WfYzM5GJvayuETdInVqcq3knEA";
 			this.displayName = "Skelebones Archer";
 			break;
 		case "Monk":
+			this.stats.int = 9;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Mage";
 			break;
-		case "Knight":
+		case "Bruiser":
 			this.maxHP = 16;
+			this.stats.str = 10;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
@@ -304,6 +348,12 @@ Skele.prototype.constructor = Skele;
 
 function Snek (type) {
 	this.maxHP = 10;
+	this.stats = {
+		str: 9,
+		agi: 12,
+		int: 5,
+		cha: 10
+	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNOD4HcHp6K6oGnHKULVXmaW0r0M1Zw4drWnPOdVs5ARzzCWo8b3YzZc+QsVKFhIsKJCmkwltpaaE7iQar8bLJyZWR2flc0TLUkc+nL3H9kA";
 	this.displayName = "Snek";
 	this.color = 'green';
@@ -314,6 +364,12 @@ Snek.prototype.constructor = Snek;
 
 function Werebeing (type) {
 	this.maxHP = 20;
+	this.stats = {
+		str: 12,
+		agi: 7,
+		int: 5,
+		cha: 3
+	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktWpx0M8TWdaK7F6onkrlVlW422lFzV1F4lOfPHaOves+bHumqj2/Mm0JC0jZnMqFlK1WvUbRM7tvlyK+2pQaThY5Cb04KkwSIVcB1jBJGzzNXnozT8Pxf5KFpohqkA=";
 	this.displayName = "Werebeing";
 	this.color = 'lightgray';
@@ -323,6 +379,12 @@ Werebeing.prototype.constructor = Werebeing;
 
 function Mage (type) {
 	this.maxHP = 12;
+	this.stats = {
+		str: 5,
+		agi: 8,
+		int: 12,
+		cha: 8
+	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW97geV7dgEF75K4pG5ZmKGELU20Xn5Mk71GsMM0f3tBOKpTRV2vTtyGM2kprXIK6xVWvUbNWjJLHE2M/iXniBSxYe6LeI5fxWHdPAV0sUy843yXTHCs6R2PMqu2mHhCEA=";
 	this.displayName = "Wiz";
 	this.color = 'blue';
