@@ -54,6 +54,7 @@ function Game (){
 		currentGame.enterMonster(monsterType);
 	};
 	this.attack = function(){
+		document.getElementById('interface').className = "wait";
 		var heroAtkVal = Math.floor(Math.random()*4);
 		var monsterAtkVal = Math.floor(Math.random()*4);
 		if ((this.currentMonster.HP > 0)&&(this.playerHero.HP > 0)){
@@ -70,8 +71,9 @@ function Game (){
 				} else {
 					currentGame.playerHero.dodge();
 				}
-			},2000);
-		}	
+			},1500);
+		}
+		setTimeout(function(){document.getElementById('interface').className = "";}, 2000);	
 
 	};
 
