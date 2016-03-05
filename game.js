@@ -42,11 +42,13 @@ function Game (){
 		}
 	};
 
+	this.currentLevel = new Level();
 	this.playerHero = new Hero('TEMP');
 	this.currentMonster = new Monster();
 	this.previousMonsterName = "";
 
 	this.initialize = function(){
+		this.currentLevel.draw()
 		this.playerHero.draw();
 		this.playerHero.updateHP();
 		this.switchMonster();
@@ -109,6 +111,19 @@ Displayable.prototype.draw = function(){
     	}
     }
 };
+
+// A level is an object that stores the background image and the possible monsters
+
+function Level(){
+	this.canvas = document.getElementById('level-sprite').getContext('2d');
+	this.spriteCompressed = "BwBgHgLCA+CM8MU5LVvRzCQi3/qORxJ2JuuBV1Z5xNDjTzLjOsFlhKnXrzFDojod2ddvwFCu40fXKSpg+LPFEhittLIqkvBX00FBM9WpESdGo8hO195+rvXabw13Idq5K0hsNGdtJi3q6UYs7WbtoBUU7y4WbhUW5BngmO6aKR0ZGmBo6JITm5aYXmWRJpNmUWfnEu7rGaQXwy6UkVHrkeGRWFJT3Knh11Xe09ur4hmaQKMZPDffPWhm3dgRtT0zPL2QvRteVjEXbN/K3Hqgl5pWFXJ5y3h/fl7u9xW4rV9iM+c8UDqlep0vLsvM9gUtvJ1Kn4fjVVjCTA4dtgvpIjqjGjxuMNEfjcW0ClVkoSWiCSflQU8gQSGgD2stlKdzgIUfYkilbJZJsZ5Gwut9ZPzkZlWG8dgogA==";
+	this.monsterArray = ["Axedude","Balltype","Scamp","Skele","Snek","Werebeing","Mage"];
+	this.shortName = "dungeon";
+	document.body.className = this.shortName;
+}
+
+Level.prototype = new Displayable ();
+Level.prototype.constructor = Level;
 
 // A Character is either a Monster (NPC) or the Hero
 
@@ -411,5 +426,6 @@ loadButtons();
 currentGame.playerHero = new Hero('Sandra');
 currentGame.currentMonster = new Monster();
 currentGame.previousMonsterName = "";
+currentGame.currentLevel = new Level();
 
 currentGame.initialize();

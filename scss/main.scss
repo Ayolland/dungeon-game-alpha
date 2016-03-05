@@ -60,8 +60,14 @@ section#display{
   margin: 0 auto;
   padding: 0;
   position: relative;
-  &>img{ width: 100%;}
 }
+
+  canvas#level-sprite{ 
+    width: 100%;
+    body.dungeon &{
+      background: gray;
+    }
+  }
 
 section#interface{
   text-align: center;
