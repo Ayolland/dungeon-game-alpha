@@ -64,8 +64,11 @@ section#display{
 
   canvas#level-sprite{ 
     width: 100%;
-    body.dungeon &{
-      background: gray;
+    body.Dungeon &{
+      background: #7c7c7c;
+    }
+    body.Volcano &{
+      background: #881400;
     }
   }
 

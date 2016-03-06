@@ -42,13 +42,13 @@ function Game (){
 		}
 	};
 
-	this.currentLevel = new Level();
+	this.currentLocation = new Location();
 	this.playerHero = new Hero('TEMP');
 	this.currentMonster = new Monster();
 	this.previousMonsterName = "";
 
 	this.initialize = function(){
-		this.currentLevel.draw()
+		this.currentLocation.draw();
 		this.playerHero.draw();
 		this.playerHero.updateHP();
 		this.switchMonster();
@@ -56,13 +56,19 @@ function Game (){
 
 	this.enterMonster = function(monsterType){
 		this.previousMonsterName = this.currentMonster.displayName;
-		var newMonster = new window[monsterType];
+		var monsterClass = monsterType.slice(0,monsterType.indexOf(" "));
+		var monsterVariant = monsterType.slice(monsterType.indexOf(" ") + 1);
+		if (monsterType.indexOf(" ") === -1){
+			monsterClass = monsterType;
+			monsterVariant = "";
+		}
+		var newMonster = new window[monsterClass](monsterVariant);
 		newMonster.div.className = "";
 		newMonster.appear();
 		this.currentMonster = newMonster;
 	};
 	this.switchMonster = function(){
-		var monsterType = randomEntry(["Axedude","Balltype","Scamp","Skele","Snek","Werebeing","Mage"]);
+		var monsterType = randomEntry(currentGame.currentLocation.monsterArray);
 		currentGame.enterMonster(monsterType);
 	};
 	this.attack = function(){
@@ -112,18 +118,26 @@ Displayable.prototype.draw = function(){
     }
 };
 
-// A level is an object that stores the background image and the possible monsters
+// A Location is an object that stores the background image and the possible monsters
 
-function Level(){
+function Location(type){
 	this.canvas = document.getElementById('level-sprite').getContext('2d');
-	this.spriteCompressed = "BwBgHgLCA+CM8MU5LVvRzCQi3/qORxJ2JuuBV1Z5xNDjTzLjOsFlhKnXrzFDojod2ddvwFCu40fXKSpg+LPFEhittLIqkvBX00FBM9WpESdGo8hO195+rvXabw13Idq5K0hsNGdtJi3q6UYs7WbtoBUU7y4WbhUW5BngmO6aKR0ZGmBo6JITm5aYXmWRJpNmUWfnEu7rGaQXwy6UkVHrkeGRWFJT3Knh11Xe09ur4hmaQKMZPDffPWhm3dgRtT0zPL2QvRteVjEXbN/K3Hqgl5pWFXJ5y3h/fl7u9xW4rV9iM+c8UDqlep0vLsvM9gUtvJ1Kn4fjVVjCTA4dtgvpIjqjGjxuMNEfjcW0ClVkoSWiCSflQU8gQSGgD2stlKdzgIUfYkilbJZJsZ5Gwut9ZPzkZlWG8dgogA==";
-	this.monsterArray = ["Axedude","Balltype","Scamp","Skele","Snek","Werebeing","Mage"];
-	this.shortName = "dungeon";
+	this.shortName = type;
+	switch (type){
+		case "Dungeon":
+			this.spriteCompressed = "BwBgHgLCA+CM8MU5LVvRzCQi3/qORxJ2JuuBV1Z5xNDjTzLjOsFlhKnXrzFDojod2ddvwFCu40fXKSpg+LPFEhittLIqkvBX00FBM9WpESdGo8hO195+rvXabw13Idq5K0hsNGdtJi3q6UYs7WbtoBUU7y4WbhUW5BngmO6aKR0ZGmBo6JITm5aYXmWRJpNmUWfnEu7rGaQXwy6UkVHrkeGRWFJT3Knh11Xe09ur4hmaQKMZPDffPWhm3dgRtT0zPL2QvRteVjEXbN/K3Hqgl5pWFXJ5y3h/fl7u9xW4rV9iM+c8UDqlep0vLsvM9gUtvJ1Kn4fjVVjCTA4dtgvpIjqjGjxuMNEfjcW0ClVkoSWiCSflQU8gQSGgD2stlKdzgIUfYkilbJZJsZ5Gwut9ZPzkZlWG8dgogA==";
+			this.monsterArray = ["Axedude", "Ball Goo", "Skele Bones", "Skele Footman", "Mage"];
+			break;
+		case "Volcano":
+			this.spriteCompressed = "BwBgHgLCA+CM8MUpJWpWz6308/sWBxJuRiIhWO6ZupF5peGTC1eLhD+Ht7fSgLZV6VfjlE9kg2XK5Txk7rSHTW8zW1XVGQ/uuFatRpQtOGZus8bJrlBvWssantxwedXHLuhs1iAhTM5r5eRnKBQezM0b7cBCYJesHEXuHx3pG8lM4ZUX6ZidmJij4FcUX+1qWeaWn5mSXeKLHFjS5MHQrlMSGhhgM5fCQdbiIMyqM9vcnSM+qzbhj1nRljlrPdYflLi43bO6NFU627J8fxuZfhGyGXm3uKMU8POYP2kzIVg22TdV8+j8eKdvl9JHcIalNkDhg9VPNxND5ulpuU8qD2n5XnZeKtPOlMVkOPtdgdscM9kQSf1Kb0JHMIh5BDYMSy7CMwT9jJyeXztMjWazqcyAvyWKiObj5P8ablOMSaRyFsKBhMmrJVWzleqqnT3Di9SdsJq7kbzfR5aggA==";
+			this.monsterArray = ["Axedude","Ball Fire","Skele Monk","Skele Bruiser", "Were Hellbeast"];
+			break;
+	}
 	document.body.className = this.shortName;
 }
 
-Level.prototype = new Displayable ();
-Level.prototype.constructor = Level;
+Location.prototype = new Displayable ();
+Location.prototype.constructor = Location;
 
 // A Character is either a Monster (NPC) or the Hero
 
@@ -280,7 +294,7 @@ function Axedude (type) {
 Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
 
-function Balltype (type) {
+function Ball (type) {
 	this.maxHP = 15;
 	this.stats = {
 		str: 7,
@@ -288,12 +302,28 @@ function Balltype (type) {
 		int: 1,
 		cha: 1
 	};
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcXncF6qEkqFzAUHLWV1EKmPnN51UNvu1L0nuJKHahWJVR+RliHYZ2eQsVLlK1Wtb5+Ofg0E6Re2i1ZthMrVuZmeg66dvWpZcXJxOMrj+u8/fGIA==";
-	this.displayName = "Gooball";
-	this.color = 'purple';
+	if ( type === ""){
+		type = randomEntry(["Fire","Goo"]);
+	}
+	var dripSprite = "IwNgHgLAHAPgDAxTktW9HNbcXncF6qEkqFzAUHLWV1EKmPnN51UNvu1L0nuJKHahWJVR+RliHYZ2eQsVLlK1Wtb5+Ofg0E6Re2i1ZthMrVuZmeg66dvWpZcXJxOMrj+u8/fGIA==";
+	var burnSprite = "IwNgHgLAHAPgDAxTktWxx0YZrTi7qYHFrElyH7kmnW22UaM1M4WmPsXcH1Ot6nHkIZkGVVCLwzZc+QsVLlKhZKy512Slvw66KGger6OyCS2YW+hCab69h0sWNF3z18a6IO4QA===";
+	switch (type){
+		case 'Goo':
+			this.spriteCompressed = dripSprite;
+			this.displayName = "floating ball of dripping ooze";
+			this.shortName = "Gooball";
+			this.color = '#d800cc';
+			break;
+		case 'Fire':
+			this.spriteCompressed = burnSprite;
+			this.displayName = "floating orb of fire";
+			this.shortName = "Fireball";
+			this.color = "#f83800";
+			break;
+	}
 }
-Balltype.prototype = new Monster();
-Balltype.prototype.constructor = Balltype;
+Ball.prototype = new Monster();
+Ball.prototype.constructor = Ball;
 
 function Scamp (type) {
 	this.maxHP = 10;
@@ -319,7 +349,7 @@ function Skele (type) {
 		cha: 2
 	};
 	if ( type === ""){
-		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming"]);
+		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming", "Bones"]);
 	}
 	this.color = 'white';
 	switch (type){
@@ -353,9 +383,10 @@ function Skele (type) {
 			this.shortName = "Flaming Skelebones";
 			this.color = "#ff5000";
 			break;
-		default:
+		case "Bones":
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOFxPc7D7pGnGqEJFqGlzlINUrHXPZV30nsb5Mc8fRsKE8RuSVOkzZc+Qt5YBFeirxl13fitrVdqwWrESySwVu7mWJw9Ym2jVIA";
-			this.displayName = "Skelebones";	
+			this.displayName = "Skelebones";
+			break;	
 	}
 }
 Skele.prototype = new Monster();
@@ -377,7 +408,7 @@ Snek.prototype = new Monster();
 Snek.prototype.constructor = Snek;
 
 
-function Werebeing (type) {
+function Were (type) {
 	this.maxHP = 20;
 	this.stats = {
 		str: 12,
@@ -385,12 +416,38 @@ function Werebeing (type) {
 		int: 5,
 		cha: 3
 	};
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktWpx0M8TWdaK7F6onkrlVlW422lFzV1F4lOfPHaOves+bHumqj2/Mm0JC0jZnMqFlK1WvUbRM7tvlyK+2pQaThY5Cb04KkwSIVcB1jBJGzzNXnozT8Pxf5KFpohqkA=";
-	this.displayName = "Werebeing";
-	this.color = 'lightgray';
+	if( type === ''){
+    	type = "Wolf";
+	};
+	var wolfSprite = "IwNgHgLAHAPgDAxTktW9Lhyxhx8HoHH6YkmrmFlU5JbnZ1N7Xb2LGv11fuecKaWsJyFSmQd0kDhyZh3m5lK1WvUbNmhisaiqNEYaHzaC9ownS+/PD1JWWTLszEHKbnZSmPFd37Z23koIQA==";
+	var goatSprite = "IwNgHgLAHAPgDAxTktWpx0M8TWdaK7F6onkrlVlW422lFzV1F4lOfPHaOves+bHumqj2/Mm0JC0jZnMqFlK1WvUbRM7tvlyK+2pQaThY5Cb04KkwSIVcB1jBJGzzNXnozT8Pxf5KFpohqkA=";
+	switch (type){
+		case "Wolf":
+			this.spriteCompressed = wolfSprite;
+			this.displayName = "Werewolf";
+			this.color = "#ac7c00";
+			break;
+		case "Goat":
+			this.maxHP = 22;
+			this.stats.str = 9;
+			this.spriteCompressed = goatSprite;
+			this.displayName = "Weregoat";
+			this.color = '#d8d8d8';
+			break;
+		case "Hellbeast":
+			this.maxHP = 25;
+			this.stats.str = 14;
+			this.stats.int = 8;
+			this.stats.agi = 8;
+			this.spriteCompressed = goatSprite;
+			this.displayName = "loathsome, hellish beast";
+			this.shortName = "Hellbeast";
+			this.color = "#7c7c7c";
+			break;
+	}
 }
-Werebeing.prototype = new Monster();
-Werebeing.prototype.constructor = Werebeing;
+Were.prototype = new Monster();
+Were.prototype.constructor = Were;
 
 function Mage (type) {
 	this.maxHP = 12;
@@ -426,6 +483,6 @@ loadButtons();
 currentGame.playerHero = new Hero('Sandra');
 currentGame.currentMonster = new Monster();
 currentGame.previousMonsterName = "";
-currentGame.currentLevel = new Level();
+currentGame.currentLocation = new Location(randomEntry(["Dungeon", "Volcano"]));
 
 currentGame.initialize();
