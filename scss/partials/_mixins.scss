@@ -1,0 +1,55 @@
+@mixin bounce-it(
+	$name: 'effect',
+	$bounce: true,
+	$x-perc-1: 0,
+	$y-perc-1: 0,
+	$angle-1: 0,
+	$opacity-1: 1,
+	$x-perc-2: 0,
+	$y-perc-2: 0,
+	$angle-2: 0,
+	$opacity-2: 1,
+	$duration: 1s,
+	$iterations: 1) {
+	@at-root{
+		@keyframes #{$name} {
+			0%{transform: translate(0, 0) rotate(0); opacity: 1;}
+			25%{transform: translate($x-perc-1, $y-perc-1) rotate($angle-1); opacity: $opacity-1;}
+			@if ($bounce != true){ 50%{transform: translate(0, 0) rotate(0); opacity: 1;} }
+			75%{transform: translate($x-perc-2, $y-perc-2) rotate($angle-2); opacity: $opacity-2;}
+			@if $bounce { 
+				89%{transform: translate($x-perc-1*.4, $y-perc-1*.4) rotate($angle-1*.4); opacity: 1;}
+				96%{transform: translate($x-perc-2*.2, $y-perc-2*.2) rotate($angle-2*.2); opacity: 1;}
+			}
+			100%{transform: translate(0, 0) rotate(0); opacity: 1;}
+		}
+	}
+	animation: $name $duration $iterations ease-in-out;
+
+}
+
+@mixin pulse($name,$color1,$color2,$duration){
+  @at-root{
+    @keyframes #{$name}{
+      0%{background-color: $color1;}
+      50%{background-color: $color2;}
+      100%{background-color: $color1;}
+    }
+  }
+  animation: $name $duration infinite ease-in-out;
+}
+
+@mixin flicker($name,$color1,$color2,$duration){
+  @at-root{
+    @keyframes #{$name}{
+      0%{background-color: $color1;}
+      17%{ background-color: mix($color1,$color2,random(100)*1%) }
+      34%{ background-color: mix($color1,$color2,random(100)*1%) }
+      50%{background-color: $color2;}
+      67%{ background-color: mix($color1,$color2,random(100)*1%) }
+      84%{ background-color: mix($color1,$color2,random(100)*1%) }
+      100%{background-color: $color1;}
+	}
+  }
+  animation: $name $duration infinite ease-in-out;
+}

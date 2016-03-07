@@ -1,0 +1,16 @@
+
+canvas#level-sprite{ 
+    width: 100%;
+    body.Dungeon &{
+      // background: #7c7c7c;
+      @include pulse(dungeon-bg,#004058,#008888, 15s);
+    }
+    body.Volcano &{
+      // background: #881400;
+      @include flicker(volcano-bg,#881400,#a81000,4s);
+    }
+    body.Forest &{
+      // background: #503000;
+      @include pulse(forest-bg,#503000,#005800, 15s);
+    }
+  }

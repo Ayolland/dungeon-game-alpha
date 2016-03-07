@@ -1,4 +1,5 @@
 @import 'partials/font';
+@import 'partials/mixins';
 
 $small-width: 320px;
 
@@ -44,6 +45,14 @@ section#headsup, section#headsdown{
 
   p{ margin: 0; white-space: nowrap;}
 
+  #level-text{
+    text-transform: uppercase;
+    color: gray;
+    text-align: center;
+    font-size: 1.25em;
+    letter-spacing: 1.5;
+  }
+
   .hp-text::before{ content: "HP: "}
 
   .hp-bar{
@@ -62,15 +71,6 @@ section#display{
   position: relative;
 }
 
-  canvas#level-sprite{ 
-    width: 100%;
-    body.Dungeon &{
-      background: #7c7c7c;
-    }
-    body.Volcano &{
-      background: #881400;
-    }
-  }
 
 section#interface{
   text-align: center;
@@ -117,3 +117,4 @@ section#interface{
 
 @import 'partials/monsters';
 @import 'partials/effects';
+@import 'partials/locations';

@@ -132,8 +132,13 @@ function Location(type){
 			this.spriteCompressed = "BwBgHgLCA+CM8MUpJWpWz6308/sWBxJuRiIhWO6ZupF5peGTC1eLhD+Ht7fSgLZV6VfjlE9kg2XK5Txk7rSHTW8zW1XVGQ/uuFatRpQtOGZus8bJrlBvWssantxwedXHLuhs1iAhTM5r5eRnKBQezM0b7cBCYJesHEXuHx3pG8lM4ZUX6ZidmJij4FcUX+1qWeaWn5mSXeKLHFjS5MHQrlMSGhhgM5fCQdbiIMyqM9vcnSM+qzbhj1nRljlrPdYflLi43bO6NFU627J8fxuZfhGyGXm3uKMU8POYP2kzIVg22TdV8+j8eKdvl9JHcIalNkDhg9VPNxND5ulpuU8qD2n5XnZeKtPOlMVkOPtdgdscM9kQSf1Kb0JHMIh5BDYMSy7CMwT9jJyeXztMjWazqcyAvyWKiObj5P8ablOMSaRyFsKBhMmrJVWzleqqnT3Di9SdsJq7kbzfR5aggA==";
 			this.monsterArray = ["Axedude","Ball Fire","Skele Monk","Skele Bruiser", "Were Hellbeast"];
 			break;
+		case "Forest":
+			this.spriteCompressed = "BwBgHgLCA+IgjIpiF3muDnNZ9ftDNiCUtsTyiMbClca06dLTn8T3HcuyGq6rToL7DqHASIYd2oobInFmWMcvwtJFIWxxyd9RUzXCjy7acGtZVs4fXXzm8nn0p0crvyaaNnJRXp+EXc7S1CFQy8AgwkiPkUzLwtEpVV3AX9LGzDsh1S0kMDXJNcZbh9fcqdKqXlbJIiEpt0i/WdKTzdclPti1p12gsDK5OppMji9C0HM8SmK4cjJKm708LnIxpU63W2C1HWtftHPVZWOyYuczYU9s5DVh5dT9KGsnejHu8K4g6vb8xqG6fVLGV6zU7aIH/Fp+T69N5aQE5RFRDKiDxbZHwmHvSaxZoLMqIp4nJHLbaksniL4HAkA5JGAhiIlVFrqb68CYbZlsVmHVpPYJHfEEvlYiEqMXVNyy4X+UilXz4oJymIyQorXbOUlY6yYhk/YLjYEOfXNSHo+Ea/oRBYzan2UW/J0sRpcgwQoq2S5urLugGugN9WH2hUYI1SSMM0bLbmBtW3RMJ9XsxYRgPux2Z4U5vPO/OFov5oA=";
+			this.monsterArray =["Axedude","Scamp","Were Wolf","Skele Archer","Snek"];
+			break;
 	}
 	document.body.className = this.shortName;
+	document.getElementById('level-text').innerHTML = "LVL: " + this.shortName;
 }
 
 Location.prototype = new Displayable ();
@@ -182,7 +187,7 @@ function Hero(name){
 		name: document.getElementById('hero-name')
 	};
 	this.displayElement.name.innerHTML = name;
-	this.maxHP = 50;
+	this.maxHP = 100;
 	this.HP = this.maxHP;
 	this.stats = {
 		str: 8,
@@ -289,7 +294,7 @@ function Axedude (type) {
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
 	this.displayName = "Axedude";
-	this.color = 'yellow';
+	this.color = '#f8d878';
 }
 Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
@@ -335,7 +340,7 @@ function Scamp (type) {
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
 	this.displayName = "Scamp";
-	this.color = 'darkgreen';
+	this.color = '#b8f818';
 }
 Scamp.prototype = new Monster();
 Scamp.prototype.constructor = Scamp;
@@ -351,7 +356,7 @@ function Skele (type) {
 	if ( type === ""){
 		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming", "Bones"]);
 	}
-	this.color = 'white';
+	this.color = '#f0d0b0';
 	switch (type){
 		case "Footman":
 			this.maxHP = 14;
@@ -400,9 +405,9 @@ function Snek (type) {
 		int: 5,
 		cha: 10
 	};
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNOD4HcHp6K6oGnHKULVXmaW0r0M1Zw4drWnPOdVs5ARzzCWo8b3YzZc+QsVKFhIsKJCmkwltpaaE7iQar8bLJyZWR2flc0TLUkc+nL3H9kA";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
 	this.displayName = "Snek";
-	this.color = 'green';
+	this.color = '#58d854';
 }
 Snek.prototype = new Monster();
 Snek.prototype.constructor = Snek;
@@ -459,7 +464,7 @@ function Mage (type) {
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW97geV7dgEF75K4pG5ZmKGELU20Xn5Mk71GsMM0f3tBOKpTRV2vTtyGM2kprXIK6xVWvUbNWjJLHE2M/iXniBSxYe6LeI5fxWHdPAV0sUy843yXTHCs6R2PMqu2mHhCEA=";
 	this.displayName = "Wiz";
-	this.color = 'blue';
+	this.color = '#0058f8';
 }
 Mage.prototype = new Monster();
 
@@ -483,6 +488,6 @@ loadButtons();
 currentGame.playerHero = new Hero('Sandra');
 currentGame.currentMonster = new Monster();
 currentGame.previousMonsterName = "";
-currentGame.currentLocation = new Location(randomEntry(["Dungeon", "Volcano"]));
+currentGame.currentLocation = new Location(randomEntry(["Dungeon", "Volcano", "Forest"]));
 
 currentGame.initialize();

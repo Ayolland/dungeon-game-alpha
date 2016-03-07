@@ -40,6 +40,12 @@ section#headsup, section#headsdown {
   section#headsup p, section#headsdown p {
     margin: 0;
     white-space: nowrap; }
+  section#headsup #level-text, section#headsdown #level-text {
+    text-transform: uppercase;
+    color: gray;
+    text-align: center;
+    font-size: 1.25em;
+    letter-spacing: 1.5; }
   section#headsup .hp-text::before, section#headsdown .hp-text::before {
     content: "HP: "; }
   section#headsup .hp-bar, section#headsdown .hp-bar {
@@ -54,13 +60,6 @@ section#display {
   margin: 0 auto;
   padding: 0;
   position: relative; }
-
-canvas#level-sprite {
-  width: 100%; }
-  body.Dungeon canvas#level-sprite {
-    background: #7c7c7c; }
-  body.Volcano canvas#level-sprite {
-    background: #881400; }
 
 section#interface {
   text-align: center;
@@ -173,24 +172,62 @@ section#interface {
 .hp-bar {
   background: white; }
   .hp-bar.hp-0 {
-    background: red; }
+    background: #e40058; }
   .hp-bar.hp-10 {
-    background: #ff3300; }
+    background: #e92054; }
   .hp-bar.hp-20 {
-    background: #ff6600; }
+    background: #ee4050; }
   .hp-bar.hp-30 {
-    background: #ff9900; }
+    background: #f2604c; }
   .hp-bar.hp-40 {
-    background: #ffcc00; }
+    background: #f78048; }
   .hp-bar.hp-50 {
-    background: yellow; }
+    background: #fca044; }
   .hp-bar.hp-60 {
-    background: #ffff33; }
+    background: #eeb23b; }
   .hp-bar.hp-70 {
-    background: #ffff66; }
+    background: #e1c332; }
   .hp-bar.hp-80 {
-    background: #ffff99; }
+    background: #d3d52a; }
   .hp-bar.hp-90 {
-    background: #ffffcc; }
+    background: #c6e621; }
   .hp-bar.hp-100 {
-    background: white; }
+    background: #b8f818; }
+
+canvas#level-sprite {
+  width: 100%; }
+  body.Dungeon canvas#level-sprite {
+    animation: dungeon-bg 15s infinite ease-in-out; }
+@keyframes dungeon-bg {
+  0% {
+    background-color: #004058; }
+  50% {
+    background-color: #008888; }
+  100% {
+    background-color: #004058; } }
+  body.Volcano canvas#level-sprite {
+    animation: volcano-bg 4s infinite ease-in-out; }
+@keyframes volcano-bg {
+  0% {
+    background-color: #881400; }
+  17% {
+    background-color: #9e1100; }
+  34% {
+    background-color: #961200; }
+  50% {
+    background-color: #a81000; }
+  67% {
+    background-color: #9c1100; }
+  84% {
+    background-color: #a61000; }
+  100% {
+    background-color: #881400; } }
+  body.Forest canvas#level-sprite {
+    animation: forest-bg 15s infinite ease-in-out; }
+@keyframes forest-bg {
+  0% {
+    background-color: #503000; }
+  50% {
+    background-color: #005800; }
+  100% {
+    background-color: #503000; } }
