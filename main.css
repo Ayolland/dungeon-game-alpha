@@ -211,15 +211,15 @@ canvas#level-sprite {
   0% {
     background-color: #881400; }
   17% {
-    background-color: #9e1100; }
+    background-color: #911300; }
   34% {
-    background-color: #961200; }
+    background-color: #8c1400; }
   50% {
     background-color: #a81000; }
   67% {
-    background-color: #9c1100; }
+    background-color: #971200; }
   84% {
-    background-color: #a61000; }
+    background-color: #8d1300; }
   100% {
     background-color: #881400; } }
   body.Forest canvas#level-sprite {
@@ -231,3 +231,46 @@ canvas#level-sprite {
     background-color: #005800; }
   100% {
     background-color: #503000; } }
+  body.Graveyard canvas#level-sprite {
+    animation: graveyard-bg 10s infinite ease-in-out; }
+@keyframes graveyard-bg {
+  0% {
+    background-color: #150d36; }
+  10% {
+    background-color: #150d36; }
+  11% {
+    background-color: #504a68; }
+  15% {
+    background-color: #150d36; }
+  34% {
+    background-color: #150d36; }
+  35% {
+    background-color: #504a68; }
+  37% {
+    background-color: #150d36; }
+  38% {
+    background-color: white; }
+  40% {
+    background-color: white; }
+  41% {
+    background-color: #150d36; }
+  66% {
+    background-color: #150d36; }
+  67% {
+    background-color: white; }
+  72% {
+    background-color: white; }
+  73% {
+    background-color: #150d36; }
+  71% {
+    background-color: #150d36; }
+  80% {
+    background-color: #150d36; }
+  81% {
+    background-color: white; }
+  83% {
+    background-color: white; }
+  84% {
+    background-color: #150d36; }
+  100% {
+    background-color: #150d36; } }

@@ -53,3 +53,31 @@
   }
   animation: $name $duration infinite ease-in-out;
 }
+
+@mixin flash($name,$color1,$color2,$duration){
+	@at-root{
+		@keyframes #{$name}{
+			0%{background-color: $color1;}
+			10%{background-color: $color1;}
+			11%{background-color: mix($color1,$color2,75%);}
+			15%{background-color: $color1;}
+			34%{background-color: $color1;}
+			35%{background-color: mix($color1,$color2,75%);}
+			37%{background-color: $color1;}
+			38%{background-color: $color2;}
+			40%{background-color: $color2;}
+			41%{background-color: $color1;}
+			66%{background-color: $color1;}
+			67%{background-color: $color2;}
+			72%{background-color: $color2;}
+			73%{background-color: $color1;}
+			71%{background-color: $color1;}
+			80%{background-color: $color1;}
+			81%{background-color: $color2;}
+			83%{background-color: $color2;}
+			84%{background-color: $color1;}
+			100%{background-color: $color1;}
+		}
+	}
+	animation: $name $duration infinite ease-in-out;
+}

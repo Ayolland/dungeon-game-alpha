@@ -13,4 +13,7 @@ canvas#level-sprite{
       // background: #503000;
       @include pulse(forest-bg,#503000,#005800, 15s);
     }
+    body.Graveyard &{
+      @include flash(graveyard-bg,#150d36,white, 10s);
+    }
   }
