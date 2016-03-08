@@ -91,13 +91,6 @@ section#interface {
       height: 100%;
       z-index: 4; }
 
-@keyframes monster-ready {
-  0% {
-    top: 0; }
-  50% {
-    top: -100%; }
-  100% {
-    top: 0%; } }
 #hero, #monster {
   display: block;
   position: absolute;
@@ -110,28 +103,43 @@ section#interface {
     height: 200%;
     top: 0;
     animation: monster-ready 1.5s steps(1, end) infinite; }
-
-#monster {
-  width: 30%;
-  height: 72%;
-  bottom: 5%;
-  left: 35%; }
-
-#hero {
-  width: 35%;
-  height: 84%;
-  bottom: -10%;
-  left: -3%; }
-
-#monster.dead, #hero.dead {
-  animation: dead 1.5s forwards; }
+@keyframes monster-ready {
+  0% {
+    top: 0; }
+  50% {
+    top: -100%; }
+  100% {
+    top: 0%; } }
+  #hero > .damage-sprite, #monster > .damage-sprite {
+    position: absolute;
+    width: 400%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0; }
+    #hero > .damage-sprite.active, #monster > .damage-sprite.active {
+      opacity: 1;
+      animation: damage-sprite 0.5s steps(1, end) infinite; }
+@keyframes damage-sprite {
+  0% {
+    left: 0; }
+  25% {
+    left: -100%; }
+  50% {
+    left: -200%; }
+  75% {
+    left: -300%; }
+  100% {
+    left: -400%; } }
+  #hero.dead, #monster.dead {
+    animation: dead 1.5s forwards; }
 @keyframes dead {
   0% {
     opacity: 1; }
   100% {
     opacity: 0; } }
-#monster.hit, #hero.hit {
-  animation: hit 0.25s infinite ease-in-out; }
+  #hero.hit, #monster.hit {
+    animation: hit 0.25s infinite ease-in-out; }
 @keyframes hit {
   0% {
     transform: translate(0, 0) rotate(0);
@@ -148,8 +156,8 @@ section#interface {
   100% {
     transform: translate(0, 0) rotate(0);
     opacity: 1; } }
-#monster.dodge, #hero.dodge {
-  animation: dodge 0.5s infinite ease-in-out; }
+  #hero.dodge, #monster.dodge {
+    animation: dodge 0.5s infinite ease-in-out; }
 @keyframes dodge {
   0% {
     transform: translate(0, 0) rotate(0);
@@ -169,6 +177,18 @@ section#interface {
   100% {
     transform: translate(0, 0) rotate(0);
     opacity: 1; } }
+#monster {
+  width: 30%;
+  height: 72%;
+  bottom: 5%;
+  left: 35%; }
+
+#hero {
+  width: 35%;
+  height: 84%;
+  bottom: -10%;
+  left: -3%; }
+
 .hp-bar {
   background: white; }
   .hp-bar.hp-0 {
@@ -211,15 +231,15 @@ canvas#level-sprite {
   0% {
     background-color: #881400; }
   17% {
-    background-color: #911300; }
+    background-color: #a51000; }
   34% {
-    background-color: #8c1400; }
+    background-color: #911300; }
   50% {
     background-color: #a81000; }
   67% {
-    background-color: #971200; }
+    background-color: #951200; }
   84% {
-    background-color: #8d1300; }
+    background-color: #9e1100; }
   100% {
     background-color: #881400; } }
   body.Forest canvas#level-sprite {

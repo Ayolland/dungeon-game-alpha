@@ -30,6 +30,20 @@ function rollHits(diceStr,target){
 	return totalHits;
 }
 
+function thirdPerson(verb){
+	switch (verb){
+		case "bash":
+		case "punch":
+		case "slash":
+			verb += 'es';
+			break;
+		default:
+			verb += 's';
+			break;
+	}
+	return verb;
+}
+
 // Copied from MDN
 // Hypothetically Enable the passage of the 'this' object through the JavaScript timers
  
@@ -62,10 +76,8 @@ function Game (){
 	this.previousMonsterName = "";
 
 	this.initialize = function(){
-		this.currentLocation.draw(this.currentLocation.canvas);
-		this.playerHero.equip1(new Sword());
-		this.playerHero.draw(this.playerHero.canvas);
-		this.playerHero.updateHP();
+		this.currentLocation.draw(this.currentLocation.canvas, this.currentLocation.spriteCompressed);
+		this.playerHero.initialize();
 		this.switchMonster();
 	};
 
@@ -97,11 +109,11 @@ function Game (){
 		var turnInterval = setInterval(function(){
 			switch (stepsArr[step]){
 				case "player turn":
-					var heroAtkVal = currentGame.playerHero.useHand1();
+					var heroAtkObj = currentGame.playerHero.useHand1();
 					if (currentGame.currentMonster.calcDodge()){
 						currentGame.currentMonster.dodge();
 					} else {
-						currentGame.currentMonster.hit(heroAtkVal);
+						currentGame.currentMonster.hit(heroAtkObj);
 					}
 					break;
 				case "monster turn":
@@ -133,8 +145,8 @@ function Displayable (){
 
 Displayable.prototype.constructor = Displayable;
 
-Displayable.prototype.draw = function(canvas){
-	var rawStr = LZString.decompressFromBase64(this.spriteCompressed);
+Displayable.prototype.draw = function(canvas,sprite){
+	var rawStr = LZString.decompressFromBase64(sprite);
     var binary = (rawStr.slice( rawStr.indexOf('|') + 1));
     var spriteWidth = rawStr.slice( 0, rawStr.indexOf('x'));
     var spriteHeight = rawStr.slice( rawStr.indexOf('x') + 1 , rawStr.indexOf('|') );
@@ -223,11 +235,22 @@ Character.prototype.getEnemy = function(){
 	}
 };
 
+Character.prototype.punch = function(){
+	var attck = {};
+	attck.natural = 1;
+	attck.calculated = roll( Math.floor((this.stats.str + this.stats.agi)/8) + 'd3');
+	attck.type = "physical";
+	attck.sprite = "poof";
+	attck.color = this.color;
+	attck.verbs = ["punch","smack","hit","wallop","slap"];
+	return attck;
+};
+
 Character.prototype.useHand1 = function(){
 	if (this.hand1){
-		return this.hand1.attackVal();
+		return this.hand1.attackObj();
 	} else {
-		return roll( Math.floor(this.stats.agi/4) + 'd3');
+		return this.punch();
 	}
 	
 };
@@ -261,23 +284,23 @@ function Hero(name){
 Hero.prototype = new Character ();
 Hero.prototype.constructor = Hero;
 
-Hero.prototype.hit = function(atkVal){
-	atkVal = (atkVal - this.stats.def);
-	if (atkVal < 1){
-		atkVal = 1;
-	}
-	this.HP -= atkVal;
+Hero.prototype.hit = function(atkObj){
+	var defense = this.stats.def;
+	var totalAtk = atkObj.natural + atkObj.calculated - defense;
+	this.HP -= totalAtk;
+	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
 	this.wiggle('hit', 250);
-	currentGame.log.add('The '+ currentGame.currentMonster.shortName +' hit you for ' + atkVal + 'HP.');
+	var verb = thirdPerson(randomEntry(atkObj.verbs));
+	currentGame.log.add('The '+ currentGame.currentMonster.shortName +' ' + verb +' you for ' + totalAtk + 'HP.');
 	this.updateHP();
 };
 
 Hero.prototype.calcDodge = function(){
 	var possibilities = [];
-	for (var i = currentGame.currentMonster.stats.agi - 1; i >= 0; i--) {
+	for (var j = currentGame.currentMonster.stats.agi - 1; j >= 0; j--) {
 		possibilities.push(false);
 	}
-	for (var i = (this.stats.agi/2) - 1; i >= 0; i--) {
+	for (var k = (this.stats.agi/2) - 1; k >= 0; k--) {
 		possibilities.push(true);
 	}
 	return randomEntry(possibilities);
@@ -294,6 +317,14 @@ Hero.prototype.die = function(){
 	setTimeout(function(){
 		currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters before perishing.');
 	},2000);
+};
+
+Hero.prototype.initialize = function(){
+	this.effectController = new Effect();
+	this.effectController.link(this);
+	this.equip1(new Sword());
+	this.draw(this.canvas,this.spriteCompressed);
+	this.updateHP();
 };
 
 // A Monster is an enemy the PlayerCharacter fights one at a time
@@ -331,7 +362,9 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.announce();
-	this.draw(this.canvas);
+	this.effectController = new Effect();
+	this.effectController.link(this);
+	this.draw(this.canvas,this.spriteCompressed);
 	this.HP = this.stats.maxHP;
 	this.updateHP();
 };
@@ -343,23 +376,23 @@ Monster.prototype.die = function(){
 	setTimeout(currentGame.switchMonster, 2000);
 };
 
-Monster.prototype.hit = function(atkVal){
-	atkVal = (atkVal - this.stats.def);
-	if (atkVal < 1){
-		atkVal = 1;
-	}
-	this.HP -= atkVal;
+Monster.prototype.hit = function(atkObj){
+	var defense = this.stats.def;
+	var totalAtk = atkObj.natural + atkObj.calculated - defense;
+	this.HP -= totalAtk;
+	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
 	this.wiggle('hit', 250);
-	currentGame.log.add('You hit the ' + this.shortName + ' for ' + atkVal + 'HP.');
+	var verb = randomEntry(atkObj.verbs);
+	currentGame.log.add('You '+ verb +' the ' + this.shortName + ' for ' + totalAtk + 'HP.');
 	this.updateHP();
 };
 
 Monster.prototype.calcDodge = function(){
 	var possibilities = [];
-	for (var i = currentGame.playerHero.stats.agi - 1; i >= 0; i--) {
+	for (var l = currentGame.playerHero.stats.agi - 1; l >= 0; l--) {
 		possibilities.push(false);
 	}
-	for (var i = (this.stats.agi/2) - 1; i >= 0; i--) {
+	for (var m = (this.stats.agi/2) - 1; m >= 0; m--) {
 		possibilities.push(true);
 	}
 	return randomEntry(possibilities);
@@ -580,25 +613,58 @@ Item.prototype = new Displayable();
 Item.prototype.constructor = Item;
 
 function Weapon(){
-	this.target = "Enemy";
+	this.natural = 1;
 }
 Weapon.prototype = new Item();
 Weapon.prototype.constructor = Weapon;
 
+Weapon.prototype.target = function(){
+	return this.owner.getEnemy();
+};
+
+Weapon.prototype.attackObj = function(){
+	var attck = {};
+	attck.natural = this.natural;
+	attck.calculated = this.attackVal();
+	attck.type = this.attackType;
+	attck.sprite = this.hitSprite;
+	attck.color = this.color;
+	attck.verbs = this.verbArray;
+	return attck;
+};
+
 function Sword (type) {
-	this.attackVal = function(){
-		return 1 + roll("2d3");	
-	};
+	this.hitSprite = "slash1";
+	this.attackType = "physical";
+	this.verbArray = ['slash','strike','stab','lance','wound','cut'];
+	switch (type){
+		case "Wood":
+		default:
+			this.color = "#ac7c00";
+			this.attackVal = function(){
+				return 1 + roll("2d3");	
+			};
+			break;
+	}
 }
 Sword.prototype = new Weapon();
 Sword.prototype.constructor = Sword;
 
 function Staff (type) {
-	this.attackVal = function(){
-		var str = this.owner.stats.str;
-		var agi = this.owner.stats.agi;
-		return 1 + rollHits( (str+agi) + "d5",5);	
-	};
+	this.hitSprite = 'kapow';
+	this.attackType = "physical";
+	this.verbArray = ['strike','bludgeon','bash','thwack','smack'];
+	switch (type){
+		case "Wood":
+		default:
+			this.color = "#ac7c00";
+			this.attackVal = function(){
+				var str = this.owner.stats.str;
+				var agi = this.owner.stats.agi;
+				return 1 + rollHits( (str+agi) + "d5",5);	
+			};
+			break;
+	}
 }
 Staff.prototype = new Weapon();
 Staff.prototype.constructor = Staff;
@@ -606,10 +672,36 @@ Staff.prototype.constructor = Staff;
 // an Effect is a Displayable that visually displays the type of damage to the player
 
 function Effect(){
-
-};
+	this.sprites = {
+		kapow: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJBAjKZahRjVSnQ4o8i/UmTZ/N+5ZwMFs+zHl2pDeItJJmTh0hLIbypi5vNaqBPbAqzKtq9SsFzDJpWN2mhlwtv32512GueYnjLx4Off+HRAA==",
+		slash1: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpZaAjOdZTXUlfU40zRS5h65e9l9ynb9BwkXSF9RyXtQlYpAhDM6KMC1bnUa+20oyA",
+		blast: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJeAjGfBaTUpRQ4/bTU25S2h41Yk3zxLV07DggaoJRNl2FSq8uovLcxStfOXrCwhSl3iNa5AZUD9x2AdNLicywqNitAh9hmT7Tt4OlvDHgGe/iyqcq7Wvpw6oi7ROPSxVvGk9rBAA==",
+		claws: "GwFgHgTCA+AM8MU5LVvRzXs93/BGAjCYWXiUeddpYnTYwqfA0+1ay15+4bwzZ8ynFkOH8uPCTSpjeM2XIWLypbmjmtVqUSuRbY+nfWNJDZk0cwWra6w7sFbmh5yA",
+		poof: "GwFgHgTCA+AM8MU5LVvRzXs93/mAjASasaRYuUWdtafVTZbI0mwvR5y/Nz8n69B7YWNF9xU6TNlzWHQuSVEVWIfM1bN1DdvSM9+gxkXGmaflxPnWtU7aOSR6809stqQA"
+	};
+	this.color = "yellow";
+	this.associatedCharacter = "";
+}
 Effect.prototype = new Displayable();
 Effect.prototype.constructor = Effect;
+
+Effect.prototype.link = function(Character){
+	this.associatedCharacter = Character;
+	this.damageCanvasElement = Character.div.getElementsByClassName('damage-sprite')[0];
+	this.damageCanvas = this.damageCanvasElement.getContext('2d');
+};
+
+Effect.prototype.displayDamage = function(spriteName, color){
+	this.color = color;
+	this.damageCanvasElement.classList.add("active", spriteName);
+	this.draw(this.damageCanvas,this.sprites[spriteName]);
+	var thisEffect = this;
+	setTimeout(function(){thisEffect.clearDamage();}, 500);
+};
+
+Effect.prototype.clearDamage = function(){
+	this.damageCanvasElement.className = "damage-sprite";
+};
 
 // event Listeners
 

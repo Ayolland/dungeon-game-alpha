@@ -1,29 +1,5 @@
 
 
-// Monster and Player effects
-
-#monster, #hero{
-
-	&.dead{
-		@at-root{
-			@keyframes dead {
-				0% { opacity: 1;}
-				100% { opacity: 0;}
-			}
-		}
-		animation: dead 1.5s forwards;
-	}
-
-	&.hit{
-		@include bounce-it(hit, false, 10%, -5%, 5deg, 1, -10%, -5%, -5deg, 1, 0.25s, infinite)
-	}
-
-	&.dodge{
-		@include bounce-it(dodge, true, 25%, 0%, 0, 1, -25%, 0%, 0, 1, 0.5s, infinite)
-	}
-
-}
-
 .hp-bar{
 	$light-green: #b8f818;
 	$orange:#fca044;

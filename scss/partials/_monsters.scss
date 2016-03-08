@@ -1,10 +1,4 @@
 
-@keyframes monster-ready {
-	0% { top: 0;}
-	50% { top: -100%;}
-	100% { top: 0%;}
-}
-
 #hero, #monster{
 	display: block;
 	position: absolute;
@@ -18,6 +12,57 @@
 		height: 200%;
 		top: 0;
 		animation: monster-ready 1.5s steps(1, end) infinite;
+
+		@at-root{
+			@keyframes monster-ready {
+				0% { top: 0;}
+				50% { top: -100%;}
+				100% { top: 0%;}
+			}
+		}
+	}
+
+	&>.damage-sprite{
+		position: absolute;
+		width: 400%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		opacity: 0;
+		&.active{
+			opacity: 1;
+			animation: damage-sprite 0.5s steps(1,end) infinite;
+		}
+
+		@at-root{
+			@keyframes damage-sprite{
+				0%{ left: 0;}
+				25%{ left: -100%;}
+				50%{ left: -200%;}
+				75%{ left: -300%;}
+				100%{left: -400%;}
+			}
+		}
+	}
+
+// Monster and Player effects
+
+	&.dead{
+		@at-root{
+			@keyframes dead {
+				0% { opacity: 1;}
+				100% { opacity: 0;}
+			}
+		}
+		animation: dead 1.5s forwards;
+	}
+
+	&.hit{
+		@include bounce-it(hit, false, 10%, -5%, 5deg, 1, -10%, -5%, -5deg, 1, 0.25s, infinite)
+	}
+
+	&.dodge{
+		@include bounce-it(dodge, true, 25%, 0%, 0, 1, -25%, 0%, 0, 1, 0.5s, infinite)
 	}
 }
 
@@ -33,4 +78,12 @@
 	height: 84%;
 	bottom: -10%;
 	left: -3%;
+}
+
+
+
+#monster, #hero{
+
+	
+
 }
