@@ -417,6 +417,7 @@ function Axedude (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
+	this.hand1 = new Sword();
 }
 Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
@@ -538,6 +539,7 @@ function Snek (type) {
 		def: 0,
 		maxHP: 10
 	};
+	this.hand1 = new Claws();
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
 	this.displayName = "Snek";
 	this.color = '#58d854';
@@ -565,6 +567,7 @@ function Were (type) {
 			this.spriteCompressed = wolfSprite;
 			this.displayName = "Werewolf";
 			this.color = "#ac7c00";
+			this.hand1 = new Claws();
 			break;
 		case "Goat":
 			this.stats.maxHP = 22;
@@ -640,9 +643,9 @@ function Sword (type) {
 	switch (type){
 		case "Wood":
 		default:
-			this.color = "#ac7c00";
+			this.color = "#f8b800";
 			this.attackVal = function(){
-				return 1 + roll("2d3");	
+				return roll("2d3");	
 			};
 			break;
 	}
@@ -657,17 +660,36 @@ function Staff (type) {
 	switch (type){
 		case "Wood":
 		default:
-			this.color = "#ac7c00";
+			this.color = "#f8b800";
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
 				var agi = this.owner.stats.agi;
-				return 1 + rollHits( (str+agi) + "d5",5);	
+				return rollHits( (str+agi) + "d5",5);	
 			};
 			break;
 	}
 }
 Staff.prototype = new Weapon();
 Staff.prototype.constructor = Staff;
+
+function Claws (type) {
+	this.hitSprite = 'claws';
+	this.attackType = "physical";
+	this.verbArray = ['maul','savage','lacerate','wound','cut'];
+	switch (type){
+		case "Bone":
+		default:
+			this.color = "#f0d0b0";
+			this.attackVal = function(){
+				var str = this.owner.stats.str;
+				var agi = this.owner.stats.agi;
+				return roll( Math.floor((str + agi)/8) + 'd4');	
+			};
+			break;
+	}
+}
+Claws.prototype = new Weapon();
+Claws.prototype.constructor = Claws;Claws
 
 // an Effect is a Displayable that visually displays the type of damage to the player
 
