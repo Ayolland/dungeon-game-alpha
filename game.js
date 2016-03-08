@@ -25,7 +25,7 @@ function rollHits(diceStr,target){
 		var diceRoll = roll("1d"+diceSides);
 		if ( (diceRoll >= target) || (diceRoll === diceSides)){
 			totalHits++;
-		};
+		}
 	}
 	return totalHits;
 }
@@ -63,6 +63,7 @@ function Game (){
 
 	this.initialize = function(){
 		this.currentLocation.draw();
+		this.playerHero.equip1(new Sword());
 		this.playerHero.draw();
 		this.playerHero.updateHP();
 		this.switchMonster();
@@ -78,6 +79,9 @@ function Game (){
 		}
 		var newMonster = new window[monsterClass](monsterVariant);
 		newMonster.div.className = "";
+		if (newMonster.hand1){
+			newMonster.equip1(newMonster.hand1);
+		}
 		newMonster.appear();
 		this.currentMonster = newMonster;
 	};
@@ -93,7 +97,7 @@ function Game (){
 		var turnInterval = setInterval(function(){
 			switch (stepsArr[step]){
 				case "player turn":
-					var heroAtkVal = roll( Math.floor(currentGame.playerHero.stats.agi/4) + 'd3');
+					var heroAtkVal = currentGame.playerHero.useHand1();
 					if (currentGame.currentMonster.calcDodge()){
 						currentGame.currentMonster.dodge();
 					} else {
@@ -102,7 +106,7 @@ function Game (){
 					break;
 				case "monster turn":
 					if (currentGame.currentMonster.HP > 0) {
-						var monsterAtkVal = roll( Math.floor(currentGame.currentMonster.stats.agi/4) + 'd3');
+						var monsterAtkVal = currentGame.currentMonster.useHand1();
 						if (currentGame.playerHero.calcDodge()){
 							currentGame.playerHero.dodge();
 						} else {
@@ -205,25 +209,28 @@ Character.prototype.wiggle = function(tempClass, time){
 	setTimeout(function(){thisCharacter.div.classList.remove(tempClass);}, time);
 };
 
-Character.prototype.equip = function(item){
+Character.prototype.equip1 = function(item){
 	item.owner = this;
-	this.equip1 = item;
+	this.hand1 = item;
 };
 
-Character.prototype.enemy = function(){
+Character.prototype.getEnemy = function(){
 	switch (this.constructor.name){
 		case 'Hero':
 			return currentGame.currentMonster;
-			break;
 		case 'Monster':
 			return currentGame.playerHero;
-			break;
 	}
 };
 
-Character.prototype.punch = function(){
-	return roll( Math.floor(this.stats.agi/4) + 'd3');
-}
+Character.prototype.useHand1 = function(){
+	if (this.hand1){
+		return this.hand1.attackVal();
+	} else {
+		return roll( Math.floor(this.stats.agi/4) + 'd3');
+	}
+	
+};
 
 // A hero is the PlayerCharacter Object
 
@@ -449,6 +456,7 @@ function Skele (type) {
 			this.stats.def = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
+			this.hand1 = new Sword();
 			break;
 		case "Archer":
 			this.stats.agi = 9;
@@ -462,6 +470,7 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Monk";
+			this.hand1 = new Staff();
 			break;
 		case "Bruiser":
 			this.stats.maxHP = 16;
@@ -470,6 +479,7 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
+			this.hand1 = new Sword();
 			break;
 		case "Flaming":
 			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GbJb7Kl4mGn6F7Hq7nVWOqa5XrZ0LGPfPsOnIUxHCeJIfxwyKrSQsVLlK1WSUsuRaazYKaOiVkMGxBBofVEmDM2f69ew23eb6C7iXI/efWnEA=";
@@ -569,22 +579,28 @@ function Item(){
 Item.prototype = new Displayable();
 Item.prototype.constructor = Item;
 
+function Weapon(){
+	this.target = "Enemy";
+}
+Weapon.prototype = new Item();
+Weapon.prototype.constructor = Weapon;
+
 function Sword (type) {
 	this.attackVal = function(){
 		return 1 + roll("2d3");	
-	}
+	};
 }
-Sword.prototype = new Item;
+Sword.prototype = new Weapon();
 Sword.prototype.constructor = Sword;
 
 function Staff (type) {
 	this.attackVal = function(){
 		var str = this.owner.stats.str;
 		var agi = this.owner.stats.agi;
-		return 1 + rollHits( (str+agi) + "d10",10);	
-	}
+		return 1 + rollHits( (str+agi) + "d5",5);	
+	};
 }
-Staff.prototype = new Item;
+Staff.prototype = new Weapon();
 Staff.prototype.constructor = Staff;
 
 // event Listeners
