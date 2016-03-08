@@ -62,9 +62,9 @@ function Game (){
 	this.previousMonsterName = "";
 
 	this.initialize = function(){
-		this.currentLocation.draw();
+		this.currentLocation.draw(this.currentLocation.canvas);
 		this.playerHero.equip1(new Sword());
-		this.playerHero.draw();
+		this.playerHero.draw(this.playerHero.canvas);
 		this.playerHero.updateHP();
 		this.switchMonster();
 	};
@@ -133,17 +133,17 @@ function Displayable (){
 
 Displayable.prototype.constructor = Displayable;
 
-Displayable.prototype.draw = function(){
+Displayable.prototype.draw = function(canvas){
 	var rawStr = LZString.decompressFromBase64(this.spriteCompressed);
     var binary = (rawStr.slice( rawStr.indexOf('|') + 1));
     var spriteWidth = rawStr.slice( 0, rawStr.indexOf('x'));
     var spriteHeight = rawStr.slice( rawStr.indexOf('x') + 1 , rawStr.indexOf('|') );
-    this.canvas.clearRect(0,0,spriteWidth,spriteHeight);
-    this.canvas.fillStyle = this.color;
+    canvas.clearRect(0,0,spriteWidth,spriteHeight);
+    canvas.fillStyle = this.color;
     for (var i=0; i < binary.length; i+=1){
     	if (binary.slice(i,i+1) == 1){
     		var row = Math.floor(i / spriteWidth );
-    		this.canvas.fillRect( (i - row * spriteWidth ), row, 1, 1 );
+    		canvas.fillRect( (i - row * spriteWidth ), row, 1, 1 );
     	}
     }
 };
@@ -331,7 +331,7 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.announce();
-	this.draw();
+	this.draw(this.canvas);
 	this.HP = this.stats.maxHP;
 	this.updateHP();
 };
@@ -603,6 +603,14 @@ function Staff (type) {
 Staff.prototype = new Weapon();
 Staff.prototype.constructor = Staff;
 
+// an Effect is a Displayable that visually displays the type of damage to the player
+
+function Effect(){
+
+};
+Effect.prototype = new Displayable();
+Effect.prototype.constructor = Effect;
+
 // event Listeners
 
 function loadButtons(){
@@ -615,9 +623,7 @@ function loadButtons(){
 
 loadButtons();
 
-// var tempHero = new Hero();
-// tempHero.draw();
-// switchMonster();
+
 currentGame.playerHero = new Hero('Sandra');
 currentGame.currentMonster = new Monster();
 currentGame.previousMonsterName = "";
