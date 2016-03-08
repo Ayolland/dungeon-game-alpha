@@ -7,6 +7,7 @@ function randomEntry(array){
 	return array[Math.floor(Math.random()*array.length)];
 }
 
+// Rolls a number of dice using DnD shorthand (ie: 2d20) and returns the total;
 function roll(diceStr){
 	var diceNum = diceStr.slice(0,diceStr.indexOf("d"));
 	var diceSides = diceStr.slice(diceStr.indexOf("d")+1);
@@ -17,6 +18,7 @@ function roll(diceStr){
 	return totalRoll;
 }
 
+// Rolls a number of dice using DnD shorthand and returns the number of dice that are equal or higher to the target.
 function rollHits(diceStr,target){
 	var diceNum = diceStr.slice(0,diceStr.indexOf("d"));
 	var diceSides = diceStr.slice(diceStr.indexOf("d")+1);
@@ -30,6 +32,7 @@ function rollHits(diceStr,target){
 	return totalHits;
 }
 
+// used to change the tense of attack verbs
 function thirdPerson(verb){
 	switch (verb){
 		case "bash":
@@ -235,6 +238,22 @@ Character.prototype.getEnemy = function(){
 	}
 };
 
+Character.prototype.hit = function(atkObj){
+	var defense = this.stats.def;
+	var totalAtk = atkObj.natural + atkObj.calculated - defense;
+	this.HP -= totalAtk;
+	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
+	this.wiggle('hit', 250);
+	var verb = randomEntry(atkObj.verbs);
+	if (this.constructor.name != "Hero"){
+		var message = 'You '+ verb +' the ' + this.shortName + ' for ' + totalAtk + 'HP.';
+	} else {
+		var message = 'The '+ currentGame.currentMonster.shortName +' ' + thirdPerson(verb) +' you for ' + totalAtk + 'HP.';
+	};
+	currentGame.log.add(message);
+	this.updateHP();
+};
+
 Character.prototype.punch = function(){
 	var attck = {};
 	attck.natural = 1;
@@ -283,17 +302,6 @@ function Hero(name){
 
 Hero.prototype = new Character ();
 Hero.prototype.constructor = Hero;
-
-Hero.prototype.hit = function(atkObj){
-	var defense = this.stats.def;
-	var totalAtk = atkObj.natural + atkObj.calculated - defense;
-	this.HP -= totalAtk;
-	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
-	this.wiggle('hit', 250);
-	var verb = thirdPerson(randomEntry(atkObj.verbs));
-	currentGame.log.add('The '+ currentGame.currentMonster.shortName +' ' + verb +' you for ' + totalAtk + 'HP.');
-	this.updateHP();
-};
 
 Hero.prototype.calcDodge = function(){
 	var possibilities = [];
@@ -374,17 +382,6 @@ Monster.prototype.die = function(){
 	currentGame.log.add('You slayed the ' + this.shortName + '.');
 	currentGame.playerHero.kills ++;
 	setTimeout(currentGame.switchMonster, 2000);
-};
-
-Monster.prototype.hit = function(atkObj){
-	var defense = this.stats.def;
-	var totalAtk = atkObj.natural + atkObj.calculated - defense;
-	this.HP -= totalAtk;
-	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
-	this.wiggle('hit', 250);
-	var verb = randomEntry(atkObj.verbs);
-	currentGame.log.add('You '+ verb +' the ' + this.shortName + ' for ' + totalAtk + 'HP.');
-	this.updateHP();
 };
 
 Monster.prototype.calcDodge = function(){
