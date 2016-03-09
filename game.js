@@ -38,6 +38,7 @@ function thirdPerson(verb){
 		case "bash":
 		case "punch":
 		case "slash":
+		case "splash":
 			verb += 'es';
 			break;
 		default:
@@ -218,6 +219,8 @@ Character.prototype.constructor = Character;
 Character.prototype.updateHP = function(){
 	if (this.HP < 1){
 		this.HP = 0;
+	} else if (this.HP > this.stats.maxHP){
+		this.HP = this.stats.maxHP;
 	}
 	this.displayElement.hpText.innerHTML = this.HP + "/" + this.stats.maxHP;
 	var percentage = Math.floor((this.HP / this.stats.maxHP)*100);
@@ -253,18 +256,25 @@ Character.prototype.getEnemy = function(){
 };
 
 Character.prototype.hit = function(atkObj){
-	var defense = this.stats.def;
-	var afterDef = (atkObj.calculated - defense) < 0 ? 0 : (atkObj.calculated - defense);
+	var physicalDefense = this.stats.phys;
+	var magicalDefense = 0;
+	var afterDef = (atkObj.calculated - physicalDefense) < 0 ? 0 : (atkObj.calculated - physicalDefense);
 	var totalAtk = atkObj.natural + afterDef;
-	this.HP -= totalAtk;
+	if (atkObj.targetStat === 'HP'){
+		this.HP -= totalAtk;
+	} else {
+		// Any natural damage is ignored for non-HP damage;
+		totalAtk = afterDef;
+		this.stats[atkObj.targetStat] -= totalAtk;
+	}
 	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
 	this.wiggle('hit', 250);
 	var verb = randomEntry(atkObj.verbs);
 	var message = "";
-	if (this.constructor.name != "Hero"){
-		message = 'You '+ verb +' the ' + this.shortName + ' for ' + totalAtk + 'HP.';
+	if (this.constructor.name !== "Hero"){
+		message = 'You '+ verb +' the ' + this.shortName + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	} else {
-		message = 'The '+ currentGame.currentMonster.shortName +' ' + thirdPerson(verb) +' you for ' + totalAtk + 'HP.';
+		message = 'The '+ currentGame.currentMonster.shortName +' ' + thirdPerson(verb) +' you for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	}
 	currentGame.log.add(message);
 	this.updateHP();
@@ -275,6 +285,7 @@ Character.prototype.punch = function(){
 	attck.natural = 1;
 	attck.calculated = roll( Math.floor((this.stats.str + this.stats.agi)/8) + 'd3');
 	attck.type = "physical";
+	attck.targetStat = "HP";
 	attck.sprite = "poof";
 	attck.color = this.color;
 	attck.verbs = ["punch","smack","hit","wallop","slap"];
@@ -307,7 +318,7 @@ function Hero(name){
 		agi: 8,
 		int: 8,
 		cha: 8,
-		def: 1,
+		phys: 1,
 		maxHP: 100
 	};
 	this.HP = this.stats.maxHP;
@@ -424,7 +435,7 @@ function Axedude (type) {
 		agi: 5,
 		int: 5,
 		cha: 2,
-		def: 2,
+		phys: 2,
 		maxHP: 16
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
@@ -441,7 +452,7 @@ function Ball (type) {
 		agi: 7,
 		int: 1,
 		cha: 1,
-		def: 0,
+		phys: 0,
 		maxHP: 15
 	};
 	if ( type === ""){
@@ -473,7 +484,7 @@ function Scamp (type) {
 		agi: 12,
 		int: 10,
 		cha: 8,
-		def: 0,
+		phys: 0,
 		maxHP: 10
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
@@ -489,7 +500,7 @@ function Skele (type) {
 		agi: 6,
 		int: 6,
 		cha: 2,
-		def: 0,
+		phys: 0,
 		maxHP: 12
 	};
 	if ( type === ""){
@@ -549,7 +560,7 @@ function Snek (type) {
 		agi: 12,
 		int: 5,
 		cha: 10,
-		def: 0,
+		phys: 0,
 		maxHP: 10
 	};
 	this.hand1 = new Claws();
@@ -563,12 +574,13 @@ Snek.prototype.constructor = Snek;
 function Jelly (type) {
 	this.stats = {
 		str: 7,
-		agi: 2,
+		agi: 12,
 		int: 0,
 		cha: 0,
-		def: 4,
+		phys: 4,
 		maxHP: 25
 	};
+	this.hand1 = new Bucket();
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNecXf8r5HBYmrEkGIWW4413UOMLMtxv3NJ0M80cyrQQJ4ii2SVOkzZc+QsXk+XCqTRqq4iQVqdtKtnlZGmetQd0tzxHJaFA";
 	this.displayName = "quivering, gelatinous cube";
 	this.shortName = "Box Jelly";
@@ -584,7 +596,7 @@ function Were (type) {
 		agi: 7,
 		int: 5,
 		cha: 3,
-		def: 1,
+		phys: 1,
 		maxHP: 20
 	};
 	if( type === ''){
@@ -627,7 +639,7 @@ function Mage (type) {
 		agi: 8,
 		int: 12,
 		cha: 8,
-		def: 0,
+		phys: 0,
 		maxHP: 12
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW97geV7dgEF75K4pG5ZmKGELU20Xn5Mk71GsMM0f3tBOKpTRV2vTtyGM2kprXIK6xVWvUbNWjJLHE2M/iXniBSxYe6LeI5fxWHdPAV0sUy843yXTHCs6R2PMqu2mHhCEA=";
@@ -663,6 +675,12 @@ Weapon.prototype.attackObj = function(){
 	attck.sprite = this.hitSprite;
 	attck.color = this.color;
 	attck.verbs = this.verbArray;
+	// Physical damage always targets HP, other do not.
+	if (this.attackType === 'physical'){
+		attck.targetStat = "HP";
+	} else {
+		attck.targetStat = this.targetStat;
+	}
 	return attck;
 };
 
@@ -719,7 +737,28 @@ function Claws (type) {
 	}
 }
 Claws.prototype = new Weapon();
-Claws.prototype.constructor = Claws;Claws
+Claws.prototype.constructor = Claws;
+
+function Bucket (type) {
+	this.hitSprite = 'splat';
+	this.attackType = "physical";
+	this.verbArray = ['splash','douse'];
+	switch (type){
+		case "Acid":
+		default:
+			this.attackType = "acid";
+			this.targetStat = "maxHP";
+			this.color = 'rgba(88,216,84,0.5)';
+			this.verbArray.push('slime','spatter');
+			this.attackVal = function(){
+				return roll('1d2');
+			};
+			break;
+	}
+}
+Bucket.prototype = new Weapon();
+Bucket.prototype.constructor = Bucket;
+
 
 // an Effect is a Displayable that visually displays the type of damage to the player
 
@@ -729,7 +768,8 @@ function Effect(){
 		slash1: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpZaAjOdZTXUlfU40zRS5h65e9l9ynb9BwkXSF9RyXtQlYpAhDM6KMC1bnUa+20oyA",
 		blast: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJeAjGfBaTUpRQ4/bTU25S2h41Yk3zxLV07DggaoJRNl2FSq8uovLcxStfOXrCwhSl3iNa5AZUD9x2AdNLicywqNitAh9hmT7Tt4OlvDHgGe/iyqcq7Wvpw6oi7ROPSxVvGk9rBAA==",
 		claws: "GwFgHgTCA+AM8MU5LVvRzXs93/BGAjCYWXiUeddpYnTYwqfA0+1ay15+4bwzZ8ynFkOH8uPCTSpjeM2XIWLypbmjmtVqUSuRbY+nfWNJDZk0cwWra6w7sFbmh5yA",
-		poof: "GwFgHgTCA+AM8MU5LVvRzXs93/mAjASasaRYuUWdtafVTZbI0mwvR5y/Nz8n69B7YWNF9xU6TNlzWHQuSVEVWIfM1bN1DdvSM9+gxkXGmaflxPnWtU7aOSR6809stqQA"
+		poof: "GwFgHgTCA+AM8MU5LVvRzXs93/mAjASasaRYuUWdtafVTZbI0mwvR5y/Nz8n69B7YWNF9xU6TNlzWHQuSVEVWIfM1bN1DdvSM9+gxkXGmaflxPnWtU7aOSR6809stqQA",
+		splat: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxhAjCduRdWuaVTQw/M/vfTS8h8ex62Tqx2JPjwpi+EkV1GSEAwbMHzqkxZRbq523qo1Z1MlVOn7ewqgc26LnREbvLhoy1ev3cQ7vCA="
 	};
 	this.color = "yellow";
 	this.associatedCharacter = "";
