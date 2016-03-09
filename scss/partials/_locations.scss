@@ -1,10 +1,21 @@
 
 #level{ 
   width: 100%;
+  height: 100%;
+
+  &::after{
+    content: "";
+    display: block;
+    background: black;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 20%;
+  }
 
   #level-sprite{
     width: 200%;
-    position: relative;
+    position: absolute;
     top: 0;
     left: 0;
     animation: level-sprite 3s steps(1, end) infinite;
