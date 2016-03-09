@@ -65,10 +65,13 @@ section#interface {
   text-align: center;
   position: relative; }
   section#interface #gameLog {
-    height: 1em;
-    line-height: 1.1em;
+    height: 2em;
     overflow-y: scroll;
-    margin: 0.5em 0 0; }
+    margin: 0.5em 0; }
+    section#interface #gameLog p {
+      line-height: 1.1em;
+      margin: 0;
+      padding-top: 1em; }
   section#interface.wait::before {
     content: "";
     display: block;
@@ -214,9 +217,30 @@ section#interface {
   .hp-bar.hp-100 {
     background: #b8f818; }
 
-canvas#level-sprite {
+#level {
   width: 100%; }
-  body.Dungeon canvas#level-sprite {
+  #level #level-sprite {
+    width: 200%;
+    position: relative;
+    top: 0;
+    left: 0;
+    animation: level-sprite 3s steps(1, end) infinite; }
+    body.Dungeon #level #level-sprite {
+      animation: none !important; }
+    body.Volcano #level #level-sprite {
+      animation: none !important; }
+    body.Graveyard #level #level-sprite {
+      animation: level-sprite 1s steps(1, end) infinite; }
+    body.Mine #level #level-sprite {
+      animation: level-sprite 1s steps(1, end) infinite; }
+@keyframes level-sprite {
+  0% {
+    left: 0; }
+  50% {
+    left: -100%; }
+  100% {
+    left: 0%; } }
+  body.Dungeon #level {
     animation: dungeon-bg 15s infinite ease-in-out; }
 @keyframes dungeon-bg {
   0% {
@@ -225,24 +249,28 @@ canvas#level-sprite {
     background-color: #008888; }
   100% {
     background-color: #004058; } }
-  body.Volcano canvas#level-sprite {
-    animation: volcano-bg 4s infinite ease-in-out; }
+  body.Volcano #level {
+    animation: volcano-bg 10s  infinite; }
 @keyframes volcano-bg {
   0% {
-    background-color: #881400; }
-  17% {
-    background-color: #a51000; }
-  34% {
-    background-color: #911300; }
+    background-color: #750202; }
+  12% {
+    background-color: #b02800; }
+  25% {
+    background-color: #BD3000; }
+  37% {
+    background-color: #9e1c01; }
   50% {
-    background-color: #a81000; }
-  67% {
-    background-color: #951200; }
-  84% {
-    background-color: #9e1100; }
+    background-color: #750202; }
+  62% {
+    background-color: #9d1b01; }
+  75% {
+    background-color: #BD3000; }
+  87% {
+    background-color: #8c1101; }
   100% {
-    background-color: #881400; } }
-  body.Forest canvas#level-sprite {
+    background-color: #750202; } }
+  body.Forest #level {
     animation: forest-bg 15s infinite ease-in-out; }
 @keyframes forest-bg {
   0% {
@@ -251,46 +279,67 @@ canvas#level-sprite {
     background-color: #005800; }
   100% {
     background-color: #503000; } }
-  body.Graveyard canvas#level-sprite {
+  body.Graveyard #level {
     animation: graveyard-bg 10s infinite ease-in-out; }
 @keyframes graveyard-bg {
   0% {
-    background-color: #150d36; }
+    background-color: #272044; }
   10% {
-    background-color: #150d36; }
+    background-color: #272044; }
   11% {
-    background-color: #504a68; }
+    background-color: #5d5873; }
   15% {
-    background-color: #150d36; }
+    background-color: #272044; }
   34% {
-    background-color: #150d36; }
+    background-color: #272044; }
   35% {
-    background-color: #504a68; }
+    background-color: #5d5873; }
   37% {
-    background-color: #150d36; }
+    background-color: #272044; }
   38% {
     background-color: white; }
   40% {
     background-color: white; }
   41% {
-    background-color: #150d36; }
+    background-color: #272044; }
   66% {
-    background-color: #150d36; }
+    background-color: #272044; }
   67% {
     background-color: white; }
   72% {
     background-color: white; }
   73% {
-    background-color: #150d36; }
+    background-color: #272044; }
   71% {
-    background-color: #150d36; }
+    background-color: #272044; }
   80% {
-    background-color: #150d36; }
+    background-color: #272044; }
   81% {
     background-color: white; }
   83% {
     background-color: white; }
   84% {
-    background-color: #150d36; }
+    background-color: #272044; }
   100% {
-    background-color: #150d36; } }
+    background-color: #272044; } }
+  body.Mine #level {
+    animation: mine-bg 4.5s  infinite; }
+@keyframes mine-bg {
+  0% {
+    background-color: #ac7c00; }
+  12% {
+    background-color: #c79c2a; }
+  25% {
+    background-color: #f8d878; }
+  37% {
+    background-color: #d7b043; }
+  50% {
+    background-color: #ac7c00; }
+  62% {
+    background-color: #cda435; }
+  75% {
+    background-color: #f8d878; }
+  87% {
+    background-color: #ebc864; }
+  100% {
+    background-color: #ac7c00; } }

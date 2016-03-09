@@ -1,19 +1,56 @@
 
-canvas#level-sprite{ 
-    width: 100%;
-    body.Dungeon &{
-      // background: #7c7c7c;
-      @include pulse(dungeon-bg,#004058,#008888, 15s);
+#level{ 
+  width: 100%;
+
+  #level-sprite{
+    width: 200%;
+    position: relative;
+    top: 0;
+    left: 0;
+    animation: level-sprite 3s steps(1, end) infinite;
+
+    $no-animation-locations: Dungeon Volcano;
+
+    @each $location in $no-animation-locations{
+      body.#{$location} &{
+        animation: none !important;
+      }
     }
-    body.Volcano &{
-      // background: #881400;
-      @include flicker(volcano-bg,#881400,#a81000,4s);
+
+    $fast-animation-locations: Graveyard Mine;
+
+    @each $location in $fast-animation-locations{
+      body.#{$location} &{
+        animation: level-sprite 1s steps(1, end) infinite;
+      }
     }
-    body.Forest &{
-      // background: #503000;
-      @include pulse(forest-bg,#503000,#005800, 15s);
-    }
-    body.Graveyard &{
-      @include flash(graveyard-bg,#150d36,white, 10s);
+
+    @at-root{
+      @keyframes level-sprite {
+        0% { left: 0;}
+        50% { left: -100%;}
+        100% { left: 0%;}
+      }
     }
   }
+
+  body.Dungeon &{
+    // background: #7c7c7c;
+    @include pulse(dungeon-bg,#004058,#008888, 15s);
+  }
+  body.Volcano &{
+    // background: #881400;
+    @include flicker(volcano-bg,#750202,#BD3000,10s);
+  }
+  body.Forest &{
+    // background: #503000;
+    @include pulse(forest-bg,#503000,#005800, 15s);
+  }
+  body.Graveyard &{
+    @include flash(graveyard-bg,#272044,white, 10s);
+  }
+  body.Mine &{
+    // background: #881400;
+    @include flicker(mine-bg,#ac7c00,#f8d878,4.5s);
+  }
+}

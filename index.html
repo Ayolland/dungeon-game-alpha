@@ -12,7 +12,9 @@
 				<div id="monster-hp-bar" class="hp-bar"></div>
 			</section><!-- /#headsup-->
 			<section id="display">
-				<canvas id="level-sprite" class="main-sprite" width="80" height="40"></canvas>
+				<div id="level" class="level">
+					<canvas id="level-sprite" class="main-sprite" width="160" height="40"></canvas>
+				</div>
 				<div id="monster" class="monster">
 					<canvas id="monster-sprite" class="main-sprite" width="16" height="48"></canvas>
 					<canvas id="monster-damage" class="damage-sprite" width="64" height="24"></canvas>
@@ -23,7 +25,7 @@
 				</div>
 			</section><!-- /#display-->
 			<section id="interface">
-				<p id="gameLog"></p>
+				<div id="gameLog"></div>
 				<section id="headsdown">
 					<p id="hero-name" class="name">HERO</p>
 					<p id="hero-hp-text" class="hp-text">56</p>

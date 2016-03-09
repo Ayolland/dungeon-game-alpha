@@ -39,19 +39,25 @@
   animation: $name $duration infinite ease-in-out;
 }
 
-@mixin flicker($name,$color1,$color2,$duration){
+@mixin flicker($name,$color1,$color2,$duration,$steps:false){
+  $stepstr: "";
+  @if($steps){
+  	$stepstr: steps(2,end);
+  }
   @at-root{
     @keyframes #{$name}{
       0%{background-color: $color1;}
-      17%{ background-color: mix($color1,$color2,random(100)*1%) }
-      34%{ background-color: mix($color1,$color2,random(100)*1%) }
-      50%{background-color: $color2;}
-      67%{ background-color: mix($color1,$color2,random(100)*1%) }
-      84%{ background-color: mix($color1,$color2,random(100)*1%) }
+      12%{ background-color: mix($color1,$color2,random(100)*1%) }
+      25%{ background-color: $color2;}
+      37%{ background-color: mix($color1,$color2,random(100)*1%) }
+      50%{background-color: $color1;}
+      62%{ background-color: mix($color1,$color2,random(100)*1%) }
+      75%{ background-color: $color2;}
+      87%{ background-color: mix($color1,$color2,random(100)*1%) }
       100%{background-color: $color1;}
 	}
   }
-  animation: $name $duration infinite ease-in-out;
+  animation: $name $duration #{unquote($stepstr)} infinite;
 }
 
 @mixin flash($name,$color1,$color2,$duration){
