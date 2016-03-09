@@ -245,11 +245,11 @@ section#interface {
       animation: level-sprite 1s steps(1, end) infinite; }
 @keyframes level-sprite {
   0% {
-    left: 0; }
+    transform: translate-x(0); }
   50% {
-    left: -100%; }
+    transform: translate-x(-100%); }
   100% {
-    left: 0%; } }
+    transform: translate-x(0%); } }
   body.Dungeon #level {
     animation: dungeon-bg 15s infinite ease-in-out; }
 @keyframes dungeon-bg {
@@ -265,19 +265,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #790502; }
+    background-color: #9f1d01; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #b72c00; }
+    background-color: #901301; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #870e02; }
+    background-color: #b62b00; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #901301; }
+    background-color: #a52001; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -338,18 +338,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #dab449; }
+    background-color: #e2bd55; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #f0cf6c; }
+    background-color: #c39824; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #b68810; }
+    background-color: #f0cf6c; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #bb8e18; }
+    background-color: #ddb74d; }
   100% {
     background-color: #ac7c00; } }
