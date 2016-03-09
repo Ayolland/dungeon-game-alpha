@@ -5,6 +5,7 @@ $small-width: 320px;
 
 body{
 	background: black;
+  overflow: hidden;
 
 	*{
 		-ms-interpolation-mode: nearest-neighbor; // IE 7+ (non-standard property)
