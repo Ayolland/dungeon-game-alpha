@@ -256,9 +256,22 @@ Character.prototype.getEnemy = function(){
 };
 
 Character.prototype.hit = function(atkObj){
-	var physicalDefense = this.stats.phys;
-	var magicalDefense = 0;
-	var afterDef = (atkObj.calculated - physicalDefense) < 0 ? 0 : (atkObj.calculated - physicalDefense);
+	var defense = 0;
+	switch (atkObj.type){
+		case 'white':
+		case 'black':
+			defense = this.stats.magi;
+			break;
+		case 'lightning':
+		case 'fire':
+			defense = Math.floor((this.stats.magi + this.stats.phys) /2);
+			break;
+		case 'physical':
+		default:
+			defense = this.stats.phys;
+			break;
+	}
+	var afterDef = (atkObj.calculated - defense) < 0 ? 0 : (atkObj.calculated - defense);
 	var totalAtk = atkObj.natural + afterDef;
 	if (atkObj.targetStat === 'HP'){
 		this.HP -= totalAtk;
@@ -319,6 +332,7 @@ function Hero(name){
 		int: 8,
 		cha: 8,
 		phys: 1,
+		magi: 0,
 		maxHP: 100
 	};
 	this.HP = this.stats.maxHP;
@@ -436,6 +450,7 @@ function Axedude (type) {
 		int: 5,
 		cha: 2,
 		phys: 2,
+		magi: 0,
 		maxHP: 16
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
@@ -453,6 +468,7 @@ function Ball (type) {
 		int: 1,
 		cha: 1,
 		phys: 0,
+		magi: 1,
 		maxHP: 15
 	};
 	if ( type === ""){
@@ -485,6 +501,7 @@ function Scamp (type) {
 		int: 10,
 		cha: 8,
 		phys: 0,
+		magi: 1,
 		maxHP: 10
 	};
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
@@ -501,6 +518,7 @@ function Skele (type) {
 		int: 6,
 		cha: 2,
 		phys: 0,
+		magi: 0,
 		maxHP: 12
 	};
 	if ( type === ""){
@@ -511,7 +529,7 @@ function Skele (type) {
 		case "Footman":
 			this.stats.maxHP = 14;
 			this.stats.str = 8;
-			this.stats.def = 1;
+			this.stats.phys = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
 			this.hand1 = new Sword();
@@ -524,7 +542,8 @@ function Skele (type) {
 		case "Monk":
 			this.stats.agi = 9;
 			this.stats.int = 9;
-			this.stats.def = 1;
+			this.stats.phys = 1;
+			this.stats.magi = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Monk";
@@ -533,7 +552,7 @@ function Skele (type) {
 		case "Bruiser":
 			this.stats.maxHP = 16;
 			this.stats.str = 10;
-			this.stats.def = 2;
+			this.stats.phys = 2;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
@@ -561,6 +580,7 @@ function Snek (type) {
 		int: 5,
 		cha: 10,
 		phys: 0,
+		magi: 0,
 		maxHP: 10
 	};
 	this.hand1 = new Claws();
@@ -578,6 +598,7 @@ function Jelly (type) {
 		int: 0,
 		cha: 0,
 		phys: 4,
+		magi: 0,
 		maxHP: 25
 	};
 	this.hand1 = new Bucket();
@@ -597,6 +618,7 @@ function Were (type) {
 		int: 5,
 		cha: 3,
 		phys: 1,
+		magi: 0,
 		maxHP: 20
 	};
 	if( type === ''){
@@ -623,6 +645,7 @@ function Were (type) {
 			this.stats.str = 14;
 			this.stats.int = 8;
 			this.stats.agi = 8;
+			this.stats.magi = 1;
 			this.spriteCompressed = goatSprite;
 			this.displayName = "loathsome, hellish beast";
 			this.shortName = "Hellbeast";
@@ -640,8 +663,10 @@ function Mage (type) {
 		int: 12,
 		cha: 8,
 		phys: 0,
+		magi: 2,
 		maxHP: 12
 	};
+	this.hand1 = new Staff('Thunder');
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW97geV7dgEF75K4pG5ZmKGELU20Xn5Mk71GsMM0f3tBOKpTRV2vTtyGM2kprXIK6xVWvUbNWjJLHE2M/iXniBSxYe6LeI5fxWHdPAV0sUy843yXTHCs6R2PMqu2mHhCEA=";
 	this.displayName = "Wiz";
 	this.color = '#0058f8';
@@ -706,6 +731,16 @@ function Staff (type) {
 	this.attackType = "physical";
 	this.verbArray = ['strike','bludgeon','bash','thwack','smack'];
 	switch (type){
+		case "Thunder":
+			this.hitSprite = 'bolt';
+			this.attackType = "lightning";
+			this.targetStat = "HP";
+			this.color = "#b8f8d8";
+			this.verbArray = ['blast','electrocute','zap','smite'];
+			this.attackVal = function(){
+				return Math.floor(1.5 * rollHits( this.owner.stats.int + "d3",3));
+			};
+			break;
 		case "Wood":
 		default:
 			this.color = "#f8b800";
@@ -769,7 +804,8 @@ function Effect(){
 		blast: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJeAjGfBaTUpRQ4/bTU25S2h41Yk3zxLV07DggaoJRNl2FSq8uovLcxStfOXrCwhSl3iNa5AZUD9x2AdNLicywqNitAh9hmT7Tt4OlvDHgGe/iyqcq7Wvpw6oi7ROPSxVvGk9rBAA==",
 		claws: "GwFgHgTCA+AM8MU5LVvRzXs93/BGAjCYWXiUeddpYnTYwqfA0+1ay15+4bwzZ8ynFkOH8uPCTSpjeM2XIWLypbmjmtVqUSuRbY+nfWNJDZk0cwWra6w7sFbmh5yA",
 		poof: "GwFgHgTCA+AM8MU5LVvRzXs93/mAjASasaRYuUWdtafVTZbI0mwvR5y/Nz8n69B7YWNF9xU6TNlzWHQuSVEVWIfM1bN1DdvSM9+gxkXGmaflxPnWtU7aOSR6809stqQA",
-		splat: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxhAjCduRdWuaVTQw/M/vfTS8h8ex62Tqx2JPjwpi+EkV1GSEAwbMHzqkxZRbq523qo1Z1MlVOn7ewqgc26LnREbvLhoy1ev3cQ7vCA="
+		splat: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxhAjCduRdWuaVTQw/M/vfTS8h8ex62Tqx2JPjwpi+EkV1GSEAwbMHzqkxZRbq523qo1Z1MlVOn7ewqgc26LnREbvLhoy1ev3cQ7vCA=",
+		bolt: "GwFgHgTCA+AM8MU58CMKOZervM70MQKKJNL3Iqyuo1rqXQcYVRcZw87Vd2+oC+vYU1GVxbSf0lDRcmdPrtxC1gTXYlW6c01klJFYZPJ99WOYtNjwrtrGW7UhyLeDH2qzrTfrr93kAl1MAv2wgA=="
 	};
 	this.color = "yellow";
 	this.associatedCharacter = "";
