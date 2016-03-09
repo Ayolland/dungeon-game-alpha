@@ -111,6 +111,7 @@ function Game (){
 		}
 		currentGame.currentLocation = new Location(locationName);
 		this.currentLocation.draw(this.currentLocation.canvas, this.currentLocation.spriteCompressed);
+		this.currentLocation.canvas.fillRect(0,40,160,50);
 	};
 
 

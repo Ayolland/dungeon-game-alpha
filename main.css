@@ -222,14 +222,6 @@ section#interface {
   width: 100%;
   height: 100%;
   overflow: hidden; }
-  #level::after {
-    content: "";
-    display: block;
-    background: black;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 20%; }
   #level #level-sprite {
     width: 200%;
     position: absolute;
@@ -266,19 +258,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #b42a00; }
+    background-color: #7c0702; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #941601; }
+    background-color: #901301; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #941601; }
+    background-color: #820a02; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #ad2600; }
+    background-color: #b12900; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -339,18 +331,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #b78a12; }
+    background-color: #e3be56; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #bd901a; }
+    background-color: #f6d676; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #ba8d16; }
+    background-color: #b18208; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #e5c15a; }
+    background-color: #b5870e; }
   100% {
     background-color: #ac7c00; } }

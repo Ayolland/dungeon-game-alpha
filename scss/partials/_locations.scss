@@ -4,16 +4,6 @@
   height: 100%;
   overflow: hidden;
 
-  &::after{
-    content: "";
-    display: block;
-    background: black;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 20%;
-  }
-
   #level-sprite{
     width: 200%;
     position: absolute;
