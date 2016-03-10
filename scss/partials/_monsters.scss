@@ -45,6 +45,28 @@
 		}
 	}
 
+	// &>.buff-box{
+	// 	position: absolute;
+	// 	bottom: 0;
+	// 	left: 0;
+	// 	width: 50%;
+	// 	height: 50%;
+	// 	overflow: hidden;
+	// 	opacity: 0;
+
+	// 	.buff-sprite{
+	// 		width: 400%;
+	// 		position: relative;
+	// 	}
+
+	// 	&.active{
+	// 		opacity: 1;
+	// 		.buff-sprite{
+	// 			animation: damage-sprite 0.5s steps(1,end) infinite;
+	// 		}
+	// 	}
+	// }
+
 // Monster and Player effects
 
 	&.dead{

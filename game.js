@@ -41,12 +41,58 @@ function thirdPerson(verb){
 		case "splash":
 			verb += 'es';
 			break;
+		case "are":
+			verb = "is";
+			break;
 		default:
 			verb += 's';
 			break;
 	}
 	return verb;
 }
+
+// workaround for simulating multi-threaded
+
+var goAhead = false;
+
+function greenLight(){
+	goAhead = true;
+}
+
+function redLight(){
+	goAhead = false;
+}
+
+function trafficCop(fnArrArr){
+// fnArrArr is an array of Arrays.
+// first element in each array is the function to be executed by 'window'
+// second element in each array is the argument for that function
+	greenLight();
+	var counter = 0;
+	var trafficJam = setInterval(function(){
+		var fnString = fnArrArr[counter][0];
+		var arg = fnArrArr[counter][1];
+		if (goAhead){
+			redLight();
+			counter++;
+			window[fnString](arg);
+		}
+		if (counter >= fnArrArr.length){
+			clearInterval(trafficJam);
+		}
+	},50);
+}
+
+function argCar(string){
+	console.log(string);
+	setTimeout(function(){greenLight();},3000);
+}
+
+function noArgCar(){
+	console.log('beep');
+	setTimeout(function(){greenLight();},3000);
+}
+
 
 // Copied from MDN
 // Hypothetically Enable the passage of the 'this' object through the JavaScript timers
@@ -101,10 +147,12 @@ function Game (){
 		newMonster.appear();
 		this.currentMonster = newMonster;
 	};
+
 	this.switchMonster = function(){
 		var monsterType = randomEntry(currentGame.currentLocation.monsterArray);
 		currentGame.enterMonster(monsterType);
 	};
+
 	this.switchLocation = function(locationName){
 		var validLocations = ["Dungeon", "Volcano", "Forest", "Graveyard", "Mine"];
 		if ((typeof locationName === "undefined")||!(validLocations.includes(locationName))){
@@ -114,7 +162,6 @@ function Game (){
 		this.currentLocation.draw(this.currentLocation.canvas, this.currentLocation.spriteCompressed);
 		this.currentLocation.canvas.fillRect(0,40,160,50);
 	};
-
 
 	this.attack = function(){
 		interfaceElement.classList.add("wait");
@@ -150,6 +197,14 @@ function Game (){
 			step ++;
 		},1000);
 	};
+
+	this.runRound = function(playerInput){
+		interfaceElement.classList.add("wait");
+		var step = 0;
+		var stepsArr = ["player turn","monster turn","end"];
+		var turnInterval = setInterval(function(){},500);
+
+	}
 
 }
 
@@ -216,7 +271,7 @@ function Character (){
 Character.prototype = new Displayable ();
 Character.prototype.constructor = Character;
 
-Character.prototype.updateHP = function(){
+Character.prototype.updateStatus = function(){
 	if (this.HP < 1){
 		this.HP = 0;
 	} else if (this.HP > this.stats.maxHP){
@@ -284,13 +339,88 @@ Character.prototype.hit = function(atkObj){
 	this.wiggle('hit', 250);
 	var verb = randomEntry(atkObj.verbs);
 	var message = "";
-	if (this.constructor.name !== "Hero"){
+	if (atkObj.buff === true){
+		message = this.selfStr() + ' ' + this.conjugate(verb) + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
+	} else if (this.constructor.name !== "Hero"){
 		message = 'You '+ verb +' the ' + this.shortName + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	} else {
 		message = 'The '+ currentGame.currentMonster.shortName +' ' + thirdPerson(verb) +' you for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	}
 	currentGame.log.add(message);
-	this.updateHP();
+	this.updateStatus();
+};
+
+Character.prototype.selfStr = function(){
+	return (this.constructor.name === "Hero") ? "You" : "The" + this.shortName;
+};
+
+Character.prototype.conjugate = function(verb){
+	return (this.constructor.name === "Hero") ? verb : thirdPerson(verb);
+};
+
+Character.prototype.runBuffs = function(){
+	redLight();
+	if (this.buffs.length < 1){
+		return;
+	}
+	var buffsArr = this.buffs.slice();
+	var thisCharacter = this;
+	var counter = 0;
+	var curedIt = false;
+	var buffAtkObj = {};
+	var buffInterval = setInterval(function(){
+		if (!curedIt){
+			buffAtkObj = thisCharacter.buffEffect(buffsArr[counter]);
+			thisCharacter.hit(buffAtkObj);
+			var cured = (roll('1d'+buffAtkObj.cureChance)===buffAtkObj.cureChance);
+			if (cured){
+				var curedIndex = thisCharacter.buffs.indexOf(buffsArr[counter]);
+				if(curedIndex !== -1) {
+					thisCharacter.buffs.splice(curedIndex, 1);
+				}
+				curedIt = true;
+			} else {
+				counter++;
+			}
+		} else {
+			currentGame.log.add(thisCharacter.selfStr() + ' ' + thisCharacter.conjugate('are') + ' no longer ' + buffsArr[counter].toLowerCase() + '.' );
+			curedIt = false;
+			counter++;
+		}
+		if ((counter >= (buffsArr.length))&&(!curedIt)){
+			clearInterval(buffInterval);
+			greenLight();
+		}
+	},1500);
+};
+
+Character.prototype.buffEffect = function(buffStr){
+	var attck = {};
+	attck.buff = true;
+	attck.cureChance = 3;
+	attck.natural = 0;
+	attck.calculated = 0;
+	attck.type = 'physical';
+	attck.targetStat = 'HP';
+	attck.color = 'white';
+	attck.verbs = ['waste'];
+	switch (buffStr){
+		case 'Aflame':
+			attck.calculated = Math.ceil(roll('1d5')*this.stats.maxHP/100);
+			attck.type = 'fire';
+			attck.sprite = 'flame';
+			attck.color = 'red';
+			attck.verbs = ['burn','roast'];
+			break;
+		case 'Poisoned':
+			attck.calculated = roll('1d3');
+			attck.type = 'poison';
+			attck.sprite = 'bubble';
+			attck.color = 'purple';
+			attck.verbs = ['waste','wither'];
+			break;
+	}
+	return attck;
 };
 
 Character.prototype.punch = function(){
@@ -339,6 +469,7 @@ function Hero(name){
 	this.kills = 0;
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNfcY267a6EbHGlkkp6VVJ4EnmIOOs5maVc3vWt1kVQfSFpBI/FOkzZc+QsUJJqFUOYdOmrdTY7RbZXQbcKG8bwos+9ATZZjVfKkA===";
 	this.color = "white";
+	this.buffs = [];
 }
 
 Hero.prototype = new Character ();
@@ -373,7 +504,7 @@ Hero.prototype.initialize = function(){
 	this.effectController.link(this);
 	this.equip1(new Sword());
 	this.draw(this.canvas,this.spriteCompressed);
-	this.updateHP();
+	this.updateStatus();
 };
 
 // A Monster is an enemy the PlayerCharacter fights one at a time
@@ -415,7 +546,7 @@ Monster.prototype.appear = function(){
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
 	this.HP = this.stats.maxHP;
-	this.updateHP();
+	this.updateStatus();
 };
 
 Monster.prototype.die = function(){
@@ -805,7 +936,9 @@ function Effect(){
 		claws: "GwFgHgTCA+AM8MU5LVvRzXs93/BGAjCYWXiUeddpYnTYwqfA0+1ay15+4bwzZ8ynFkOH8uPCTSpjeM2XIWLypbmjmtVqUSuRbY+nfWNJDZk0cwWra6w7sFbmh5yA",
 		poof: "GwFgHgTCA+AM8MU5LVvRzXs93/mAjASasaRYuUWdtafVTZbI0mwvR5y/Nz8n69B7YWNF9xU6TNlzWHQuSVEVWIfM1bN1DdvSM9+gxkXGmaflxPnWtU7aOSR6809stqQA",
 		splat: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxhAjCduRdWuaVTQw/M/vfTS8h8ex62Tqx2JPjwpi+EkV1GSEAwbMHzqkxZRbq523qo1Z1MlVOn7ewqgc26LnREbvLhoy1ev3cQ7vCA=",
-		bolt: "GwFgHgTCA+AM8MU58CMKOZervM70MQKKJNL3Iqyuo1rqXQcYVRcZw87Vd2+oC+vYU1GVxbSf0lDRcmdPrtxC1gTXYlW6c01klJFYZPJ99WOYtNjwrtrGW7UhyLeDH2qzrTfrr93kAl1MAv2wgA=="
+		bolt: "GwFgHgTCA+AM8MU58CMKOZervM70MQKKJNL3Iqyuo1rqXQcYVRcZw87Vd2+oC+vYU1GVxbSf0lDRcmdPrtxC1gTXYlW6c01klJFYZPJ99WOYtNjwrtrGW7UhyLeDH2qzrTfrr93kAl1MAv2wgA==",
+		flame: "GwFgHgTCA+AM8MU5LVvRzXs5wRl1wMM2JNPPTzMrWtpXobpudifY1cYQ69OrFuiPqiGCso5IIJSRwpPRmSF8Gcpa8x6uZzWqJO7UuFGJ02eYuWNinafXs597sqN2bV3o9v63oqxMaf18nS29WMy9nPkCbeQcEpwj5bVTGYIVYrMixaTzFApEi7x47MuKLfKqa/TTSjPTa5JZdBNUIjr9iIA=",
+		bubble: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRsAjMefmRdalSnTdQws42iR21/Jz697V60WpAZipCkDTvzEiewxGWmylqrHVn91cjuuY65GzYaPHTZxtsuV2NohfsY6QA==="
 	};
 	this.color = "yellow";
 	this.associatedCharacter = "";
@@ -813,22 +946,23 @@ function Effect(){
 Effect.prototype = new Displayable();
 Effect.prototype.constructor = Effect;
 
-Effect.prototype.link = function(Character){
-	this.associatedCharacter = Character;
-	this.damageCanvasElement = Character.div.getElementsByClassName('damage-sprite')[0];
-	this.damageCanvas = this.damageCanvasElement.getContext('2d');
+Effect.prototype.link = function(character){
+	this.associatedCharacter = character;
+	this.damageElement = character.div.getElementsByClassName('damage-sprite')[0];
+	this.damageCanvas = this.damageElement.getContext('2d');
 };
 
 Effect.prototype.displayDamage = function(spriteName, color){
 	this.color = color;
-	this.damageCanvasElement.classList.add("active", spriteName);
+	this.damageElement.classList.add("active", spriteName);
 	this.draw(this.damageCanvas,this.sprites[spriteName]);
 	var thisEffect = this;
-	setTimeout(function(){thisEffect.clearDamage();}, 500);
+	setTimeout(function(){thisEffect.clear();}, 500);
 };
 
-Effect.prototype.clearDamage = function(){
-	this.damageCanvasElement.className = "damage-sprite";
+Effect.prototype.clear = function(){
+	this.damageElement.className = "damage-sprite";
+	this.buffElement.className = "buff-box";
 };
 
 // event Listeners
