@@ -838,12 +838,12 @@ Snek.prototype.constructor = Snek;
 function Jelly (type) {
 	this.stats = {
 		str: 7,
-		agi: 12,
+		agi: 10,
 		int: 0,
 		cha: 0,
 		phys: 4,
 		magi: 0,
-		maxHP: 25
+		maxHP: 20
 	};
 	this.hand1 = new Hose('Acid');
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNecXf8r5HBYmrEkGIWW4413UOMLMtxv3NJ0M80cyrQQJ4ii2SVOkzZc+QsXk+XCqTRqq4iQVqdtKtnlZGmetQd0tzxHJaFA";
