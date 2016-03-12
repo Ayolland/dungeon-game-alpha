@@ -70,15 +70,17 @@ function trafficCop(fnArrArr){
 	greenLight();
 	var counter = 0;
 	var trafficJam = setInterval(function(){
-		var fnString = fnArrArr[counter][0];
-		var arg = fnArrArr[counter][1];
+		var obj = fnArrArr[counter][0];
+		var fnString = fnArrArr[counter][1];
+		var arg = fnArrArr[counter][2];
 		if (goAhead){
 			redLight();
 			counter++;
-			window[fnString](arg);
+			obj[fnString](arg);
 		}
 		if (counter >= fnArrArr.length){
 			clearInterval(trafficJam);
+			redLight();
 		}
 	},50);
 }
@@ -108,6 +110,9 @@ window.setTimeout = function (vCallback, nDelay /*, argumentToPass1, argumentToP
 
 // Global Variables
 
+// this is a global variable used to pass information between setIntervals
+var intervalRelay = "";
+
 var currentGame = new Game();
 var interfaceElement = document.getElementById('interface');
 
@@ -115,6 +120,7 @@ function Game (){
 	this.log = {
 		element: document.getElementById('gameLog'),
 		add: function(message){
+			redLight();
 			this.element.innerHTML += ('<p>'+ message + '</p>');
 			this.element.scrollTop = this.element.scrollHeight;
 		}
@@ -198,13 +204,24 @@ function Game (){
 		},1000);
 	};
 
-	this.runRound = function(playerInput){
-		interfaceElement.classList.add("wait");
-		var step = 0;
-		var stepsArr = ["player turn","monster turn","end"];
-		var turnInterval = setInterval(function(){},500);
-
-	}
+	this.runRound = function(playerChoice){
+		intervalRelay = "Player turn";
+		var gameLoop = setInterval(function(){
+			if (intervalRelay === "Player turn"){
+				intervalRelay = "wait";
+				interfaceElement.classList.add("wait");
+				nextStep = currentGame.playerHero.runTurn(playerChoice);
+			} else if (intervalRelay === "Monster turn"){
+				intervalRelay = "wait";
+				var monsterChoice = currentGame.currentMonster.ai();
+				nextStep = currentGame.currentMonster.runTurn(monsterChoice);
+			} else if (intervalRelay === "End round"){
+				clearInterval(gameLoop);
+				intervalRelay = "wait";
+				interfaceElement.classList.remove("wait");
+			}
+		},2000);
+	};
 
 }
 
@@ -265,7 +282,8 @@ Location.prototype.constructor = Location;
 
 // A Character is either a Monster (NPC) or the Hero
 
-function Character (){	
+function Character (){
+	this.buffs = [];
 }
 
 Character.prototype = new Displayable ();
@@ -302,11 +320,10 @@ Character.prototype.equip1 = function(item){
 };
 
 Character.prototype.getEnemy = function(){
-	switch (this.constructor.name){
-		case 'Hero':
-			return currentGame.currentMonster;
-		case 'Monster':
-			return currentGame.playerHero;
+	if (this.constructor.name === 'Hero'){
+		return currentGame.currentMonster;
+	} else { 
+		return currentGame.playerHero;
 	}
 };
 
@@ -348,6 +365,7 @@ Character.prototype.hit = function(atkObj){
 	}
 	currentGame.log.add(message);
 	this.updateStatus();
+	return "End turn";
 };
 
 Character.prototype.selfStr = function(){
@@ -359,9 +377,9 @@ Character.prototype.conjugate = function(verb){
 };
 
 Character.prototype.runBuffs = function(){
-	redLight();
+	var nextStep = "Use equip";
 	if (this.buffs.length < 1){
-		return;
+		return nextStep;
 	}
 	var buffsArr = this.buffs.slice();
 	var thisCharacter = this;
@@ -389,7 +407,7 @@ Character.prototype.runBuffs = function(){
 		}
 		if ((counter >= (buffsArr.length))&&(!curedIt)){
 			clearInterval(buffInterval);
-			greenLight();
+			intervalRelay = nextStep;
 		}
 	},1500);
 };
@@ -429,6 +447,11 @@ Character.prototype.punch = function(){
 	attck.calculated = roll( Math.floor((this.stats.str + this.stats.agi)/8) + 'd3');
 	attck.type = "physical";
 	attck.targetStat = "HP";
+	if (this.constructor.name === 'Hero'){
+		attck.targetCharacter = currentGame.currentMonster;
+	} else {
+		attck.targetCharacter = currentGame.playerHero;
+	}
 	attck.sprite = "poof";
 	attck.color = this.color;
 	attck.verbs = ["punch","smack","hit","wallop","slap"];
@@ -441,7 +464,36 @@ Character.prototype.useHand1 = function(){
 	} else {
 		return this.punch();
 	}
-	
+};
+
+Character.prototype.activate1 = function(){
+	var obj = {};
+	if (this.hand1){
+		obj = this.hand1.attackObj();
+	} else {
+		obj = this.punch();
+	}
+	return obj.targetCharacter.hit(obj);
+};
+
+Character.prototype.runTurn = function(choice){
+	var nextTurn = (this.constructor.name === 'Hero') ? 'Monster turn' : 'End round';
+	var nextStep = "Check buffs";
+	var thisCharacter = this;
+	var turnLoop = setInterval(function(){
+		if (nextStep === "Check buffs"){
+			nextStep = "wait;"
+			nextStep = thisCharacter.runBuffs();
+		} else if ((nextStep === "Use equip")||(intervalRelay === "Use equip")){
+			intervalRelay = "wait";
+			nextStep = "wait;"
+			nextStep = thisCharacter.activate1(choice);
+		} else if (nextStep === "End turn"){
+			nextStep = "wait;"
+			clearInterval(turnLoop);
+			intervalRelay = nextTurn;
+		}
+	},500);
 };
 
 // A hero is the PlayerCharacter Object
@@ -517,6 +569,9 @@ function Monster(){
 		hpText: document.getElementById('monster-hp-text'),
 		hpBar: document.getElementById('monster-hp-bar'),
 		name: document.getElementById('monster-name')
+	};
+	this.ai = function(){
+		return 'activate1';
 	};
 }
 
@@ -819,10 +874,6 @@ function Weapon(){
 Weapon.prototype = new Item();
 Weapon.prototype.constructor = Weapon;
 
-Weapon.prototype.target = function(){
-	return this.owner.getEnemy();
-};
-
 Weapon.prototype.attackObj = function(){
 	var attck = {};
 	attck.natural = this.natural;
@@ -831,6 +882,7 @@ Weapon.prototype.attackObj = function(){
 	attck.sprite = this.hitSprite;
 	attck.color = this.color;
 	attck.verbs = this.verbArray;
+	attck.targetCharacter = this.owner.getEnemy();
 	// Physical damage always targets HP, other do not.
 	if (this.attackType === 'physical'){
 		attck.targetStat = "HP";
@@ -962,7 +1014,6 @@ Effect.prototype.displayDamage = function(spriteName, color){
 
 Effect.prototype.clear = function(){
 	this.damageElement.className = "damage-sprite";
-	this.buffElement.className = "buff-box";
 };
 
 // event Listeners
