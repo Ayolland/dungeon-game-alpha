@@ -214,15 +214,19 @@ function Game (){
 			if (intervalRelay === "Player turn"){
 				intervalRelay = "wait";
 				interfaceElement.classList.add("wait");
-				intervalRelay = (currentGame.everyoneIsAlive()) ?
-					currentGame.playerHero.runTurn(playerChoice):
-					"Monster turn";
+				if(currentGame.everyoneIsAlive()){
+					currentGame.playerHero.runTurn(playerChoice);
+				} else {
+					intervalRelay = "End round";
+				}
 			} else if (intervalRelay === "Monster turn"){
 				intervalRelay = "wait";
 				var monsterChoice = currentGame.currentMonster.ai();
-				intervalRelay = (currentGame.everyoneIsAlive()) ?
-					currentGame.currentMonster.runTurn(monsterChoice):
-					"End round";
+				if(currentGame.everyoneIsAlive()){
+					currentGame.currentMonster.runTurn(playerChoice);
+				} else {
+					intervalRelay = "End round";
+				}
 			} else if (intervalRelay === "End round"){
 				clearInterval(gameLoop);
 				intervalRelay = "wait";
@@ -335,22 +339,29 @@ Character.prototype.getEnemy = function(){
 	}
 };
 
-Character.prototype.hit = function(atkObj){
-	var defense = 0;
-	switch (atkObj.type){
+Character.prototype.defense = function(attackType){
+	switch (attackType){
 		case 'white':
 		case 'black':
-			defense = this.stats.magi;
+			return this.stats.magi;
 			break;
 		case 'lightning':
 		case 'fire':
-			defense = Math.floor((this.stats.magi + this.stats.phys) /2);
+			return Math.floor((this.stats.magi + this.stats.phys) /2);
+			break;
+		case 'poison':
+			return 0;
 			break;
 		case 'physical':
 		default:
-			defense = this.stats.phys;
+			return this.stats.phys;
 			break;
 	}
+}
+
+Character.prototype.hit = function(atkObj){
+	intervalRelay = 'wait';
+	var defense = this.defense(atkObj.type);
 	var afterDef = (atkObj.calculated - defense) < 0 ? 0 : (atkObj.calculated - defense);
 	var totalAtk = atkObj.natural + afterDef;
 	if (atkObj.targetStat === 'HP'){
@@ -364,20 +375,35 @@ Character.prototype.hit = function(atkObj){
 	this.wiggle('hit', 250);
 	var verb = randomEntry(atkObj.verbs);
 	var message = "";
-	if (atkObj.buff === true){
+	if (atkObj.buff){
 		message = this.selfStr() + ' ' + this.conjugate(verb) + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
-	} else if (this.constructor.name !== "Hero"){
-		message = 'You '+ verb +' the ' + this.shortName + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	} else {
-		message = 'The '+ currentGame.currentMonster.shortName +' ' + thirdPerson(verb) +' you for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
+		message = this.getEnemy().selfStr()+' '+ this.getEnemy().conjugate(verb) +' '+ this.selfStr().toLowerCase() + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	}
 	currentGame.log.add(message);
 	this.updateStatus();
-	return "End turn";
+	if (atkObj.buffArr.length > 1){
+		var currentBuff = atkObj.buffArr[0];
+		var chance = atkObj.buffArr[1];
+		var gotBuffed = (rollHits('1d'+chance,chance) >= 1);
+		if ((gotBuffed)&&(!this.buffs.includes(currentBuff))){
+			verb = 'are';
+			message = this.selfStr()+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
+			this.buffs.push(currentBuff);
+			setTimeout(function(){currentGame.log.add(message);},1000);
+			setTimeout(function(){intervalRelay = "End turn";},2000);
+		} else {
+			setTimeout(function(){intervalRelay = "End turn";},1000);
+		}
+	} else {
+		if (!atkObj.buff){
+			setTimeout(function(){intervalRelay = "End turn";},1000);
+		}
+	}
 };
 
 Character.prototype.selfStr = function(){
-	return (this.constructor.name === "Hero") ? "You" : "The" + this.shortName;
+	return (this.constructor.name === "Hero") ? "You" : "The " + this.shortName;
 };
 
 Character.prototype.conjugate = function(verb){
@@ -387,15 +413,17 @@ Character.prototype.conjugate = function(verb){
 Character.prototype.runBuffs = function(){
 	var nextStep = "Use equip";
 	if (this.buffs.length < 1){
-		return nextStep;
+		intervalRelay = nextStep;
+		return;
 	}
 	var buffsArr = this.buffs.slice();
 	var thisCharacter = this;
 	var counter = 0;
 	var curedIt = false;
 	var buffAtkObj = {};
+	var goAhead = true;
 	var buffInterval = setInterval(function(){
-		if (!curedIt){
+		if ((!curedIt)&&(goAhead)){
 			buffAtkObj = thisCharacter.buffEffect(buffsArr[counter]);
 			thisCharacter.hit(buffAtkObj);
 			var cured = (roll('1d'+buffAtkObj.cureChance)===buffAtkObj.cureChance);
@@ -405,17 +433,20 @@ Character.prototype.runBuffs = function(){
 					thisCharacter.buffs.splice(curedIndex, 1);
 				}
 				curedIt = true;
+				setTimeout(function(){goAhead = true;},1000);
 			} else {
 				counter++;
+				setTimeout(function(){goAhead = true;},1000);
 			}
-		} else {
+		} else if (goAhead) {
 			currentGame.log.add(thisCharacter.selfStr() + ' ' + thisCharacter.conjugate('are') + ' no longer ' + buffsArr[counter].toLowerCase() + '.' );
 			curedIt = false;
 			counter++;
 		}
-		if ((counter >= (buffsArr.length))&&(!curedIt)){
+		if ((counter >= (buffsArr.length))&&(!curedIt)&&(goAhead)){
+			if (thisCharacter.HP <= 0){ nextStep = "End round"}
 			clearInterval(buffInterval);
-			intervalRelay = nextStep;
+			setTimeout(function(){intervalRelay = nextStep;},1000);
 		}
 	},750);
 };
@@ -430,9 +461,10 @@ Character.prototype.buffEffect = function(buffStr){
 	attck.targetStat = 'HP';
 	attck.color = 'white';
 	attck.verbs = ['waste'];
+	attck.buffArr = [];
 	switch (buffStr){
 		case 'Aflame':
-			attck.calculated = Math.ceil(roll('2d5')*this.stats.maxHP/100);
+			attck.calculated = Math.ceil(roll('1d5')*this.stats.maxHP/100);
 			attck.type = 'fire';
 			attck.sprite = 'flame';
 			attck.color = 'red';
@@ -460,6 +492,10 @@ Character.prototype.punch = function(){
 	} else {
 		attck.targetCharacter = currentGame.playerHero;
 	}
+	attck.buffArr = [];
+	if (this.buffs.includes('Aflame')){
+		attck.buffArr = ['Aflame',3];
+	}
 	attck.sprite = "poof";
 	attck.color = this.color;
 	attck.verbs = ["punch","smack","hit","wallop","slap"];
@@ -481,27 +517,34 @@ Character.prototype.activate1 = function(){
 	} else {
 		obj = this.punch();
 	}
-	return obj.targetCharacter.hit(obj);
+	if (obj.targetCharacter !== this){
+		if (obj.targetCharacter.calcDodge()){
+			obj.targetCharacter.dodge();
+		} else {
+			obj.targetCharacter.hit(obj);
+		}
+	} else {
+		obj.targetCharacter.hit(obj);
+	}
 };
 
-Character.prototype.runTurn = function(choice){
+Character.prototype.runTurn = function(turnChoice){
 	var nextTurn = (this.constructor.name === 'Hero') ? 'Monster turn' : 'End round';
-	var nextStep = "Check buffs";
+	intervalRelay = "Check buffs";
 	var thisCharacter = this;
 	var turnLoop = setInterval(function(){
-		if (nextStep === "Check buffs"){
-			nextStep = "wait";
-			nextStep = thisCharacter.runBuffs();
-		} else if ((nextStep === "Use equip")||(intervalRelay === "Use equip")){
+		if (intervalRelay === "Check buffs"){
 			intervalRelay = "wait";
-			nextStep = "wait";
-			nextStep = thisCharacter.activate1(choice);
-		} else if (nextStep === "End turn"){
-			nextStep = "wait";
+			thisCharacter.runBuffs();
+		} else if (intervalRelay === "Use equip"){
+			intervalRelay = "wait";
+			thisCharacter[turnChoice]();
+		} else if (intervalRelay === "End turn"){
+			intervalRelay = "wait";
 			clearInterval(turnLoop);
 			intervalRelay = nextTurn;
 		}
-	},500);
+	},250);
 };
 
 // A hero is the PlayerCharacter Object
@@ -549,9 +592,11 @@ Hero.prototype.calcDodge = function(){
 Hero.prototype.dodge = function(){
 	this.wiggle('dodge', 500);
 	currentGame.log.add("You dodge the "+ currentGame.currentMonster.shortName +"'s attack.");
+	intervalRelay = "End turn";
 };
 
 Hero.prototype.die = function(){
+	intervalRelay = "End round";
 	this.addClass('dead');
 	currentGame.log.add('You were slain by the ' + currentGame.currentMonster.shortName + '.');
 	setTimeout(function(){
@@ -614,6 +659,7 @@ Monster.prototype.appear = function(){
 };
 
 Monster.prototype.die = function(){
+	intervalRelay = "End round";
 	this.addClass('dead');
 	currentGame.log.add('You slayed the ' + this.shortName + '.');
 	currentGame.playerHero.kills ++;
@@ -634,6 +680,7 @@ Monster.prototype.calcDodge = function(){
 Monster.prototype.dodge = function(){
 	this.wiggle('dodge', 500);
 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
+	intervalRelay = "End turn";
 };
 
 // Types of Monsters
@@ -881,6 +928,7 @@ Item.prototype.constructor = Item;
 
 function Weapon(){
 	this.natural = 1;
+	this.buffArr = [];
 }
 Weapon.prototype = new Item();
 Weapon.prototype.constructor = Weapon;
@@ -894,7 +942,10 @@ Weapon.prototype.attackObj = function(){
 	attck.color = this.color;
 	attck.verbs = this.verbArray;
 	attck.targetCharacter = this.owner.getEnemy();
-	this.buffArr = [];
+	attck.buffArr = this.buffArr;
+	if (this.owner.buffs.includes('Aflame')){
+		attck.buffArr = ['Aflame',3];
+	}
 	// Physical damage always targets HP, other do not.
 	if (this.attackType === 'physical'){
 		attck.targetStat = "HP";
@@ -973,7 +1024,7 @@ function Claws (type) {
 		case "Venom":
 			this.color = "#00b800";
 			this.attackType = "poison";
-			this.buffArr = ["Poisoned",8]
+			this.buffArr = ["Poisoned",6];
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
 				var agi = this.owner.stats.agi;
@@ -1004,9 +1055,9 @@ function Hose (type) {
 			this.targetStat = "HP";
 			this.color = 'rgba(248,56,0,0.5)';
 			this.verbArray.push('ignite','torch');
-			this.buffArr = ["Aflame",3]
+			this.buffArr = ["Aflame",3];
 			this.attackVal = function(){
-				return roll('1d4');
+				return roll('1d3');
 			};
 			break;
 		case "Acid":
@@ -1068,8 +1119,10 @@ Effect.prototype.clear = function(){
 function loadButtons(){
 	var buttons = document.getElementsByClassName("button");
 	for (var i=0; i < buttons.length; i+=1){
-		var fnName = buttons[i].getAttribute('click-data');
-		buttons[i].addEventListener("click", function(){currentGame[fnName]();});
+		var clickData = buttons[i].getAttribute('click-data');
+		var fnName = clickData.slice(0,clickData.indexOf(' '));
+		var fnArg = clickData.slice(clickData.indexOf(' ')+1);
+		buttons[i].addEventListener("click", function(){currentGame[fnName](fnArg);});
 	}
 }
 
