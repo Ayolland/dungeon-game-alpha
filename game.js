@@ -204,23 +204,31 @@ function Game (){
 		},1000);
 	};
 
+	this.everyoneIsAlive = function(){
+		return ((this.playerHero.HP > 0)&&(this.currentMonster.HP >0));
+	};
+
 	this.runRound = function(playerChoice){
 		intervalRelay = "Player turn";
 		var gameLoop = setInterval(function(){
 			if (intervalRelay === "Player turn"){
 				intervalRelay = "wait";
 				interfaceElement.classList.add("wait");
-				nextStep = currentGame.playerHero.runTurn(playerChoice);
+				intervalRelay = (currentGame.everyoneIsAlive()) ?
+					currentGame.playerHero.runTurn(playerChoice):
+					"Monster turn";
 			} else if (intervalRelay === "Monster turn"){
 				intervalRelay = "wait";
 				var monsterChoice = currentGame.currentMonster.ai();
-				nextStep = currentGame.currentMonster.runTurn(monsterChoice);
+				intervalRelay = (currentGame.everyoneIsAlive()) ?
+					currentGame.currentMonster.runTurn(monsterChoice):
+					"End round";
 			} else if (intervalRelay === "End round"){
 				clearInterval(gameLoop);
 				intervalRelay = "wait";
 				interfaceElement.classList.remove("wait");
 			}
-		},2000);
+		},500);
 	};
 
 }
@@ -409,7 +417,7 @@ Character.prototype.runBuffs = function(){
 			clearInterval(buffInterval);
 			intervalRelay = nextStep;
 		}
-	},1500);
+	},750);
 };
 
 Character.prototype.buffEffect = function(buffStr){
@@ -424,7 +432,7 @@ Character.prototype.buffEffect = function(buffStr){
 	attck.verbs = ['waste'];
 	switch (buffStr){
 		case 'Aflame':
-			attck.calculated = Math.ceil(roll('1d5')*this.stats.maxHP/100);
+			attck.calculated = Math.ceil(roll('2d5')*this.stats.maxHP/100);
 			attck.type = 'fire';
 			attck.sprite = 'flame';
 			attck.color = 'red';
@@ -482,14 +490,14 @@ Character.prototype.runTurn = function(choice){
 	var thisCharacter = this;
 	var turnLoop = setInterval(function(){
 		if (nextStep === "Check buffs"){
-			nextStep = "wait;"
+			nextStep = "wait";
 			nextStep = thisCharacter.runBuffs();
 		} else if ((nextStep === "Use equip")||(intervalRelay === "Use equip")){
 			intervalRelay = "wait";
-			nextStep = "wait;"
+			nextStep = "wait";
 			nextStep = thisCharacter.activate1(choice);
 		} else if (nextStep === "End turn"){
-			nextStep = "wait;"
+			nextStep = "wait";
 			clearInterval(turnLoop);
 			intervalRelay = nextTurn;
 		}
@@ -570,6 +578,7 @@ function Monster(){
 		hpBar: document.getElementById('monster-hp-bar'),
 		name: document.getElementById('monster-name')
 	};
+	this.buffs = [];
 	this.ai = function(){
 		return 'activate1';
 	};
@@ -642,7 +651,7 @@ function Axedude (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
-	this.hand1 = new Sword();
+	this.hand1 = new Sword('Iron');
 }
 Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
@@ -674,6 +683,7 @@ function Ball (type) {
 			this.displayName = "floating orb of fire";
 			this.shortName = "Fireball";
 			this.color = "#f83800";
+			this.hand1 = new Hose('Fire');
 			break;
 	}
 }
@@ -742,12 +752,13 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
-			this.hand1 = new Sword();
+			this.hand1 = new Sword('Iron');
 			break;
 		case "Flaming":
 			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GbJb7Kl4mGn6F7Hq7nVWOqa5XrZ0LGPfPsOnIUxHCeJIfxwyKrSQsVLlK1WSUsuRaazYKaOiVkMGxBBofVEmDM2f69ew23eb6C7iXI/efWnEA=";
 			this.displayName = "Skelebones who is on fire";
 			this.shortName = "Flaming Skelebones";
+			this.buffs.push("Aflame");
 			this.color = "#ff5000";
 			break;
 		case "Bones":
@@ -769,7 +780,7 @@ function Snek (type) {
 		magi: 0,
 		maxHP: 10
 	};
-	this.hand1 = new Claws();
+	this.hand1 = new Claws('Venom');
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
 	this.displayName = "Snek";
 	this.color = '#58d854';
@@ -787,7 +798,7 @@ function Jelly (type) {
 		magi: 0,
 		maxHP: 25
 	};
-	this.hand1 = new Bucket();
+	this.hand1 = new Hose('Acid');
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNecXf8r5HBYmrEkGIWW4413UOMLMtxv3NJ0M80cyrQQJ4ii2SVOkzZc+QsXk+XCqTRqq4iQVqdtKtnlZGmetQd0tzxHJaFA";
 	this.displayName = "quivering, gelatinous cube";
 	this.shortName = "Box Jelly";
@@ -883,6 +894,7 @@ Weapon.prototype.attackObj = function(){
 	attck.color = this.color;
 	attck.verbs = this.verbArray;
 	attck.targetCharacter = this.owner.getEnemy();
+	this.buffArr = [];
 	// Physical damage always targets HP, other do not.
 	if (this.attackType === 'physical'){
 		attck.targetStat = "HP";
@@ -897,6 +909,20 @@ function Sword (type) {
 	this.attackType = "physical";
 	this.verbArray = ['slash','strike','stab','lance','wound','cut'];
 	switch (type){
+		case "Iron":
+			this.color = "#008888";
+			this.attackVal = function(){
+				return roll("3d3") - 2;	
+			};
+			break;
+		case "Flame":
+			this.color = "#f87858";
+			this.attackType = "flame";
+			this.buffArr= ["Aflame",10];
+			this.attackVal = function(){
+				return roll("3d3") - 1;	
+			};
+			break;
 		case "Wood":
 		default:
 			this.color = "#f8b800";
@@ -941,15 +967,26 @@ Staff.prototype.constructor = Staff;
 function Claws (type) {
 	this.hitSprite = 'claws';
 	this.attackType = "physical";
+	this.targetStat = "HP";
 	this.verbArray = ['maul','savage','lacerate','wound','cut'];
 	switch (type){
+		case "Venom":
+			this.color = "#00b800";
+			this.attackType = "poison";
+			this.buffArr = ["Poisoned",8]
+			this.attackVal = function(){
+				var str = this.owner.stats.str;
+				var agi = this.owner.stats.agi;
+				return roll( Math.ceil((str + agi)/12) + 'd4');	
+			};
+			break;
 		case "Bone":
 		default:
 			this.color = "#f0d0b0";
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
 				var agi = this.owner.stats.agi;
-				return roll( Math.floor((str + agi)/8) + 'd4');	
+				return roll( Math.ceil((str + agi)/8) + 'd4');	
 			};
 			break;
 	}
@@ -957,11 +994,21 @@ function Claws (type) {
 Claws.prototype = new Weapon();
 Claws.prototype.constructor = Claws;
 
-function Bucket (type) {
+function Hose (type) {
 	this.hitSprite = 'splat';
 	this.attackType = "physical";
 	this.verbArray = ['splash','douse'];
 	switch (type){
+		case "Fire":
+			this.attackType = "fire";
+			this.targetStat = "HP";
+			this.color = 'rgba(248,56,0,0.5)';
+			this.verbArray.push('ignite','torch');
+			this.buffArr = ["Aflame",3]
+			this.attackVal = function(){
+				return roll('1d4');
+			};
+			break;
 		case "Acid":
 		default:
 			this.attackType = "acid";
@@ -974,8 +1021,8 @@ function Bucket (type) {
 			break;
 	}
 }
-Bucket.prototype = new Weapon();
-Bucket.prototype.constructor = Bucket;
+Hose.prototype = new Weapon();
+Hose.prototype.constructor = Hose;
 
 
 // an Effect is a Displayable that visually displays the type of damage to the player
