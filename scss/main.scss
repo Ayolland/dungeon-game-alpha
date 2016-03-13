@@ -64,6 +64,10 @@ section#headsup, section#headsdown{
   }
 }
 
+#headsup{
+  height: 3.5em;
+}
+
 section#display{
   width: $small-width;
   height: ($small-width * 0.625);

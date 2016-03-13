@@ -132,9 +132,12 @@ function Game (){
 	this.previousMonsterName = "";
 
 	this.initialize = function(){
+		currentGame.playerHero = new Hero('Sandra');
+		currentGame.currentMonster = new Monster();
+		currentGame.previousMonsterName = "";
 		this.switchLocation();
 		this.playerHero.initialize();
-		this.switchMonster();
+		this.switchLocation();
 	};
 
 	this.enterMonster = function(monsterType){
@@ -151,7 +154,7 @@ function Game (){
 			newMonster.equip1(newMonster.hand1);
 		}
 		newMonster.appear();
-		this.currentMonster = newMonster;
+		currentGame.currentMonster = newMonster;
 	};
 
 	this.switchMonster = function(){
@@ -160,13 +163,17 @@ function Game (){
 	};
 
 	this.switchLocation = function(locationName){
+		var oldLocationName = (typeof(currentGame.currentLocation) === "undefined") ? "" : currentGame.currentLocation.shortName;
 		var validLocations = ["Dungeon", "Volcano", "Forest", "Graveyard", "Mine"];
-		if ((typeof locationName === "undefined")||!(validLocations.includes(locationName))){
+		while ((typeof locationName === "undefined")||!(validLocations.includes(locationName))||(oldLocationName === locationName)){
 			locationName = randomEntry(validLocations);
 		}
 		currentGame.currentLocation = new Location(locationName);
-		this.currentLocation.draw(this.currentLocation.canvas, this.currentLocation.spriteCompressed);
-		this.currentLocation.canvas.fillRect(0,40,160,50);
+		currentGame.currentLocation.switchTrigger = currentGame.playerHero.kills + 6 + roll('1d4');
+		currentGame.currentLocation.draw(currentGame.currentLocation.canvas, currentGame.currentLocation.spriteCompressed);
+		currentGame.currentLocation.canvas.fillRect(0,40,160,50);
+		currentGame.log.add("You enter the " +locationName+'...')
+		setTimeout(function(){currentGame.switchMonster()},2000);
 	};
 
 	this.attack = function(){
@@ -663,7 +670,11 @@ Monster.prototype.die = function(){
 	this.addClass('dead');
 	currentGame.log.add('You slayed the ' + this.shortName + '.');
 	currentGame.playerHero.kills ++;
-	setTimeout(currentGame.switchMonster, 2000);
+	if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
+		setTimeout(currentGame.switchLocation, 2000);
+	} else {
+		setTimeout(currentGame.switchMonster, 2000);
+	}
 };
 
 Monster.prototype.calcDodge = function(){
@@ -1128,9 +1139,4 @@ function loadButtons(){
 
 loadButtons();
 
-
-currentGame.playerHero = new Hero('Sandra');
-currentGame.currentMonster = new Monster();
-currentGame.previousMonsterName = "";
-currentGame.switchLocation();
 currentGame.initialize();
