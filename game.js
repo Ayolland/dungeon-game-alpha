@@ -1070,8 +1070,8 @@ function Effect(){
 		poof: "GwFgHgTCA+AM8MU5LVvRzXs93/mAjASasaRYuUWdtafVTZbI0mwvR5y/Nz8n69B7YWNF9xU6TNlzWHQuSVEVWIfM1bN1DdvSM9+gxkXGmaflxPnWtU7aOSR6809stqQA",
 		splat: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxhAjCduRdWuaVTQw/M/vfTS8h8ex62Tqx2JPjwpi+EkV1GSEAwbMHzqkxZRbq523qo1Z1MlVOn7ewqgc26LnREbvLhoy1ev3cQ7vCA=",
 		bolt: "GwFgHgTCA+AM8MU58CMKOZervM70MQKKJNL3Iqyuo1rqXQcYVRcZw87Vd2+oC+vYU1GVxbSf0lDRcmdPrtxC1gTXYlW6c01klJFYZPJ99WOYtNjwrtrGW7UhyLeDH2qzrTfrr93kAl1MAv2wgA==",
-		flame: "GwFgHgTCA+AM8MU5LVvRzXs5wRl1wMM2JNPPTzMrWtpXobpudifY1cYQ69OrFuiPqiGCso5IIJSRwpPRmSF8Gcpa8x6uZzWqJO7UuFGJ02eYuWNinafXs597sqN2bV3o9v63oqxMaf18nS29WMy9nPkCbeQcEpwj5bVTGYIVYrMixaTzFApEi7x47MuKLfKqa/TTSjPTa5JZdBNUIjr9iIA=",
-		bubble: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRsAjMefmRdalSnTdQws42iR21/Jz697V60WpAZipCkDTvzEiewxGWmylqrHVn91cjuuY65GzYaPHTZxtsuV2NohfsY6QA==="
+		flame: "GwFgHgTCA+AM8MU5LVvRzXs93/BaAjIZiaauRZdckVbUvYwsy0w7W7Jyr06358y9ckMTdhPUVkl8Zc+emajxEtatU14i9ZqFVdO+hH1Kt81ad0qZl6xY5m6mh5c0uTzvaLdPfjsZWdoJEEOFecvoODAFhEVGugSbhqX5B1qkh0vFp1nqZCbG5eZIpefmCFQnq1ZWsdbwlaU2NdG0c1a0Vis01TF385fWdWQYlRsNGQWozItOh5EA",
+		bubble: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRsAjMefmRdalSnTdQws42iR21/BxH59ywdWiEnwhiRgpGIlTZ/SdPQL54/hNFStxVbXXjty0gP3qjxoaouWrN24xH2Ho9i8LP3KhEA=="
 	};
 	this.color = "yellow";
 	this.associatedCharacter = "";
