@@ -32,7 +32,7 @@ function rollHits(diceStr,target){
 	return totalHits;
 }
 
-// used to change the tense of attack verbs
+// used to change the tense of used verbs
 function thirdPerson(verb){
 	switch (verb){
 		case "bash":
@@ -49,6 +49,11 @@ function thirdPerson(verb){
 			break;
 	}
 	return verb;
+}
+
+// Capitalizes first character of a string, other characters lowercase.
+function firstCap(string){
+	return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
 // Copied from MDN
@@ -128,40 +133,40 @@ function Game (){
 		setTimeout(function(){currentGame.switchMonster()},2000);
 	};
 
-	this.attack = function(){
-		interfaceElement.classList.add("wait");
-		var step = 0;
-		var stepsArr = ["player turn","monster turn","end"];
-		var turnInterval = setInterval(function(){
-			switch (stepsArr[step]){
-				case "player turn":
-					var heroAtkObj = currentGame.playerHero.useHand1();
-					if (currentGame.currentMonster.calcDodge()){
-						currentGame.currentMonster.dodge();
-					} else {
-						currentGame.currentMonster.hit(heroAtkObj);
-					}
-					break;
-				case "monster turn":
-					if (currentGame.currentMonster.HP > 0) {
-						var monsterAtkVal = currentGame.currentMonster.useHand1();
-						if (currentGame.playerHero.calcDodge()){
-							currentGame.playerHero.dodge();
-						} else {
-							currentGame.playerHero.hit(monsterAtkVal);
-						}
-					}
-					break;
-				case "end":
-					if (currentGame.playerHero.HP > 0){
-						interfaceElement.classList.remove("wait");
-					}
-					clearInterval(turnInterval);
-					break;
-			}
-			step ++;
-		},1000);
-	};
+	// this.attack = function(){
+	// 	interfaceElement.classList.add("wait");
+	// 	var step = 0;
+	// 	var stepsArr = ["player turn","monster turn","end"];
+	// 	var turnInterval = setInterval(function(){
+	// 		switch (stepsArr[step]){
+	// 			case "player turn":
+	// 				var heroAtkObj = currentGame.playerHero.useHand1();
+	// 				if (currentGame.currentMonster.calcDodge()){
+	// 					currentGame.currentMonster.dodge();
+	// 				} else {
+	// 					currentGame.currentMonster.hit(heroAtkObj);
+	// 				}
+	// 				break;
+	// 			case "monster turn":
+	// 				if (currentGame.currentMonster.HP > 0) {
+	// 					var monsterAtkVal = currentGame.currentMonster.useHand1();
+	// 					if (currentGame.playerHero.calcDodge()){
+	// 						currentGame.playerHero.dodge();
+	// 					} else {
+	// 						currentGame.playerHero.hit(monsterAtkVal);
+	// 					}
+	// 				}
+	// 				break;
+	// 			case "end":
+	// 				if (currentGame.playerHero.HP > 0){
+	// 					interfaceElement.classList.remove("wait");
+	// 				}
+	// 				clearInterval(turnInterval);
+	// 				break;
+	// 		}
+	// 		step ++;
+	// 	},1000);
+	// };
 
 	this.everyoneIsAlive = function(){
 		return ((this.playerHero.HP > 0)&&(this.currentMonster.HP >0));
@@ -294,6 +299,11 @@ Character.prototype.equip1 = function(item){
 	this.hand1 = item;
 };
 
+Character.prototype.equip2 = function(item){
+	item.owner = this;
+	this.hand2 = item;
+};
+
 Character.prototype.getEnemy = function(){
 	if (this.constructor.name === 'Hero'){
 		return currentGame.currentMonster;
@@ -335,9 +345,9 @@ Character.prototype.hit = function(atkObj){
 	var verb = randomEntry(atkObj.verbs);
 	var message = "";
 	if (atkObj.buff){
-		message = this.selfStr() + ' ' + this.conjugate(verb) + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
+		message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	} else {
-		message = this.getEnemy().selfStr()+' '+ this.getEnemy().conjugate(verb) +' '+ this.selfStr().toLowerCase() + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
+		message = firstCap(this.getEnemy().selfStr())+' '+ this.getEnemy().conjugate(verb) +' '+ this.selfStr().toLowerCase() + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
 	}
 	currentGame.log.add(message);
 	this.updateStatus();
@@ -347,7 +357,7 @@ Character.prototype.hit = function(atkObj){
 		var gotBuffed = (rollHits('1d'+chance,chance) >= 1);
 		if ((gotBuffed)&&(!this.buffs.includes(currentBuff))){
 			verb = 'are';
-			message = this.selfStr()+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
+			message = firstCap(this.selfStr())+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
 			this.buffs.push(currentBuff);
 			setTimeout(function(){currentGame.log.add(message);},1000);
 			setTimeout(function(){intervalRelay = "End turn";},2000);
@@ -470,12 +480,22 @@ Character.prototype.useHand1 = function(){
 };
 
 Character.prototype.activate1 = function(){
-	var obj = {};
-	if (this.hand1){
-		obj = this.hand1.attackObj();
-	} else {
-		obj = this.punch();
+	if (typeof(this.hand1) === 'undefined' ){
+		this.equip1(new Punch());
 	}
+	this.useItem(this.hand1);
+};
+
+Character.prototype.activate2 = function(){
+	if (typeof(this.hand2) === 'undefined' ){
+		this.equip2(new Punch());
+	}
+	this.useItem(this.hand2);
+};
+
+
+Character.prototype.useItem = function(item){
+	var obj = this.hand1.attackObj();
 	if (obj.targetCharacter !== this){
 		if (obj.targetCharacter.calcDodge()){
 			obj.targetCharacter.dodge();
@@ -600,7 +620,7 @@ Monster.prototype.announce = function(){
 	} else {
 		article = 'a ';
 	}
-	var message = "It's " + article + this.displayName + '!';
+	var message = "It's " + article + this.displayName.toLowerCase() + '!';
 	currentGame.log.add(message);
 	if (this.shortName === ""){
 		this.shortName = this.displayName;
@@ -923,6 +943,9 @@ Weapon.prototype.attackObj = function(){
 	attck.type = this.attackType;
 	attck.sprite = this.hitSprite;
 	attck.color = this.color;
+	if ((this.constructor.name === 'Punch')&&(this.owner.constructor.name !== "Hero")){
+		attck.color = this.owner.color;
+	}
 	attck.verbs = this.verbArray;
 	attck.targetCharacter = this.owner.getEnemy();
 	attck.buffArr = this.buffArr;
@@ -937,6 +960,21 @@ Weapon.prototype.attackObj = function(){
 	}
 	return attck;
 };
+
+function Punch(){
+	this.hitSprite = "poof";
+	this.attackType = "physical";
+	this.color = 'white';
+	this.verbArray = ["punch","smack","hit","wallop","slap"];
+	this.attackVal = function(){
+		var str = this.owner.stats.str;
+		var agi = this.owner.stats.agi;
+		return roll( Math.floor((str + agi)/8) + 'd3');
+	};
+
+}
+Punch.prototype = new Weapon();
+Punch.prototype.constructor = Punch;
 
 function Sword (type) {
 	this.hitSprite = "slash1";
