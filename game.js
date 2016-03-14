@@ -133,41 +133,6 @@ function Game (){
 		setTimeout(function(){currentGame.switchMonster()},2000);
 	};
 
-	// this.attack = function(){
-	// 	interfaceElement.classList.add("wait");
-	// 	var step = 0;
-	// 	var stepsArr = ["player turn","monster turn","end"];
-	// 	var turnInterval = setInterval(function(){
-	// 		switch (stepsArr[step]){
-	// 			case "player turn":
-	// 				var heroAtkObj = currentGame.playerHero.useHand1();
-	// 				if (currentGame.currentMonster.calcDodge()){
-	// 					currentGame.currentMonster.dodge();
-	// 				} else {
-	// 					currentGame.currentMonster.hit(heroAtkObj);
-	// 				}
-	// 				break;
-	// 			case "monster turn":
-	// 				if (currentGame.currentMonster.HP > 0) {
-	// 					var monsterAtkVal = currentGame.currentMonster.useHand1();
-	// 					if (currentGame.playerHero.calcDodge()){
-	// 						currentGame.playerHero.dodge();
-	// 					} else {
-	// 						currentGame.playerHero.hit(monsterAtkVal);
-	// 					}
-	// 				}
-	// 				break;
-	// 			case "end":
-	// 				if (currentGame.playerHero.HP > 0){
-	// 					interfaceElement.classList.remove("wait");
-	// 				}
-	// 				clearInterval(turnInterval);
-	// 				break;
-	// 		}
-	// 		step ++;
-	// 	},1000);
-	// };
-
 	this.everyoneIsAlive = function(){
 		return ((this.playerHero.HP > 0)&&(this.currentMonster.HP >0));
 	};
@@ -351,6 +316,7 @@ Character.prototype.hit = function(atkObj){
 	}
 	currentGame.log.add(message);
 	this.updateStatus();
+	var waitBeforeEnding = 1;
 	if (atkObj.buffArr.length > 1){
 		var currentBuff = atkObj.buffArr[0];
 		var chance = atkObj.buffArr[1];
@@ -360,15 +326,15 @@ Character.prototype.hit = function(atkObj){
 			message = firstCap(this.selfStr())+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
 			this.buffs.push(currentBuff);
 			setTimeout(function(){currentGame.log.add(message);},1000);
-			setTimeout(function(){intervalRelay = "End turn";},2000);
-		} else {
-			setTimeout(function(){intervalRelay = "End turn";},1000);
-		}
-	} else {
-		if (!atkObj.buff){
-			setTimeout(function(){intervalRelay = "End turn";},1000);
+			waitBeforeEnding ++;
 		}
 	}
+	// only end turn if the damage is nof coming from a buff effect,
+	// otherwise runBuffs signals the next step.
+	if (!atkObj.buff){
+		setTimeout(function(){intervalRelay = "End turn";},(1000 * waitBeforeEnding));
+	}
+	
 };
 
 Character.prototype.selfStr = function(){
