@@ -28,7 +28,13 @@ body {
   font-size: 1.25em;
   border: 1px solid white;
   padding: 0.25em 0.5em 0.4em 0.5em;
-  margin: 0.25em; }
+  margin: 0.25em;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
   .button:active {
     color: black;
     background-color: white; }
@@ -70,7 +76,7 @@ section#interface {
   position: relative; }
   section#interface #gameLog {
     height: 2em;
-    overflow-y: scroll;
+    overflow: hidden;
     margin: 0.5em 0; }
     section#interface #gameLog p {
       line-height: 1.1em;
@@ -261,19 +267,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #a72201; }
+    background-color: #ad2600; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #880e01; }
+    background-color: #b62b00; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #7d0702; }
+    background-color: #7a0502; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #ab2501; }
+    background-color: #880e01; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -334,18 +340,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #b18208; }
+    background-color: #edcb67; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #ae7f04; }
+    background-color: #deb94f; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #c79c2a; }
+    background-color: #e0bb52; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #f0ce6b; }
+    background-color: #be921d; }
   100% {
     background-color: #ac7c00; } }

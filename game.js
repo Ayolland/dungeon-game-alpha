@@ -51,51 +51,6 @@ function thirdPerson(verb){
 	return verb;
 }
 
-// workaround for simulating multi-threaded
-
-var goAhead = false;
-
-function greenLight(){
-	goAhead = true;
-}
-
-function redLight(){
-	goAhead = false;
-}
-
-function trafficCop(fnArrArr){
-// fnArrArr is an array of Arrays.
-// first element in each array is the function to be executed by 'window'
-// second element in each array is the argument for that function
-	greenLight();
-	var counter = 0;
-	var trafficJam = setInterval(function(){
-		var obj = fnArrArr[counter][0];
-		var fnString = fnArrArr[counter][1];
-		var arg = fnArrArr[counter][2];
-		if (goAhead){
-			redLight();
-			counter++;
-			obj[fnString](arg);
-		}
-		if (counter >= fnArrArr.length){
-			clearInterval(trafficJam);
-			redLight();
-		}
-	},50);
-}
-
-function argCar(string){
-	console.log(string);
-	setTimeout(function(){greenLight();},3000);
-}
-
-function noArgCar(){
-	console.log('beep');
-	setTimeout(function(){greenLight();},3000);
-}
-
-
 // Copied from MDN
 // Hypothetically Enable the passage of the 'this' object through the JavaScript timers
  
@@ -120,7 +75,6 @@ function Game (){
 	this.log = {
 		element: document.getElementById('gameLog'),
 		add: function(message){
-			redLight();
 			this.element.innerHTML += ('<p>'+ message + '</p>');
 			this.element.scrollTop = this.element.scrollHeight;
 		}
@@ -137,7 +91,6 @@ function Game (){
 		currentGame.previousMonsterName = "";
 		this.switchLocation();
 		this.playerHero.initialize();
-		this.switchLocation();
 	};
 
 	this.enterMonster = function(monsterType){
@@ -165,14 +118,13 @@ function Game (){
 	this.switchLocation = function(locationName){
 		var oldLocationName = (typeof(currentGame.currentLocation) === "undefined") ? "" : currentGame.currentLocation.shortName;
 		var validLocations = ["Dungeon", "Volcano", "Forest", "Graveyard", "Mine"];
-		while ((typeof locationName === "undefined")||!(validLocations.includes(locationName))||(oldLocationName === locationName)){
-			locationName = randomEntry(validLocations);
-		}
+		validLocations.splice(validLocations.indexOf(oldLocationName),1);
+		locationName = randomEntry(validLocations);
 		currentGame.currentLocation = new Location(locationName);
 		currentGame.currentLocation.switchTrigger = currentGame.playerHero.kills + 6 + roll('1d4');
 		currentGame.currentLocation.draw(currentGame.currentLocation.canvas, currentGame.currentLocation.spriteCompressed);
 		currentGame.currentLocation.canvas.fillRect(0,40,160,50);
-		currentGame.log.add("You enter the " +locationName+'...')
+		currentGame.log.add("You enter the " +locationName+'...');
 		setTimeout(function(){currentGame.switchMonster()},2000);
 	};
 
@@ -230,7 +182,7 @@ function Game (){
 				intervalRelay = "wait";
 				var monsterChoice = currentGame.currentMonster.ai();
 				if(currentGame.everyoneIsAlive()){
-					currentGame.currentMonster.runTurn(playerChoice);
+					currentGame.currentMonster.runTurn(monsterChoice);
 				} else {
 					intervalRelay = "End round";
 				}
@@ -252,16 +204,20 @@ Displayable.prototype.constructor = Displayable;
 
 Displayable.prototype.draw = function(canvas,sprite){
 	var rawStr = LZString.decompressFromBase64(sprite);
-    var binary = (rawStr.slice( rawStr.indexOf('|') + 1));
+    var trinary = (rawStr.slice( rawStr.indexOf('|') + 1));
     var spriteWidth = rawStr.slice( 0, rawStr.indexOf('x'));
     var spriteHeight = rawStr.slice( rawStr.indexOf('x') + 1 , rawStr.indexOf('|') );
     canvas.clearRect(0,0,spriteWidth,spriteHeight);
     canvas.fillStyle = this.color;
-    for (var i=0; i < binary.length; i+=1){
-    	if (binary.slice(i,i+1) == 1){
-    		var row = Math.floor(i / spriteWidth );
-    		canvas.fillRect( (i - row * spriteWidth ), row, 1, 1 );
-    	}
+    for (var i=0; i < trinary.length; i+=1){
+    	var row = Math.floor(i / spriteWidth );
+        	if (trinary.slice(i,i+1) == 1){
+        		canvas.fillStyle = this.color;
+        		canvas.fillRect( (i - row * spriteWidth ), row, 1, 1 );
+        	} else if (trinary.slice(i,i+1) == 2){
+            	canvas.fillStyle = 'black';
+            	canvas.fillRect( (i - row * spriteWidth ), row, 1, 1 );
+			}
     }
 };
 
@@ -351,20 +307,16 @@ Character.prototype.defense = function(attackType){
 		case 'white':
 		case 'black':
 			return this.stats.magi;
-			break;
 		case 'lightning':
 		case 'fire':
 			return Math.floor((this.stats.magi + this.stats.phys) /2);
-			break;
 		case 'poison':
 			return 0;
-			break;
 		case 'physical':
 		default:
 			return this.stats.phys;
-			break;
 	}
-}
+};
 
 Character.prototype.hit = function(atkObj){
 	intervalRelay = 'wait';
@@ -451,7 +403,7 @@ Character.prototype.runBuffs = function(){
 			counter++;
 		}
 		if ((counter >= (buffsArr.length))&&(!curedIt)&&(goAhead)){
-			if (thisCharacter.HP <= 0){ nextStep = "End round"}
+			if (thisCharacter.HP <= 0){ nextStep = "End round";}
 			clearInterval(buffInterval);
 			setTimeout(function(){intervalRelay = nextStep;},1000);
 		}
@@ -706,7 +658,7 @@ function Axedude (type) {
 		magi: 0,
 		maxHP: 16
 	};
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9GnG8ZvG475Y4FzFkUUJFHl62nWO0ovnap01ff1us0LajSacRHAvhGcpQqhP5ZeAzGvUbNW7Tsx8elUg1n0ZS86MYXhhY8IGsjdsg5MSr8j86YrLFyXJcbL4kumHqQA==";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3yZKnPNjFMiknlWrci46elVr1GzVu070AviX00ufBcCkGZDUsLb1mJq3Q5yXN124XsjTn95HmXp6iZvJw5DyRcnJAA";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
 	this.hand1 = new Sword('Iron');
@@ -727,8 +679,8 @@ function Ball (type) {
 	if ( type === ""){
 		type = randomEntry(["Fire","Goo"]);
 	}
-	var dripSprite = "IwNgHgLAHAPgDAxTktW9HNbcXncF6qEkqFzAUHLWV1EKmPnN51UNvu1L0nuJKHahWJVR+RliHYZ2eQsVLlK1Wtb5+Ofg0E6Re2i1ZthMrVuZmeg66dvWpZcXJxOMrj+u8/fGIA==";
-	var burnSprite = "IwNgHgLAHAPgDAxTktWxx0YZrTi7qYHFrElyH7kmnW22UaM1M4WmPsXcH1Ot6nHkIZkGVVCLwzZc+QsVLlKhZKy512Slvw66KGger6OyCS2YW+hCab69h0sWNF3z18a6IO4QA===";
+	var dripSprite = "IwNgHgLAHAPgDAxTktW9HNe54fd6HBpGkpEBMwVhyhVDtipFrZCl1XTc+ejfJMVK1izDuzF1ewrGKnoFuHCtVr1GzVvU8SIvSKUzD+IZyJn63HiJoWJxsguGHeQifaNvByt7+zAQA===";
+	var burnSprite = "IwNgHgLAHAPgDAxTktWxx0YZrTi7qYHFrElyH7kmnW22Ua0BMwbBTOJbvj3PFhwrN2Y4clZiR9BlVkyynPCtVr1GzVu06t8rLn3ZKR/CbooaF6uYry5jQg8eiec1+IYLhyj+8nOSl4GvkA==";
 	switch (type){
 		case 'Goo':
 			this.spriteCompressed = dripSprite;
@@ -813,7 +765,7 @@ function Skele (type) {
 			this.hand1 = new Sword('Iron');
 			break;
 		case "Flaming":
-			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GbJb7Kl4mGn6F7Hq7nVWOqa5XrZ0LGPfPsOnIUxHCeJIfxwyKrSQsVLlK1WSUsuRaazYKaOiVkMGxBBofVEmDM2f69ew23eb6C7iXI/efWnEA=";
+			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GYBMe+CwxxW+55xpNld1uGh9yZVqmuH2XBdASoC+LMuz6kx0qXKGDJEpctlr1GzVvaj+unMhLTWR6hVPoKTfuZr0W+iVguDx+3aJEiF4+Qb/cikqOciECjuFAA";
 			this.displayName = "Skelebones who is on fire";
 			this.shortName = "Flaming Skelebones";
 			this.buffs.push("Aflame");
@@ -829,19 +781,39 @@ Skele.prototype = new Monster();
 Skele.prototype.constructor = Skele;
 
 function Snek (type) {
+	var smallSprite = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
+	var bigSprite = "IwNgHgLAHAPgDAxTktW9HNOD4HcHrABMpxuqBFeKJZ5RVmdD+hzpNzJXyvFtWjkGIqAuMLFMEU6VnkLFS5StVqhwxnNr1x2MRMr1WlbUc7c9aOr0YnRGyo776DMvLPGeBQA=";
 	this.stats = {
-		str: 9,
-		agi: 12,
+		str: 5,
+		agi: 9,
 		int: 5,
-		cha: 10,
+		cha: 9,
 		phys: 0,
 		magi: 0,
 		maxHP: 10
 	};
-	this.hand1 = new Claws('Venom');
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
-	this.displayName = "Snek";
 	this.color = '#58d854';
+	if ( type === ""){
+		type = randomEntry(["Big","Small"]);
+	}
+	switch (type){
+		case 'Big':
+			this.hand1 = new Claws;
+			this.spriteCompressed = bigSprite;
+			this.displayName = "distressingly large Snek";
+			this.shortName = "Really Big Snek";
+			this.stats.str = 9;
+			this.stats.agi = 12;
+			this.stats.cha = 12;
+			this.stats.maxHP = 18;
+			break;
+		case 'Small':
+		default:
+			this.hand1 = new Claws('Venom');
+			this.spriteCompressed = smallSprite;
+			this.displayName = "Snek";
+			break;
+	}
 }
 Snek.prototype = new Monster();
 Snek.prototype.constructor = Snek;
@@ -857,7 +829,7 @@ function Jelly (type) {
 		maxHP: 20
 	};
 	this.hand1 = new Hose('Acid');
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNecXf8r5HBYmrEkGIWW4413UOMLMtxv3NJ0M80cyrQQJ4ii2SVOkzZc+QsXk+XCqTRqq4iQVqdtKtnlZGmetQd0tzxHJaFA";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
 	this.displayName = "quivering, gelatinous cube";
 	this.shortName = "Box Jelly";
 	this.color = 'rgba(88,216,84,0.5)';
@@ -922,7 +894,7 @@ function Mage (type) {
 		maxHP: 12
 	};
 	this.hand1 = new Staff('Thunder');
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW97geV7dgEF75K4pG5ZmKGELU20Xn5Mk71GsMM0f3tBOKpTRV2vTtyGM2kprXIK6xVWvUbNWjJLHE2M/iXniBSxYe6LeI5fxWHdPAV0sUy843yXTHCs6R2PMqu2mHhCEA=";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HgeV7dgEF75K4oEBMuwV5hRJd9WZiNzL5cVlPrjFQQioVSo/LQT9xlBvzYjqaWUXn4OjHBwaltO4gcNHjJ08sNqmczArWy2qDZt3NnUvk4d9BInMKFSOKLsZNLqPA7kipFafIFarm7qGvx6OkA==";
 	this.displayName = "Wiz";
 	this.color = '#0058f8';
 }
