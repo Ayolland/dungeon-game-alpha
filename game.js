@@ -127,6 +127,7 @@ function Game (){
 		}
 		var newMonster = new window[monsterClass](monsterVariant);
 		newMonster.div.className = "";
+		newMonster.buffs = [];
 		if (newMonster.hand1){
 			newMonster.equip1(newMonster.hand1);
 		}
