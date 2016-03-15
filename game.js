@@ -249,6 +249,7 @@ Location.prototype.constructor = Location;
 
 function Character (){
 	this.buffs = [];
+	this.resists = {};
 }
 
 Character.prototype = new Displayable ();
@@ -334,18 +335,19 @@ Character.prototype.burnItems = function(){
 Character.prototype.hit = function(atkObj){
 	intervalRelay = 'wait';
 	var defense = this.defense(atkObj.type);
+	var resist = (typeof(this.resists[atkObj.type])!== 'undefined') ? (this.resists[atkObj.type]) : 1; 
 	var afterDef = (atkObj.calculated - defense) < 0 ? 0 : (atkObj.calculated - defense);
-	var totalAtk = atkObj.natural + afterDef;
+	var totalAtk = Math.ceil((atkObj.natural + afterDef)*resist);
 	if (atkObj.targetStat === 'HP'){
 		this.HP -= totalAtk;
 	} else {
 		// Any natural damage is ignored for non-HP damage;
-		totalAtk = afterDef;
+		totalAtk = afterDef*resist;
 		this.stats[atkObj.targetStat] -= totalAtk;
 	}
 	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
 	this.wiggle('hit', 250);
-	var verb = randomEntry(atkObj.verbs);
+	var verb = (resist > 0) ? randomEntry(atkObj.verbs) : 'heal';
 	var message = "";
 	if (atkObj.buff){
 		message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
@@ -751,6 +753,7 @@ function Ball (type) {
 			this.color = '#d800cc';
 			break;
 		case 'Fire':
+			this.resists = { fire: -0.5 }
 			this.spriteCompressed = burnSprite;
 			this.displayName = "floating orb of fire";
 			this.shortName = "Fireball";
@@ -789,6 +792,7 @@ function Skele (type) {
 		magi: 0,
 		maxHP: 12
 	};
+	this.resists = { fire: 1.5 };
 	if ( type === ""){
 		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming", "Bones"]);
 	}
@@ -803,12 +807,12 @@ function Skele (type) {
 			this.hand1 = new Sword();
 			break;
 		case "Archer":
-			this.stats.agi = 9;
+			this.stats.agi = 10;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW4aUY5xP/pLaFFzA57lXVWl5kIWPLVZ2YFlOn62oWdcgksw7t+4tpNwzZc+QsVKps4qtHd69TaO3caB8uLX6WfYzM5GJvayuETdInVqcq3knEA";
 			this.displayName = "Skelebones Archer";
 			break;
 		case "Monk":
-			this.stats.agi = 9;
+			this.stats.agi = 16;
 			this.stats.int = 9;
 			this.stats.phys = 1;
 			this.stats.magi = 1;
@@ -818,7 +822,7 @@ function Skele (type) {
 			this.hand1 = new Staff();
 			break;
 		case "Bruiser":
-			this.stats.maxHP = 16;
+			this.stats.maxHP = 18;
 			this.stats.str = 10;
 			this.stats.phys = 2;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
@@ -827,6 +831,7 @@ function Skele (type) {
 			this.hand1 = new Sword('Iron');
 			break;
 		case "Flaming":
+			this.stats.maxHP = 20;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GYBMe+CwxxW+55xpNld1uGh9yZVqmuH2XBdASoC+LMuz6kx0qXKGDJEpctlr1GzVvaj+unMhLTWR6hVPoKTfuZr0W+iVguDx+3aJEiF4+Qb/cikqOciECjuFAA";
 			this.displayName = "Skelebones who is on fire";
 			this.shortName = "Flaming Skelebones";
@@ -890,6 +895,7 @@ function Jelly (type) {
 		magi: 0,
 		maxHP: 20
 	};
+	this.resists = { fire: 1.25 };
 	this.hand1 = new Hose('Acid');
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
 	this.displayName = "quivering, gelatinous cube";
@@ -1059,7 +1065,7 @@ function Sword (type) {
 			this.displayName = "a shining red sword that smells of sulfur";
 			this.shortName = "Flame Sword";
 			this.color = "#f87858";
-			this.attackType = "flame";
+			this.attackType = "fire";
 			this.buffArr = ["Aflame",8];
 			this.attackVal = function(){
 				return roll("3d3") - 1;	
