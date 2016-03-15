@@ -69,7 +69,7 @@
 
 // Monster and Player effects
 
-	&.dead{
+	&.dead, &.escaped{
 		@at-root{
 			@keyframes dead {
 				0% { opacity: 1;}

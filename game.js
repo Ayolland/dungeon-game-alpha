@@ -56,6 +56,25 @@ function firstCap(string){
 	return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
+// Shortens string
+
+function shorten(string,maxlength){
+	if(string.length > maxlength) {
+    	string = string.substring(0,maxlength-4)+"...";
+	}
+	return string;
+}
+
+// gets the first word of a string
+function firstWord(string){
+	return string.slice(0,string.indexOf(' '));
+}
+
+// gets the second word of a string
+function secondWord(string){
+	return string.slice(string.indexOf(' ')+1);
+}
+
 // Copied from MDN
 // Hypothetically Enable the passage of the 'this' object through the JavaScript timers
  
@@ -263,7 +282,7 @@ Character.prototype.equip1 = function(item){
 	item.owner = this;
 	this.hand1 = item;
 	if (this.constructor.name === "Hero"){
-		document.getElementById('equip1').innerHTML = item.shortName;
+		document.getElementById('equip1').innerHTML = shorten(item.shortName,17);
 	}
 };
 
@@ -271,7 +290,7 @@ Character.prototype.equip2 = function(item){
 	item.owner = this;
 	this.hand2 = item;
 	if (this.constructor.name === "Hero"){
-		document.getElementById('equip2').innerHTML = item.shortName;
+		document.getElementById('equip2').innerHTML = shorten(item.shortName,17);
 	}
 };
 
@@ -290,12 +309,24 @@ Character.prototype.defense = function(attackType){
 			return this.stats.magi;
 		case 'lightning':
 		case 'fire':
+			this.burnItems();
 			return Math.floor((this.stats.magi + this.stats.phys) /2);
 		case 'poison':
 			return 0;
 		case 'physical':
 		default:
 			return this.stats.phys;
+	}
+};
+
+Character.prototype.burnItems = function(){
+	var items = [this.hand1,this.hand2];
+	for (var i = items.length - 1; i >= 0; i--) {
+		if (typeof( items[i] ) !== "undefined" ){
+			if (items[i].flammable === true){
+				items[i].uses -= roll('1d10');
+			}
+		}
 	}
 };
 
@@ -327,7 +358,7 @@ Character.prototype.hit = function(atkObj){
 		var currentBuff = atkObj.buffArr[0];
 		var chance = atkObj.buffArr[1];
 		var gotBuffed = (rollHits('1d'+chance,chance) >= 1);
-		if ((gotBuffed)&&(!this.buffs.includes(currentBuff))){
+		if ((gotBuffed)&&(!this.buffs.includes(currentBuff)&&(this.HP > 0))) {
 			verb = 'are';
 			message = firstCap(this.selfStr())+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
 			this.buffs.push(currentBuff);
@@ -404,7 +435,6 @@ Character.prototype.checkEquip = function(turnChoice){
 		default:
 			intervalRelay = "End turn";
 			return;
-			break;
 	}
 	if(item.checkExhausted()){
 		item.exhaust();
@@ -427,7 +457,7 @@ Character.prototype.buffEffect = function(buffStr){
 	attck.buffArr = [];
 	switch (buffStr){
 		case 'Aflame':
-			attck.calculated = Math.ceil(roll('1d5')*this.stats.maxHP/100);
+			attck.calculated = roll('1d3')+Math.ceil(roll('1d5')*this.stats.maxHP/100);
 			attck.type = 'fire';
 			attck.sprite = 'flame';
 			attck.color = 'red';
@@ -444,25 +474,25 @@ Character.prototype.buffEffect = function(buffStr){
 	return attck;
 };
 
-Character.prototype.punch = function(){
-	var attck = {};
-	attck.natural = 1;
-	attck.calculated = roll( Math.floor((this.stats.str + this.stats.agi)/8) + 'd3');
-	attck.type = "physical";
-	attck.targetStat = "HP";
-	if (this.constructor.name === 'Hero'){
-		attck.targetCharacter = currentGame.currentMonster;
+Character.prototype.runAway = function(){
+	var success = this.calcDodge();
+	if (success){
+		var conjugated = (this.constructor.name === "Hero") ? 'manage' : 'manages';
+		var message = firstCap(this.selfStr()) + " " + conjugated + " to escape!";
+		currentGame.log.add(message);
+		currentGame.currentMonster.addClass('escaped');
+		setTimeout(function(){ 
+			intervalRelay = "End round";
+			currentGame.switchMonster();
+		},1000);
 	} else {
-		attck.targetCharacter = currentGame.playerHero;
+		var conjugated = (this.constructor.name === "Hero") ? 'try' : 'tries';
+		message = firstCap(this.selfStr()) + " " + conjugated + " to flee, but to no avail...";
+		currentGame.log.add(message);
+		setTimeout(function(){
+			intervalRelay = "End turn";
+		},1000);
 	}
-	attck.buffArr = [];
-	if (this.buffs.includes('Aflame')){
-		attck.buffArr = ['Aflame',3];
-	}
-	attck.sprite = "poof";
-	attck.color = this.color;
-	attck.verbs = ["punch","smack","hit","wallop","slap"];
-	return attck;
 };
 
 Character.prototype.useHand1 = function(){
@@ -515,6 +545,9 @@ Character.prototype.runTurn = function(turnChoice){
 			intervalRelay = "wait";
 			clearInterval(turnLoop);
 			intervalRelay = nextTurn;
+		} else if (intervalRelay === 'End round'){
+			clearInterval(turnLoop);
+			return;
 		}
 	},250);
 };
@@ -549,6 +582,14 @@ function Hero(name){
 
 Hero.prototype = new Character ();
 Hero.prototype.constructor = Hero;
+
+Hero.prototype.debug = function(){
+	// put some stuff you need to test here;
+	this.equip2(new Sword('Flame'));
+
+	currentGame.log.add('...something mysterious occurrs...');
+	setTimeout(function(){intervalRelay = "End turn";},1000);
+};
 
 Hero.prototype.possesive = function(){
 	return "your";
@@ -933,6 +974,7 @@ function Weapon(){
 	this.natural = 1;
 	this.buffArr = [];
 	this.uses = true;
+	this.targetStat = "HP";
 }
 Weapon.prototype = new Item();
 Weapon.prototype.constructor = Weapon;
@@ -984,7 +1026,7 @@ function Punch(){
 	this.hitSprite = "poof";
 	this.attackType = "physical";
 	this.color = 'white';
-	this.displayName = "nothing but the essentials"
+	this.displayName = "nothing but the essentials";
 	this.shortName = "Bare Hands";
 	this.verbArray = ["punch","smack","hit","wallop","slap"];
 	this.attackVal = function(){
@@ -1017,13 +1059,14 @@ function Sword (type) {
 			this.shortName = "Flame Sword";
 			this.color = "#f87858";
 			this.attackType = "flame";
-			this.buffArr= ["Aflame",10];
+			this.buffArr = ["Aflame",8];
 			this.attackVal = function(){
 				return roll("3d3") - 1;	
 			};
 			break;
 		case "Wood":
 		default:
+			this.flammable = true;
 			this.uses = 25;
 			this.displayName = "a wooden sword meant for practice";
 			this.shortName = "Wooden Sword";
@@ -1057,6 +1100,7 @@ function Staff (type) {
 			break;
 		case "Wood":
 		default:
+			this.flammable = true;
 			this.uses = 25;
 			this.displayName = "a solid, wooden staff";
 			this.shortName = "Wooden Staff";
@@ -1185,13 +1229,23 @@ Effect.prototype.clear = function(){
 
 // event Listeners
 
+function addClick(a,b){
+	a.addEventListener("click",b);
+}
+
+function tempClosure(c,d){
+	return c[d];
+}
+
 function loadButtons(){
 	var buttons = document.getElementsByClassName("button");
 	for (var i=0; i < buttons.length; i+=1){
-		var clickData = buttons[i].getAttribute('click-data');
-		var fnName = clickData.slice(0,clickData.indexOf(' '));
-		var fnArg = clickData.slice(clickData.indexOf(' ')+1);
-		buttons[i].addEventListener("click", function(){currentGame[fnName](fnArg);});
+		buttons[i].addEventListener("click",(function(temp){
+			return function(){
+				var clickData = temp.getAttribute('click-data');
+				currentGame[firstWord(clickData)](secondWord(clickData));
+			};
+		})(buttons[i]));
 	}
 }
 
