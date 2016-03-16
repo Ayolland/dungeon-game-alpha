@@ -75,6 +75,33 @@ function secondWord(string){
 	return string.slice(string.indexOf(' ')+1);
 }
 
+// takes a color and makes it half-black
+
+function halfBlack(colorStr){
+	var r = 0;
+	var g = 0;
+	var b = 0;
+	var a = 1;
+	if (colorStr.charAt(0) === "#"){
+		r = parseInt(colorStr.substring(1,3), 16);
+    	g = parseInt(colorStr.substring(3,5), 16);
+   		b = parseInt(colorStr.substring(5,7), 16);
+	} else if (colorStr.charAt(0) === "r"){
+		var valArr = colorStr.slice(5,-1).split(',');
+		r = valArr[0];
+		g = valArr[1];
+		b = valArr[2];
+		a = valArr[3];
+	} else {
+		return 'rgba(127,127,127,1)';
+	}
+	r = (r/2).toFixed();
+	g = (g/2).toFixed();
+	b = (b/2).toFixed();
+	a = ((a+1)/2).toFixed(1);
+	return 'rgba('+r+','+g+','+b+','+ a +')';
+}
+
 // Copied from MDN
 // Hypothetically Enable the passage of the 'this' object through the JavaScript timers
  
@@ -154,7 +181,7 @@ function Game (){
 	};
 
 	this.everyoneIsAlive = function(){
-		return ((this.playerHero.HP > 0)&&(this.currentMonster.HP >0));
+		return ((this.playerHero.stats.HP > 0)&&(this.currentMonster.stats.HP >0));
 	};
 
 	this.runRound = function(playerChoice){
@@ -205,7 +232,7 @@ Displayable.prototype.draw = function(canvas,sprite){
         		canvas.fillStyle = this.color;
         		canvas.fillRect( (i - row * spriteWidth ), row, 1, 1 );
         	} else if (trinary.slice(i,i+1) == 2){
-            	canvas.fillStyle = 'black';
+            	canvas.fillStyle = halfBlack(this.color);
             	canvas.fillRect( (i - row * spriteWidth ), row, 1, 1 );
 			}
     }
@@ -256,16 +283,16 @@ Character.prototype = new Displayable ();
 Character.prototype.constructor = Character;
 
 Character.prototype.updateStatus = function(){
-	if (this.HP < 1){
-		this.HP = 0;
-	} else if (this.HP > this.stats.maxHP){
-		this.HP = this.stats.maxHP;
+	if (this.stats.HP < 1){
+		this.stats.HP = 0;
+	} else if (this.stats.HP > this.stats.maxHP){
+		this.stats.HP = this.stats.maxHP;
 	}
-	this.displayElement.hpText.innerHTML = this.HP + "/" + this.stats.maxHP;
-	var percentage = Math.floor((this.HP / this.stats.maxHP)*100);
+	this.displayElement.hpText.innerHTML = this.stats.HP + "/" + this.stats.maxHP;
+	var percentage = Math.floor((this.stats.HP / this.stats.maxHP)*100);
 	this.displayElement.hpBar.style.width = percentage + "%";
 	this.displayElement.hpBar.className = "hp-bar hp-" + (Math.round(percentage / 10)*10);
-	if (this.HP === 0){
+	if (this.stats.HP === 0){
 		this.die();
 	}
 };
@@ -332,27 +359,47 @@ Character.prototype.burnItems = function(){
 	}
 };
 
+Character.prototype.smite = function(num){
+	this.stats.HP -= num;
+	this.updateStatus();
+};
+
 Character.prototype.hit = function(atkObj){
 	intervalRelay = 'wait';
 	var defense = this.defense(atkObj.type);
-	var resist = (typeof(this.resists[atkObj.type])!== 'undefined') ? (this.resists[atkObj.type]) : 1; 
-	var afterDef = (atkObj.calculated - defense) < 0 ? 0 : (atkObj.calculated - defense);
-	var totalAtk = Math.ceil((atkObj.natural + afterDef)*resist);
-	if (atkObj.targetStat === 'HP'){
-		this.HP -= totalAtk;
-	} else {
+	var resist = (typeof(this.resists[atkObj.type])!== 'undefined') ? (this.resists[atkObj.type]) : 1;
+	if (atkObj.targetStat !== 'HP'){
 		// Any natural damage is ignored for non-HP damage;
-		totalAtk = afterDef*resist;
-		this.stats[atkObj.targetStat] -= totalAtk;
+		atkObj.natural = 0;
 	}
+	var afterDef = (atkObj.calculated - defense) < 0 ? 0 : (atkObj.calculated - defense);
+	// an attack cannot be < 0 (healing) b/c of defense.
+	var nonConsumAtk = Math.ceil((atkObj.natural + afterDef)*resist);
+	var appliedDmg = 0;
+	switch (atkObj.itemType){
+		case 'Consumable':
+			appliedDmg = ((atkObj.calculated + atkObj.natural)*resist);
+			// Consumables ignore defenses and can be < 0 (healing)
+			break;
+		case 'Weapon':
+		case 'Buff':
+			appliedDmg = nonConsumAtk;
+			break;
+	}
+ 	this.stats[atkObj.targetStat] -= appliedDmg;
 	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
 	this.wiggle('hit', 250);
-	var verb = (resist > 0) ? randomEntry(atkObj.verbs) : 'heal';
+	var verb = ( appliedDmg > 0) ? randomEntry(atkObj.verbs) : 'heal';
 	var message = "";
-	if (atkObj.buff){
-		message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
-	} else {
-		message = firstCap(this.getEnemy().selfStr())+' '+ this.getEnemy().conjugate(verb) +' '+ this.selfStr().toLowerCase() + ' for ' + totalAtk + atkObj.targetStat.toUpperCase() + '.';
+	switch (atkObj.itemType){
+		case 'Consumable':
+			appliedDmg = Math.abs(appliedDmg);
+		case 'Buff':
+			message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' for ' + appliedDmg + atkObj.targetStat.toUpperCase() + '.';
+			break;
+		case 'Weapon':
+			message = firstCap(this.getEnemy().selfStr())+' '+ this.getEnemy().conjugate(verb) +' '+ this.selfStr().toLowerCase() + ' for ' + appliedDmg + atkObj.targetStat.toUpperCase() + '.';
+			break;
 	}
 	currentGame.log.add(message);
 	this.updateStatus();
@@ -361,7 +408,7 @@ Character.prototype.hit = function(atkObj){
 		var currentBuff = atkObj.buffArr[0];
 		var chance = atkObj.buffArr[1];
 		var gotBuffed = (rollHits('1d'+chance,chance) >= 1);
-		if ((gotBuffed)&&(!this.buffs.includes(currentBuff)&&(this.HP > 0))) {
+		if ((gotBuffed)&&(!this.buffs.includes(currentBuff)&&(this.stats.HP > 0))) {
 			verb = 'are';
 			message = firstCap(this.selfStr())+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
 			this.buffs.push(currentBuff);
@@ -371,7 +418,7 @@ Character.prototype.hit = function(atkObj){
 	}
 	// only end turn if the damage is nof coming from a buff effect,
 	// otherwise runBuffs signals the next step.
-	if (!atkObj.buff){
+	if (atkObj.itemType !== 'Buff'){
 		setTimeout(function(){intervalRelay = "Check equip";},(1000 * waitBeforeEnding));
 	}
 	
@@ -419,7 +466,7 @@ Character.prototype.runBuffs = function(){
 			counter++;
 		}
 		if ((counter >= (buffsArr.length))&&(!curedIt)&&(goAhead)){
-			if (thisCharacter.HP <= 0){ nextStep = "End round";}
+			if (thisCharacter.stats.HP <= 0){ nextStep = "End round";}
 			clearInterval(buffInterval);
 			setTimeout(function(){intervalRelay = nextStep;},1000);
 		}
@@ -449,7 +496,8 @@ Character.prototype.checkEquip = function(turnChoice){
 
 Character.prototype.buffEffect = function(buffStr){
 	var attck = {};
-	attck.buff = true;
+	attck.selfTargeted = true;
+	attck.itemType = 'Buff';
 	attck.cureChance = 3;
 	attck.natural = 0;
 	attck.calculated = 0;
@@ -463,14 +511,14 @@ Character.prototype.buffEffect = function(buffStr){
 			attck.calculated = roll('1d3')+Math.ceil(roll('1d5')*this.stats.maxHP/100);
 			attck.type = 'fire';
 			attck.sprite = 'flame';
-			attck.color = 'red';
+			attck.color = 'rgba(248,56,0,0.5)';
 			attck.verbs = ['burn','roast'];
 			break;
 		case 'Poisoned':
 			attck.calculated = roll('1d3');
 			attck.type = 'poison';
 			attck.sprite = 'bubble';
-			attck.color = 'purple';
+			attck.color = '#d800cc';
 			attck.verbs = ['waste','wither'];
 			break;
 	}
@@ -574,9 +622,9 @@ function Hero(name){
 		cha: 8,
 		phys: 1,
 		magi: 0,
-		maxHP: 100
+		maxHP: 50
 	};
-	this.HP = this.stats.maxHP;
+	this.stats.HP = this.stats.maxHP;
 	this.kills = 0;
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNfcY267a6EbHGlkkp6VVJ4EnmIOOs5maVc3vWt1kVQfSFpBI/FOkzZc+QsUJJqFUOYdOmrdTY7RbZXQbcKG8bwos+9ATZZjVfKkA===";
 	this.color = "white";
@@ -589,8 +637,13 @@ Hero.prototype.constructor = Hero;
 Hero.prototype.debug = function(){
 	// put some stuff you need to test here;
 	this.equip2(new Sword('Flame'));
-
-	currentGame.log.add('...something mysterious occurrs...');
+	this.buffs.push('Aflame');
+	this.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
+	currentGame.currentMonster.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
+	this.wiggle('hit', 250);
+	this.smite(12);
+	currentGame.currentMonster.buffs.push('Aflame');
+	currentGame.log.add('Fire rains from the heavens!');
 	setTimeout(function(){intervalRelay = "End turn";},1000);
 };
 
@@ -628,6 +681,7 @@ Hero.prototype.initialize = function(){
 	this.effectController = new Effect();
 	this.effectController.link(this);
 	this.equip1(new Sword());
+	this.equip2(new Potion('Health'));
 	this.draw(this.canvas,this.spriteCompressed);
 	this.updateStatus();
 };
@@ -677,7 +731,7 @@ Monster.prototype.appear = function(){
 	this.effectController = new Effect();
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
-	this.HP = this.stats.maxHP;
+	this.stats.HP = this.stats.maxHP;
 	this.updateStatus();
 };
 
@@ -722,7 +776,7 @@ function Axedude (type) {
 		magi: 0,
 		maxHP: 16
 	};
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3yZKnPNjFMiknlWrci46elVr1GzVu070AviX00ufBcCkGZDUsLb1mJq3Q5yXN124XsjTn95HmXp6iZvJw5DyRcnJAA";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3wdqNQh1I8qY8UVlScnaelVr1GzVu07VAviX3jJUscEpFpDRXmb5hzK3RPyTsoe6FOjxkfZXGNrbyaGbKTEA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
 	this.hand1 = new Sword('Iron');
@@ -962,7 +1016,7 @@ function Mage (type) {
 		maxHP: 12
 	};
 	this.hand1 = new Staff('Thunder');
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HgeV7dgEF75K4oEBMuwV5hRJd9WZiNzL5cVlPrjFQQioVSo/LQT9xlBvzYjqaWUXn4OjHBwaltO4gcNHjJ08sNqmczArWy2qDZt3NnUvk4d9BInMKFSOKLsZNLqPA7kipFafIFarm7qGvx6OkA==";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HgeV7dgEF75K4oEBMuwV5hRJd9WZiLzjpCh3DbCFQfy7da3NJQatSVMdLY0e8/MxapVPHBr7Fde/QcNGJe5UymY2YrdeWrx5peRUacvMvNyCKw4Yo/q/r4yisEKVBZaHJwK9tLafEA==";
 	this.displayName = "Wiz";
 	this.color = '#0058f8';
 }
@@ -977,20 +1031,11 @@ function Item(){
 Item.prototype = new Displayable();
 Item.prototype.constructor = Item;
 
-function Weapon(){
-	this.natural = 1;
-	this.buffArr = [];
-	this.uses = true;
-	this.targetStat = "HP";
-}
-Weapon.prototype = new Item();
-Weapon.prototype.constructor = Weapon;
-
-Weapon.prototype.checkExhausted = function(){
+Item.prototype.checkExhausted = function(){
 	return (this.uses <= 0);
 };
 
-Weapon.prototype.exhaust = function(){
+Item.prototype.exhaust = function(){
 	if (this.uses === true){
 		return;
 	}
@@ -1003,7 +1048,7 @@ Weapon.prototype.exhaust = function(){
 	currentGame.log.add(message);
 };
 
-Weapon.prototype.attackObj = function(){
+Item.prototype.attackObj = function(){
 	var attck = {};
 	attck.natural = this.natural;
 	attck.calculated = this.attackVal();
@@ -1014,9 +1059,15 @@ Weapon.prototype.attackObj = function(){
 		attck.color = this.owner.color;
 	}
 	attck.verbs = this.verbArray;
-	attck.targetCharacter = this.owner.getEnemy();
+	attck.itemType = this.itemType;
+	if (this.itemType === 'Weapon'){
+		attck.targetCharacter = this.owner.getEnemy();
+	} else if (this.itemType === 'Consumable'){
+		attck.targetCharacter = this.owner;
+		attck.selfTargeted = true;
+	}
 	attck.buffArr = this.buffArr;
-	if (this.owner.buffs.includes('Aflame')){
+	if ((this.owner.buffs.includes('Aflame'))&&(this.itemType === 'Weapon')){
 		attck.buffArr = ['Aflame',3];
 	}
 	// Physical damage always targets HP, other do not.
@@ -1027,6 +1078,16 @@ Weapon.prototype.attackObj = function(){
 	}
 	return attck;
 };
+
+function Weapon(){
+	this.natural = 1;
+	this.buffArr = [];
+	this.uses = true;
+	this.targetStat = "HP";
+	this.itemType = "Weapon";
+}
+Weapon.prototype = new Item();
+Weapon.prototype.constructor = Weapon;
 
 function Punch(){
 	this.uses = true;
@@ -1195,6 +1256,43 @@ function Hose (type) {
 Hose.prototype = new Weapon();
 Hose.prototype.constructor = Hose;
 
+function Consumable(){
+	this.natural = 0;
+	this.buffArr = [];
+	this.uses = 1;
+	this.targetStat = "HP";
+	this.attackVal = function(){return 0;};
+	this.itemType = "Consumable";
+}
+Consumable.prototype = new Item();
+Consumable.prototype.constructor = Consumable;
+
+function Potion(type){
+	this.uses = 1;
+	this.hitSprite = "poof";
+	switch (type){
+		case "Health":
+			attackType = 'physical';
+			this.color = '#58f898';
+			this.shortName = "Potion of Health";
+			this.verbArray = ['heal'];
+			this.attackVal = function(){
+				return this.owner.stats.maxHP * -1;
+			};
+			break;
+		case "Regen":
+			attackType = 'physical';
+			this.color = '#f8d878'
+			this.shortName = "Potion of Regen";
+			this.buffArr = ['Regenerating',1];
+			this.verbArray = ['heal'];
+			break;
+	}
+
+}
+Potion.prototype = new Consumable();
+Potion.prototype.constructor = Potion;
+
 
 // an Effect is a Displayable that visually displays the type of damage to the player
 
@@ -1208,7 +1306,7 @@ function Effect(){
 		splat: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxhAjCduRdWuaVTQw/M/vfTS8h8ex62Tqx2JPjwpi+EkV1GSEAwbMHzqkxZRbq523qo1Z1MlVOn7ewqgc26LnREbvLhoy1ev3cQ7vCA=",
 		bolt: "GwFgHgTCA+AM8MU58CMKOZervM70MQKKJNL3Iqyuo1rqXQcYVRcZw87Vd2+oC+vYU1GVxbSf0lDRcmdPrtxC1gTXYlW6c01klJFYZPJ99WOYtNjwrtrGW7UhyLeDH2qzrTfrr93kAl1MAv2wgA==",
 		flame: "GwFgHgTCA+AM8MU5LVvRzXs93/BaAjIZiaauRZdckVbUvYwsy0w7W7Jyr06358y9ckMTdhPUVkl8Zc+emajxEtatU14i9ZqFVdO+hH1Kt81ad0qZl6xY5m6mh5c0uTzvaLdPfjsZWdoJEEOFecvoODAFhEVGugSbhqX5B1qkh0vFp1nqZCbG5eZIpefmCFQnq1ZWsdbwlaU2NdG0c1a0Vis01TF385fWdWQYlRsNGQWozItOh5EA",
-		bubble: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRsAjMefmRdalSnTdQws42iR21/BxH59ywdWiEnwhiRgpGIlTZ/SdPQL54/hNFStxVbXXjty0gP3qjxoaouWrN24xH2Ho9i8LP3KhEA=="
+		bubble: "GwFgHgTCA+AM8MU5FlvRtrM9tvuh6++RZ5FyAjFbiZTeo/PdbYfs4V0jwZZj5sB3ERiE52Y6tNmwpcpouUrVvZeyA==="
 	};
 	this.color = "yellow";
 	this.associatedCharacter = "";

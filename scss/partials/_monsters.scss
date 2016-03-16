@@ -31,7 +31,7 @@
 		opacity: 0;
 		&.active{
 			opacity: 1;
-			animation: damage-sprite 0.5s steps(1,end) infinite;
+			animation: damage-sprite 0.75s steps(1,end) infinite;
 		}
 
 		@at-root{
