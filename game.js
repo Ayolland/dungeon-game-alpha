@@ -354,6 +354,8 @@ Character.prototype.burnItems = function(){
 		if (typeof( items[i] ) !== "undefined" ){
 			if (items[i].flammable === true){
 				items[i].uses -= roll('1d10');
+				items[i].uses = (items[i].uses > 0) ? items[i].uses : items[i].uses;
+				items[i].breakVerb = 'is charred to a crisp';
 			}
 		}
 	}
@@ -391,12 +393,12 @@ Character.prototype.hit = function(atkObj){
  	this.stats[atkObj.targetStat] -= appliedDmg;
 	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
 	this.wiggle('hit', 250);
-	var verb = ( appliedDmg > 0) ? randomEntry(atkObj.verbs) : 'heal';
+	var verb = ( appliedDmg >= 0) ? randomEntry(atkObj.verbs) : 'heal';
 	var message = "";
 	switch (atkObj.itemType){
 		case 'Consumable':
 		case 'Buff':
-			if(atkObj.calculated < 0){ appliedDmg = Math.abs(appliedDmg)};
+			if(atkObj.calculated < 0){ appliedDmg = Math.abs(appliedDmg);}
 			message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' for ' + appliedDmg + atkObj.targetStat.toUpperCase() + '.';
 			break;
 		case 'Weapon':
@@ -529,9 +531,10 @@ Character.prototype.buffEffect = function(buffStr){
 
 Character.prototype.runAway = function(){
 	var success = this.calcDodge();
+	var conjugated = "", message = "";
 	if (success){
-		var conjugated = (this.constructor.name === "Hero") ? 'manage' : 'manages';
-		var message = firstCap(this.selfStr()) + " " + conjugated + " to escape!";
+		conjugated = (this.constructor.name === "Hero") ? 'manage' : 'manages';
+		message = firstCap(this.selfStr()) + " " + conjugated + " to escape!";
 		currentGame.log.add(message);
 		currentGame.currentMonster.addClass('escaped');
 		setTimeout(function(){ 
@@ -539,7 +542,7 @@ Character.prototype.runAway = function(){
 			currentGame.switchMonster();
 		},1000);
 	} else {
-		var conjugated = (this.constructor.name === "Hero") ? 'try' : 'tries';
+		conjugated = (this.constructor.name === "Hero") ? 'try' : 'tries';
 		message = firstCap(this.selfStr()) + " " + conjugated + " to flee, but to no avail...";
 		currentGame.log.add(message);
 		setTimeout(function(){
@@ -644,6 +647,7 @@ Hero.prototype.debug = function(){
 	currentGame.currentMonster.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
 	this.wiggle('hit', 250);
 	this.smite(12);
+	this.getEnemy().smite(12);
 	currentGame.currentMonster.buffs.push('Aflame');
 	currentGame.log.add('Fire rains from the heavens!');
 	setTimeout(function(){intervalRelay = "End turn";},1000);
@@ -809,7 +813,7 @@ function Ball (type) {
 			this.color = '#d800cc';
 			break;
 		case 'Fire':
-			this.resists = { fire: -0.5 }
+			this.resists = { fire: -0.5 };
 			this.spriteCompressed = burnSprite;
 			this.displayName = "floating orb of fire";
 			this.shortName = "Fireball";
@@ -1046,13 +1050,13 @@ Item.prototype.exhaust = function(){
 	} else if (this.owner.hand2 === this){
 		this.owner.equip2( new Punch() );
 	}
-	var message = firstCap(this.owner.possesive()) +" "+ this.shortName + " breaks.";
+	var message = firstCap(this.owner.possesive()) +" "+ this.shortName.toLowerCase() +' is '+ this.breakVerb + " and discarded.";
 	currentGame.log.add(message);
 };
 
 Item.prototype.target = function(){
 	return (this.selfTargeted) ? this.owner : this.owner.getEnemy();
-}
+};
 
 Item.prototype.attackObj = function(){
 	var attck = {};
@@ -1098,26 +1102,26 @@ function Buff(type,owner){
 			this.cureChance = 3;
  			this.attackVal = function(){
  				return roll('1d3')+Math.ceil(roll('1d5')*this.owner.stats.maxHP/100);
- 			}
- 			this.type = 'fire';
+ 			};
+ 			this.attackType = 'fire';
  			this.sprite = 'flame';
  			this.color = 'rgba(248,56,0,0.5)';
  			this.verbs = ['burn','roast'];
 			break;
 		case 'Poisoned':
 			this.cureChance = 4;
-			this.attackVal = function(){ roll('1d3'); }
- 			this.type = 'poison';
+			this.attackVal = function(){ roll('1d3'); };
+ 			this.attackType = 'poison';
  			this.sprite = 'bubble';
  			this.color = '#d800cc';
  			this.verbs = ['waste','wither'];
  			break;
  		case 'Regenerating':
- 			this. cureChance = 6;
+ 			this. cureChance = 5;
  			this.attackVal = function(){
  				return Math.ceil(-1 * (roll('1d10')) * (this.owner.stats.maxHP/100));
- 			}
- 			this.type = 'white';
+ 			};
+ 			this.attackType = 'white';
  			this.sprite = 'poof';
  			this.color = '#f8d878';
  			this.verbs = ['heal','regenerate'];
@@ -1162,7 +1166,8 @@ function Sword (type) {
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
 	switch (type){
 		case "Iron":
-			this.uses = 40;
+			this.uses = 30;
+			this.breakVerb = "breaks on impact";
 			this.displayName = "a modest but functional iron blade";
 			this.shortName = "Iron Sword";
 			this.color = "#008888";
@@ -1171,7 +1176,8 @@ function Sword (type) {
 			};
 			break;
 		case "Flame":
-			this.uses = 30;
+			this.uses = 20;
+			this.breakVerb = "glows red-hot, shatters,";
 			this.displayName = "a shining red sword that smells of sulfur";
 			this.shortName = "Flame Sword";
 			this.color = "#f87858";
@@ -1184,6 +1190,7 @@ function Sword (type) {
 		case "Wood":
 		default:
 			this.flammable = true;
+			this.breakVerb = "splinters into bits";
 			this.uses = 25;
 			this.displayName = "a wooden sword meant for practice";
 			this.shortName = "Wooden Sword";
@@ -1203,7 +1210,8 @@ function Staff (type) {
 	this.verbs = ['strike','bludgeon','bash','thwack','smack'];
 	switch (type){
 		case "Thunder":
-			this.uses = 40;
+			this.uses = 25;
+			this.breakVerb = "splits down the middle";
 			this.displayName = "a staff enchanted with electricity";
 			this.shortName = "Thunder Staff";
 			this.sprite = 'bolt';
@@ -1219,6 +1227,7 @@ function Staff (type) {
 		default:
 			this.flammable = true;
 			this.uses = 25;
+			this.breakVerb = "snaps like a twig";
 			this.displayName = "a solid, wooden staff";
 			this.shortName = "Wooden Staff";
 			this.color = "#f8b800";
@@ -1241,8 +1250,9 @@ function Claws (type) {
 	switch (type){
 		case "Venom":
 			this.uses = 10;
+			this.breakVerb = "snaps with a sickening crunch";
 			this.displayName = "a pair of fangs with the venom sac still attached";
-			this.shortName = "Venom Fangs";
+			this.shortName = "Venom Fang";
 			this.color = "#00b800";
 			this.attackType = "poison";
 			this.buffArr = ["Poisoned",6];
@@ -1255,8 +1265,9 @@ function Claws (type) {
 		case "Bone":
 		default:
 			this.uses = 15;
+			this.breakVerb = "is worn to stumps";
 			this.displayName = "a set of sharp bone claws";
-			this.shortName = "Bone Claws";
+			this.shortName = "Bone Claw";
 			this.color = "#f0d0b0";
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
@@ -1276,6 +1287,7 @@ function Hose (type) {
 	switch (type){
 		case "Fire":
 			this.uses = 15;
+			this.breakVerb = ", empty and starting to smell,";
 			this.displayName = "a glowing bladder of sorts, hot to the touch";
 			this.shortName = "Lava Sac";
 			this.attackType = "fire";
@@ -1290,6 +1302,7 @@ function Hose (type) {
 		case "Acid":
 		default:
 			this.uses = 30;
+			this.breakVerb = "melts into a puddle of goo";
 			this.displayName = "a slimy, acidic appendage";
 			this.shortName = "Acid Whip";
 			this.attackType = "acid";
@@ -1320,9 +1333,10 @@ Consumable.prototype.constructor = Consumable;
 function Potion(type){
 	this.uses = 1;
 	this.sprite = "poof";
+	this.breakVerb = "is empty";
 	switch (type){
 		case "Health":
-			attackType = 'physical';
+			this.attackType = 'physical';
 			this.color = '#58f898';
 			this.shortName = "Potion of Health";
 			this.verbs = ['heal'];
@@ -1331,11 +1345,14 @@ function Potion(type){
 			};
 			break;
 		case "Regen":
-			attackType = 'physical';
+			this.attackType = 'physical';
 			this.color = '#f8d878';
 			this.shortName = "Potion of Regen";
 			this.buffArr = ['Regenerating',1];
-			this.verbs = ['heal'];
+			this.verbs = ['regenerate'];
+			this.attackVal = function(){
+				return Math.ceil(-1 * (roll('1d10')) * (this.owner.stats.maxHP/100));
+			};
 			break;
 	}
 
@@ -1383,14 +1400,6 @@ Effect.prototype.clear = function(){
 };
 
 // event Listeners
-
-function addClick(a,b){
-	a.addEventListener("click",b);
-}
-
-function tempClosure(c,d){
-	return c[d];
-}
 
 function loadButtons(){
 	var buttons = document.getElementsByClassName("button");
