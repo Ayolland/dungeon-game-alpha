@@ -374,16 +374,18 @@ Character.prototype.hit = function(atkObj){
 	}
 	var afterDef = (atkObj.calculated - defense) < 0 ? 0 : (atkObj.calculated - defense);
 	// an attack cannot be < 0 (healing) b/c of defense.
-	var nonConsumAtk = Math.ceil((atkObj.natural + afterDef)*resist);
+	var defendedAtk = Math.ceil((atkObj.natural + afterDef)*resist);
+	var undefendedAtk = Math.ceil(((atkObj.calculated + atkObj.natural)*resist));
 	var appliedDmg = 0;
 	switch (atkObj.itemType){
 		case 'Consumable':
-			appliedDmg = ((atkObj.calculated + atkObj.natural)*resist);
+			appliedDmg = undefendedAtk;
 			// Consumables ignore defenses and can be < 0 (healing)
 			break;
 		case 'Weapon':
+			appliedDmg = defendedAtk;
 		case 'Buff':
-			appliedDmg = nonConsumAtk;
+			appliedDmg = (atkObj.calculated < 0) ? undefendedAtk : defendedAtk ;
 			break;
 	}
  	this.stats[atkObj.targetStat] -= appliedDmg;
@@ -393,8 +395,8 @@ Character.prototype.hit = function(atkObj){
 	var message = "";
 	switch (atkObj.itemType){
 		case 'Consumable':
-			appliedDmg = Math.abs(appliedDmg);
 		case 'Buff':
+			if(atkObj.calculated < 0){ appliedDmg = Math.abs(appliedDmg)};
 			message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' for ' + appliedDmg + atkObj.targetStat.toUpperCase() + '.';
 			break;
 		case 'Weapon':
@@ -446,7 +448,7 @@ Character.prototype.runBuffs = function(){
 	var goAhead = true;
 	var buffInterval = setInterval(function(){
 		if ((!curedIt)&&(goAhead)){
-			buffAtkObj = thisCharacter.buffEffect(buffsArr[counter]);
+			buffAtkObj = new Buff(buffsArr[counter],thisCharacter).attackObj();
 			thisCharacter.hit(buffAtkObj);
 			var cured = (roll('1d'+buffAtkObj.cureChance)===buffAtkObj.cureChance);
 			if (cured){
@@ -1048,25 +1050,28 @@ Item.prototype.exhaust = function(){
 	currentGame.log.add(message);
 };
 
+Item.prototype.target = function(){
+	return (this.selfTargeted) ? this.owner : this.owner.getEnemy();
+}
+
 Item.prototype.attackObj = function(){
 	var attck = {};
+	attck.targetCharacter = this.target();
 	attck.natural = this.natural;
 	attck.calculated = this.attackVal();
 	attck.type = this.attackType;
-	attck.sprite = this.hitSprite;
+	attck.sprite = this.sprite;
 	attck.color = this.color;
 	if ((this.constructor.name === 'Punch')&&(this.owner.constructor.name !== "Hero")){
 		attck.color = this.owner.color;
 	}
-	attck.verbs = this.verbArray;
+	attck.verbs = this.verbs;
 	attck.itemType = this.itemType;
-	if (this.itemType === 'Weapon'){
-		attck.targetCharacter = this.owner.getEnemy();
-	} else if (this.itemType === 'Consumable'){
-		attck.targetCharacter = this.owner;
-		attck.selfTargeted = true;
-	}
+	attck.selfTargeted = this.selfTargeted;
 	attck.buffArr = this.buffArr;
+	if (this.itemType === "Buff"){
+		attck.cureChance = this.cureChance;
+	}
 	if ((this.owner.buffs.includes('Aflame'))&&(this.itemType === 'Weapon')){
 		attck.buffArr = ['Aflame',3];
 	}
@@ -1079,7 +1084,51 @@ Item.prototype.attackObj = function(){
 	return attck;
 };
 
+function Buff(type,owner){
+	this.selfTargeted = true;
+	this.itemType = 'Buff';
+	this.cureChance = 3;
+	this.natural = 0;
+	this.type = 'physical';
+ 	this.targetStat = 'HP';
+ 	this.owner = owner;
+ 	this.buffArr = [];
+	switch (type){
+		case 'Aflame':
+			this.cureChance = 3;
+ 			this.attackVal = function(){
+ 				return roll('1d3')+Math.ceil(roll('1d5')*this.owner.stats.maxHP/100);
+ 			}
+ 			this.type = 'fire';
+ 			this.sprite = 'flame';
+ 			this.color = 'rgba(248,56,0,0.5)';
+ 			this.verbs = ['burn','roast'];
+			break;
+		case 'Poisoned':
+			this.cureChance = 4;
+			this.attackVal = function(){ roll('1d3'); }
+ 			this.type = 'poison';
+ 			this.sprite = 'bubble';
+ 			this.color = '#d800cc';
+ 			this.verbs = ['waste','wither'];
+ 			break;
+ 		case 'Regenerating':
+ 			this. cureChance = 6;
+ 			this.attackVal = function(){
+ 				return Math.ceil(-1 * (roll('1d10')) * (this.owner.stats.maxHP/100));
+ 			}
+ 			this.type = 'white';
+ 			this.sprite = 'poof';
+ 			this.color = '#f8d878';
+ 			this.verbs = ['heal','regenerate'];
+ 			break;
+	}
+}
+Buff.prototype = new Item();
+Buff.prototype.constructor = Buff;
+
 function Weapon(){
+	this.selfTargeted = false;
 	this.natural = 1;
 	this.buffArr = [];
 	this.uses = true;
@@ -1091,12 +1140,12 @@ Weapon.prototype.constructor = Weapon;
 
 function Punch(){
 	this.uses = true;
-	this.hitSprite = "poof";
+	this.sprite = "poof";
 	this.attackType = "physical";
 	this.color = 'white';
 	this.displayName = "nothing but the essentials";
 	this.shortName = "Bare Hands";
-	this.verbArray = ["punch","smack","hit","wallop","slap"];
+	this.verbs = ["punch","smack","hit","wallop","slap"];
 	this.attackVal = function(){
 		var str = this.owner.stats.str;
 		var agi = this.owner.stats.agi;
@@ -1108,9 +1157,9 @@ Punch.prototype = new Weapon();
 Punch.prototype.constructor = Punch;
 
 function Sword (type) {
-	this.hitSprite = "slash1";
+	this.sprite = "slash1";
 	this.attackType = "physical";
-	this.verbArray = ['slash','strike','stab','lance','wound','cut'];
+	this.verbs = ['slash','strike','stab','lance','wound','cut'];
 	switch (type){
 		case "Iron":
 			this.uses = 40;
@@ -1149,19 +1198,19 @@ Sword.prototype = new Weapon();
 Sword.prototype.constructor = Sword;
 
 function Staff (type) {
-	this.hitSprite = 'kapow';
+	this.sprite = 'kapow';
 	this.attackType = "physical";
-	this.verbArray = ['strike','bludgeon','bash','thwack','smack'];
+	this.verbs = ['strike','bludgeon','bash','thwack','smack'];
 	switch (type){
 		case "Thunder":
 			this.uses = 40;
 			this.displayName = "a staff enchanted with electricity";
 			this.shortName = "Thunder Staff";
-			this.hitSprite = 'bolt';
+			this.sprite = 'bolt';
 			this.attackType = "lightning";
 			this.targetStat = "HP";
 			this.color = "#b8f8d8";
-			this.verbArray = ['blast','electrocute','zap','smite'];
+			this.verbs = ['blast','electrocute','zap','smite'];
 			this.attackVal = function(){
 				return Math.floor(1.5 * rollHits( this.owner.stats.int + "d3",3));
 			};
@@ -1185,10 +1234,10 @@ Staff.prototype = new Weapon();
 Staff.prototype.constructor = Staff;
 
 function Claws (type) {
-	this.hitSprite = 'claws';
+	this.sprite = 'claws';
 	this.attackType = "physical";
 	this.targetStat = "HP";
-	this.verbArray = ['maul','savage','lacerate','wound','cut'];
+	this.verbs = ['maul','savage','lacerate','wound','cut'];
 	switch (type){
 		case "Venom":
 			this.uses = 10;
@@ -1221,9 +1270,9 @@ Claws.prototype = new Weapon();
 Claws.prototype.constructor = Claws;
 
 function Hose (type) {
-	this.hitSprite = 'splat';
+	this.sprite = 'splat';
 	this.attackType = "physical";
-	this.verbArray = ['splash','douse'];
+	this.verbs = ['splash','douse'];
 	switch (type){
 		case "Fire":
 			this.uses = 15;
@@ -1232,7 +1281,7 @@ function Hose (type) {
 			this.attackType = "fire";
 			this.targetStat = "HP";
 			this.color = 'rgba(248,56,0,0.5)';
-			this.verbArray.push('ignite','torch');
+			this.verbs.push('ignite','torch');
 			this.buffArr = ["Aflame",3];
 			this.attackVal = function(){
 				return roll('1d3');
@@ -1246,7 +1295,7 @@ function Hose (type) {
 			this.attackType = "acid";
 			this.targetStat = "maxHP";
 			this.color = 'rgba(88,216,84,0.5)';
-			this.verbArray.push('slime','spatter');
+			this.verbs.push('slime','spatter');
 			this.attackVal = function(){
 				return roll('1d2');
 			};
@@ -1257,6 +1306,7 @@ Hose.prototype = new Weapon();
 Hose.prototype.constructor = Hose;
 
 function Consumable(){
+	this.selfTargeted = true;
 	this.natural = 0;
 	this.buffArr = [];
 	this.uses = 1;
@@ -1269,23 +1319,23 @@ Consumable.prototype.constructor = Consumable;
 
 function Potion(type){
 	this.uses = 1;
-	this.hitSprite = "poof";
+	this.sprite = "poof";
 	switch (type){
 		case "Health":
 			attackType = 'physical';
 			this.color = '#58f898';
 			this.shortName = "Potion of Health";
-			this.verbArray = ['heal'];
+			this.verbs = ['heal'];
 			this.attackVal = function(){
 				return this.owner.stats.maxHP * -1;
 			};
 			break;
 		case "Regen":
 			attackType = 'physical';
-			this.color = '#f8d878'
+			this.color = '#f8d878';
 			this.shortName = "Potion of Regen";
 			this.buffArr = ['Regenerating',1];
-			this.verbArray = ['heal'];
+			this.verbs = ['heal'];
 			break;
 	}
 
