@@ -155,9 +155,6 @@ function Game (){
 		var newMonster = new window[monsterClass](monsterVariant);
 		newMonster.div.className = "";
 		newMonster.buffs = [];
-		if (newMonster.hand1){
-			newMonster.equip1(newMonster.hand1);
-		}
 		newMonster.appear();
 		currentGame.currentMonster = newMonster;
 	};
@@ -393,7 +390,7 @@ Character.prototype.hit = function(atkObj){
  	this.stats[atkObj.targetStat] -= appliedDmg;
 	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
 	this.wiggle('hit', 250);
-	var verb = ( appliedDmg >= 0) ? randomEntry(atkObj.verbs) : 'heal';
+	var verb = randomEntry(atkObj.verbs);
 	var message = "";
 	switch (atkObj.itemType){
 		case 'Consumable':
@@ -704,9 +701,6 @@ function Monster(){
 		name: document.getElementById('monster-name')
 	};
 	this.buffs = [];
-	this.ai = function(){
-		return 'activate1';
-	};
 }
 Monster.prototype = new Character ();
 Monster.prototype.constructor = Monster;
@@ -714,6 +708,29 @@ Monster.prototype.constructor = Monster;
 Monster.prototype.possesive = function(){
 	return "the " + this.shortName.toLowerCase() + "'s"; 
 };
+
+Monster.prototype.ai = function(){
+	if (typeof(this.aiType) === 'undefined'){
+		this.aiType = 'simple';
+	}
+	switch(this.aiType){
+		case "simple":
+			return 'activate1';
+			break;
+		case "random":
+			return (Math.random() > 0.5)? 'activate1' : 'activate2';
+			break;
+		case "switch":
+			if (typeof(this.switchTrigger) === 'undefined'){
+				this.switchTrigger = Math.round(this.maxHP / 2);
+			}
+			return ( this.stats.HP >= this.switchTrigger )? 'activate1' : 'activate2';
+			break;
+		case "buffer":
+			return ( this.hand1.constructor.name !== 'Punch') ? 'activate1' : 'activate2';
+			break;
+	}
+}
 
 Monster.prototype.announce = function(){
 	var article = "";
@@ -734,6 +751,12 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.announce();
+	if (this.hand1){
+		this.equip1(this.hand1);
+	}
+	if (this.hand2){
+		this.equip2(this.hand2);
+	}
 	this.effectController = new Effect();
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
@@ -785,7 +808,9 @@ function Axedude (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3wdqNQh1I8qY8UVlScnaelVr1GzVu07VAviX3jJUscEpFpDRXmb5hzK3RPyTsoe6FOjxkfZXGNrbyaGbKTEA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
-	this.hand1 = new Sword('Iron');
+	this.hand2 = new Sword('Iron');
+	this.hand1 = new Vial('Steroids');
+	this.aiType = 'buffer';
 }
 Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
@@ -838,6 +863,8 @@ function Scamp (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
 	this.displayName = "Scamp";
 	this.color = '#b8f818';
+	this.hand2 = new Potion('Regen');
+	this.aiType = 'random';
 }
 Scamp.prototype = new Monster();
 Scamp.prototype.constructor = Scamp;
@@ -1022,9 +1049,12 @@ function Mage (type) {
 		maxHP: 12
 	};
 	this.hand1 = new Staff('Thunder');
+	this.hand2 = new Potion('Health');
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HgeV7dgEF75K4oEBMuwV5hRJd9WZiLzjpCh3DbCFQfy7da3NJQatSVMdLY0e8/MxapVPHBr7Fde/QcNGJe5UymY2YrdeWrx5peRUacvMvNyCKw4Yo/q/r4yisEKVBZaHJwK9tLafEA==";
 	this.displayName = "Wiz";
 	this.color = '#0058f8';
+	this.aiType = 'switch';
+	this.switchTrigger = 5;
 }
 Mage.prototype = new Monster();
 Mage.prototype.constructor = Mage;
@@ -1119,12 +1149,24 @@ function Buff(type,owner){
  		case 'Regenerating':
  			this. cureChance = 5;
  			this.attackVal = function(){
- 				return Math.ceil(-1 * (roll('1d10')) * (this.owner.stats.maxHP/100));
+ 				var n = Math.ceil(this.owner.stats.maxHP/12);
+ 				return roll( n+'d3' ) * -1;
  			};
  			this.attackType = 'white';
  			this.sprite = 'poof';
  			this.color = '#f8d878';
  			this.verbs = ['heal','regenerate'];
+ 			break;
+ 		case 'Juiced':
+ 			this.cureChance = 2;
+ 			this.attackVal = function(){
+ 				return roll('1d2') * -1;
+ 			};
+ 			this.attackType = 'poison';
+ 			this.targetStat = 'str';
+ 			this.sprite = 'bubble';
+ 			this.color = '#f83800';
+ 			this.verbs = ['gain','rage'];
  			break;
 	}
 }
@@ -1360,6 +1402,28 @@ function Potion(type){
 Potion.prototype = new Consumable();
 Potion.prototype.constructor = Potion;
 
+function Vial(type){
+	this.uses = 1;
+	this.sprite = "poof";
+	this.breakVerb = "is used-up";
+	this.shortName = "Vial of"
+	switch (type){
+		case "Steroids":
+			this.attackType = 'poison';
+			this.targetStat = 'cha';
+			this.color = '#f83800';
+			this.shortName += " Steroids";
+			this.buffArr = ["Juiced",1];
+			this.verbs = ['inject'];
+			this.attackVal = function(){
+				return roll('1d3');
+			}
+			break;
+	}
+}
+
+Vial.prototype = new Consumable();
+Vial.prototype.constructor = Vial;
 
 // an Effect is a Displayable that visually displays the type of damage to the player
 
@@ -1373,7 +1437,13 @@ function Effect(){
 		splat: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxhAjCduRdWuaVTQw/M/vfTS8h8ex62Tqx2JPjwpi+EkV1GSEAwbMHzqkxZRbq523qo1Z1MlVOn7ewqgc26LnREbvLhoy1ev3cQ7vCA=",
 		bolt: "GwFgHgTCA+AM8MU58CMKOZervM70MQKKJNL3Iqyuo1rqXQcYVRcZw87Vd2+oC+vYU1GVxbSf0lDRcmdPrtxC1gTXYlW6c01klJFYZPJ99WOYtNjwrtrGW7UhyLeDH2qzrTfrr93kAl1MAv2wgA==",
 		flame: "GwFgHgTCA+AM8MU5LVvRzXs93/BaAjIZiaauRZdckVbUvYwsy0w7W7Jyr06358y9ckMTdhPUVkl8Zc+emajxEtatU14i9ZqFVdO+hH1Kt81ad0qZl6xY5m6mh5c0uTzvaLdPfjsZWdoJEEOFecvoODAFhEVGugSbhqX5B1qkh0vFp1nqZCbG5eZIpefmCFQnq1ZWsdbwlaU2NdG0c1a0Vis01TF385fWdWQYlRsNGQWozItOh5EA",
-		bubble: "GwFgHgTCA+AM8MU5FlvRtrM9tvuh6++RZ5FyAjFbiZTeo/PdbYfs4V0jwZZj5sB3ERiE52Y6tNmwpcpouUrVvZeyA==="
+		bubble: "GwFgHgTCA+AM8MU5FlvRtrM9tvuh6++RZ5FyAjFbiZTeo/PdbYfs4V0jwZZj5sB3ERiE52Y6tNmwpcpouUrVvZeyA===",
+		rain: "GwFgHgTCA+EAwMU5LkEYn1dncOfVzixXwRITOwqStSpuOzsMUccqIZQ6LwOS8+3QZz6IRAllRal6rMblmzaw3BxWqcvTRPXyu+gwvHGtp8gpJ1dTc9ZPVtOW0KG27qd3p7PmPj3EyDEC1MVDRfwiBM0cvCx8jBP4iIRc+NPTHTNiUtiS4ugcYwsi8/NzNIv84xIqgrPqw3KxpZKk5BOVO027apQLfGqc/YfjRnvGnIA=",
+		shield: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpZ8AjBWlbXbaneQlTROx59ShRK87H48+9Kn0YiBg7sNFiZSXkPLLFI0eNkKyqxErmbk+qbpbr6htaeLXB5upb2SBtuxu1PXBV/ocezXvhevkoYgUH+VqFhkTaxTo6M8YTh0thCQA=",
+		cloud: "GwFgHgTCA+AM8MU5LVvRzXs93hAjAfpkSUkcbJVedWfQ+TVU8zfGxVxRB6T0QE+lAfyQQRLdC1qJJsuZ2KKI3KTTVCVsrYWGrtBliP3HNTShqKnl5q5ZuLRja9NfOGDz/M9s37vAB4rDBLtRhwoSReva60X6xfo7JZn5pPvQKTprK2XFaNlLWhcLFJnYaktWl9jWSlZr1jVbNeVXVtEVNCvr5Zb3tPXxmNYGunSGt/XLT1twDgSYzC5Phy/Or2cgbghO2RkUHyA0YRdinMmV0Z0o3+vc74Y+Md/d7N0xAA==",
+		star: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpREZlWFaNVpAjKk/ZS4u62Q+58nV2w9hmFgNTi2I0XzQ9Ww2SnlYVVRUsQ1NKSUV47+g9LMPHVzc4T0IbV4hSA===",
+		chaos: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxqAjOeSVeuRHXZdU/KQxaxKWe85hx/X7IBDXjU5t+nJP1rS0FEqykNVXFqs3rhg4sokH92/YfkytRIxKvHrd7YhuW7p5QhNSH7i4Q+C13gaGZLp6hnJujpKiCoxhQT5R9GZiKLIUMcI8qTQinF45ltlAA==",
+		cresent: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpZ5FmAjDVehJQbc3cg43s4jcqxzjzZJ2/bLVR9Yk0RkEoRUkgqbTEC1fmWcNKOYR0DDxA2JPcdW+CL37LuvVTtXx5R6ZoMgA="
 	};
 	this.color = "yellow";
 	this.associatedCharacter = "";
