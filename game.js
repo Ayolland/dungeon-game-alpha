@@ -428,6 +428,7 @@ Character.prototype.burnItems = function(){
 
 Character.prototype.smite = function(num){
 	this.stats.HP -= num;
+	this.lastHitBy = new Buff('Smite',this).attackObj();
 	this.updateStatus();
 };
 
@@ -460,6 +461,7 @@ Character.prototype.hit = function(atkObj){
 	this.wiggle('hit', 250);
 	var verb = randomEntry(atkObj.verbs);
 	var message = "";
+	this.lastHitBy = atkObj;
 	switch (atkObj.itemType){
 		case 'Consumable':
 		case 'Buff':
@@ -480,7 +482,7 @@ Character.prototype.hit = function(atkObj){
 		if ((gotBuffed)&&(!this.buffs.includes(currentBuff)&&(this.stats.HP > 0))) {
 			verb = 'are';
 			message = firstCap(this.selfStr())+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
-			this.buffs.push(currentBuff);
+			this.addBuff(currentBuff);
 			setTimeout(function(){currentGame.log.add(message);},1000);
 			waitBeforeEnding ++;
 		}
@@ -500,6 +502,12 @@ Character.prototype.selfStr = function(){
 Character.prototype.conjugate = function(verb){
 	return (this.constructor.name === "Hero") ? verb : thirdPerson(verb);
 };
+
+Character.prototype.addBuff = function(buff){
+	if (!this.buffs.includes(buff)){
+		this.buffs.push(buff);
+	}
+}
 
 Character.prototype.runBuffs = function(){
 	var nextStep = "Use equip";
@@ -530,7 +538,9 @@ Character.prototype.runBuffs = function(){
 				setTimeout(function(){goAhead = true;},1000);
 			}
 		} else if (goAhead) {
-			currentGame.log.add(thisCharacter.selfStr() + ' ' + thisCharacter.conjugate('are') + ' no longer ' + buffsArr[counter].toLowerCase() + '.' );
+			if (thisCharacter.stats.HP > 0){
+				currentGame.log.add(thisCharacter.selfStr() + ' ' + thisCharacter.conjugate('are') + ' no longer ' + buffsArr[counter].toLowerCase() + '.' );
+			}
 			curedIt = false;
 			counter++;
 		}
@@ -564,37 +574,6 @@ Character.prototype.checkEquip = function(turnChoice){
 	} else {
 		intervalRelay = "End turn";
 	}
-};
-
-Character.prototype.buffEffect = function(buffStr){
-	var attck = {};
-	attck.selfTargeted = true;
-	attck.itemType = 'Buff';
-	attck.cureChance = 3;
-	attck.natural = 0;
-	attck.calculated = 0;
-	attck.type = 'physical';
-	attck.targetStat = 'HP';
-	attck.color = 'white';
-	attck.verbs = ['waste'];
-	attck.buffArr = [];
-	switch (buffStr){
-		case 'Aflame':
-			attck.calculated = roll('1d3')+Math.ceil(roll('1d5')*this.stats.maxHP/100);
-			attck.type = 'fire';
-			attck.sprite = 'flame';
-			attck.color = 'rgba(248,56,0,0.5)';
-			attck.verbs = ['burn','roast'];
-			break;
-		case 'Poisoned':
-			attck.calculated = roll('1d3');
-			attck.type = 'poison';
-			attck.sprite = 'bubble';
-			attck.color = '#d800cc';
-			attck.verbs = ['waste','wither'];
-			break;
-	}
-	return attck;
 };
 
 Character.prototype.runAway = function(){
@@ -697,6 +676,40 @@ Character.prototype.addToInv = function(item){
 	}
 }
 
+Character.prototype.die = function(){
+	intervalRelay = "End round";
+	this.addClass('dead');
+	switch (this.lastHitBy.itemType){
+		case 'Consumable':
+			var message = this.selfStr() + " died of self-inflicted wounds.";
+			break;
+		case 'Buff':
+			var message = this.selfStr() + " died " + this.lastHitBy.killStr + '.';
+			break;
+		case 'Weapon':
+			if(this.constructor.name === 'Hero'){
+				var message = 'You were slain by the ' + this.getEnemy().shortName + '.';
+			} else {
+				var message = 'You slayed the ' + this.shortName + '.';
+			}
+			break;
+	}
+	currentGame.log.add(message);
+	if(this.constructor.name === 'Hero'){
+		currentGame.interface.pause();
+		setTimeout(function(){
+			currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters before perishing.');
+		},2000);
+	} else {
+		currentGame.playerHero.kills ++;
+		if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
+			setTimeout(currentGame.switchLocation, 2000);
+		} else {
+			setTimeout(currentGame.switchMonster, 2000);
+		}
+	}
+};
+
 // A hero is the PlayerCharacter Object
 
 function Hero(name){
@@ -742,16 +755,18 @@ Hero.prototype.drawInventory = function(){
 
 Hero.prototype.debug = function(){
 	// put some stuff you need to test here;
-	this.equip2(new Sword('Flame'));
-	this.buffs.push('Aflame');
+	currentGame.log.add('Fire rains from the heavens, lighting everything ablaze!');
+	this.addToInv(new Sword('Flame'));
+	this.addBuff('Aflame');
+	this.getEnemy().addBuff('Aflame');
 	this.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
 	currentGame.currentMonster.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
 	this.wiggle('hit', 250);
-	this.smite(12);
-	this.getEnemy().smite(12);
-	currentGame.currentMonster.buffs.push('Aflame');
-	currentGame.log.add('Fire rains from the heavens!');
-	setTimeout(function(){intervalRelay = "End turn";},1000);
+	setTimeout(function(){
+		currentGame.playerHero.smite(12);
+		currentGame.currentMonster.smite(12);
+		intervalRelay = "End turn";
+	},1000);
 };
 
 Hero.prototype.possesive = function(){
@@ -773,15 +788,6 @@ Hero.prototype.dodge = function(){
 	this.wiggle('dodge', 500);
 	currentGame.log.add("You dodge the "+ currentGame.currentMonster.shortName +"'s attack.");
 	intervalRelay = "End turn";
-};
-
-Hero.prototype.die = function(){
-	intervalRelay = "End round";
-	this.addClass('dead');
-	currentGame.log.add('You were slain by the ' + currentGame.currentMonster.shortName + '.');
-	setTimeout(function(){
-		currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters before perishing.');
-	},2000);
 };
 
 Hero.prototype.initialize = function(){
@@ -870,17 +876,17 @@ Monster.prototype.appear = function(){
 	this.updateStatus();
 };
 
-Monster.prototype.die = function(){
-	intervalRelay = "End round";
-	this.addClass('dead');
-	currentGame.log.add('You slayed the ' + this.shortName + '.');
-	currentGame.playerHero.kills ++;
-	if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
-		setTimeout(currentGame.switchLocation, 2000);
-	} else {
-		setTimeout(currentGame.switchMonster, 2000);
-	}
-};
+// Monster.prototype.die = function(){
+// 	intervalRelay = "End round";
+// 	this.addClass('dead');
+// 	currentGame.log.add('You slayed the ' + this.shortName + '.');
+// 	currentGame.playerHero.kills ++;
+// 	if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
+// 		setTimeout(currentGame.switchLocation, 2000);
+// 	} else {
+// 		setTimeout(currentGame.switchMonster, 2000);
+// 	}
+// };
 
 Monster.prototype.calcDodge = function(){
 	var possibilities = [];
@@ -1212,6 +1218,7 @@ Item.prototype.attackObj = function(){
 	attck.itemType = this.itemType;
 	attck.selfTargeted = this.selfTargeted;
 	attck.buffArr = this.buffArr;
+	attck.killStr = this.killStr;
 	if (this.itemType === "Buff"){
 		attck.cureChance = this.cureChance;
 	}
@@ -1263,8 +1270,14 @@ function Buff(type,owner){
  	this.targetStat = 'HP';
  	this.owner = owner;
  	this.buffArr = [];
+ 	this.killStr = "from inexplicable causes";
+ 	this.attackVal = function(){ return 0 };
 	switch (type){
+		case 'Smite':
+			this.killStr = "by the hand of the divine";
+			break;
 		case 'Aflame':
+			this.killStr = "in a conflagration";
 			this.cureChance = 3;
  			this.attackVal = function(){
  				return roll('1d3')+Math.ceil(roll('1d5')*this.owner.stats.maxHP/100);
@@ -1275,6 +1288,7 @@ function Buff(type,owner){
  			this.verbs = ['burn','roast'];
 			break;
 		case 'Poisoned':
+			this.killStr = "of internal injuries";
 			this.cureChance = 4;
 			this.attackVal = function(){ roll('1d3'); };
  			this.attackType = 'poison';
