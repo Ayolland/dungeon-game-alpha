@@ -241,6 +241,7 @@ function Game (){
 	};
 
 	this.runRound = function(playerChoice){
+		this.foundItem = "";
 		this.dialog.close();
 		intervalRelay = "Player turn";
 		var gameLoop = setInterval(function(){
@@ -274,6 +275,17 @@ function Game (){
 			item.invDialog();
 		}
 	};
+
+	this.dropItem = function(number){
+		this.dialog.close();
+		this.playerHero.inventory.splice(number,1);
+		this.playerHero.updateStatus();
+		if (this.foundItem.sprite){
+			this.playerHero.addToInv(this.foundItem);
+		}
+	}
+
+	this.replace
 
 }
 
@@ -1243,6 +1255,7 @@ Item.prototype.attackObj = function(){
 };
 
 Item.prototype.invDialog = function(){
+	currentGame.foundItem = "";
 	if (this.owner.constructor.name !== "Hero"){
 		return;
 	} 
@@ -1264,7 +1277,9 @@ Item.prototype.invDialog = function(){
 		}
 	}
 	this.owner.offHand = this;
+	var invIndex = this.owner.inventory.indexOf(this)
 	currentGame.dialog.setText(message);
+	currentGame.dialog.addButton('Drop this '+this.shortName,'dropItem '+invIndex);
 	currentGame.dialog.addButton('Cancel','router closeDialog');
 	currentGame.dialog.open();
 };
@@ -1364,7 +1379,7 @@ function Sword (type) {
 	this.sprite = "slash1";
 	this.attackType = "physical";
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
-	this.smallSprite = "IwNgHqA+AMt/DFOS1Dhrhz1ub2gchkSqcbvjrkA=";
+	this.smallSprite = "IwNgHqA+AMt/DFOS18BMw20+7v9g9liDUijtpLsss17pjlgg";
 	switch (type){
 		case "Iron":
 			this.uses = 30;
@@ -1535,7 +1550,7 @@ function Potion(type){
 	this.uses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is empty";
-	var roundBottleSprite = "IwNgHqA+AMt/DFOS5x0ddYsdb3qgfvIYmbkhXNThprdvXVeSszkA";
+	var roundBottleSprite = "IwNgHqA+AMt/DFOS5x0ddYAmbXs9gDd9VTZi094qFcdGmc65cMMXF2P2kHmrer2hA===";
 	this.smallSprite = roundBottleSprite;
 	switch (type){
 		case "Regen":
