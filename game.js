@@ -1379,7 +1379,8 @@ function Sword (type) {
 	this.sprite = "slash1";
 	this.attackType = "physical";
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
-	this.smallSprite = "IwNgHqA+AMt/DFOS18BMw20+7v9g9liDUijtpLsss17pjlgg";
+	var simpleSword = "IwNgHqA+AMt/DFOS18BMw20+7v9g9liDUijtpLsss17pjlgg";
+	this.smallSprite = simpleSword;
 	switch (type){
 		case "Iron":
 			this.uses = 30;
@@ -1424,8 +1425,11 @@ function Staff (type) {
 	this.sprite = 'kapow';
 	this.attackType = "physical";
 	this.verbs = ['strike','bludgeon','bash','thwack','smack'];
+	var plainStick = "IwNgHqA+AMt/DFOgJmYlx309uu9UtCC9Ttz1LlqlaNiysg==";
+	var decoStick = "IwNgHqA+AMt/DFOcgTMF9itZ26M91cjs9YzzCryLbpq9HNmVCg==";
 	switch (type){
 		case "Thunder":
+			this.smallSprite = decoStick;
 			this.uses = 25;
 			this.breakVerb = "splits down the middle";
 			this.displayName = "a staff enchanted with electricity";
@@ -1441,6 +1445,7 @@ function Staff (type) {
 			break;
 		case "Wood":
 		default:
+			this.smallSprite = plainStick;
 			this.flammable = true;
 			this.uses = 25;
 			this.breakVerb = "snaps like a twig";
@@ -1463,6 +1468,7 @@ function Claws (type) {
 	this.attackType = "physical";
 	this.targetStat = "HP";
 	this.verbs = ['maul','savage','lacerate','wound','cut'];
+	this.smallSprite = "IwNgHqA+AMt/DFKcATMxaMK/XPgd0VC59tphSLYqb66bGniX7L0g";
 	switch (type){
 		case "Venom":
 			this.uses = 10;
@@ -1500,6 +1506,7 @@ function Hose (type) {
 	this.sprite = 'splat';
 	this.attackType = "physical";
 	this.verbs = ['splash','douse'];
+	this.smallSprite = "IwNgHqA+AMt/DFOQ4wBMLZp8ZvM1F1c9oj5STZrKSMLp7sH7H1Ny0PTECCk/boP6d8HDnCA=";
 	switch (type){
 		case "Fire":
 			this.uses = 15;
@@ -1550,13 +1557,14 @@ function Potion(type){
 	this.uses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is empty";
+	this.shortName = "Potion of ";
 	var roundBottleSprite = "IwNgHqA+AMt/DFOS5x0ddYAmbXs9gDd9VTZi094qFcdGmc65cMMXF2P2kHmrer2hA===";
 	this.smallSprite = roundBottleSprite;
 	switch (type){
 		case "Regen":
 			this.attackType = 'physical';
 			this.color = '#f8d878';
-			this.shortName = "Potion of Regen";
+			this.shortName += "Regen";
 			this.displayName = "a fizzy yellowish potion that smells like chalk";
 			this.buffArr = ['Regenerating',1];
 			this.verbs = ['regenerate'];
@@ -1568,7 +1576,7 @@ function Potion(type){
 		case "Health":
 			this.attackType = 'physical';
 			this.color = '#58f898';
-			this.shortName = "Potion of Health";
+			this.shortName += "Health";
 			this.displayName = "a brilliant green potion, slightly warm to the touch";
 			this.verbs = ['heal'];
 			this.attackVal = function(){
@@ -1586,8 +1594,11 @@ function Vial(type){
 	this.sprite = "poof";
 	this.breakVerb = "is used-up";
 	this.shortName = "Vial of";
+	this.smallSprite = "IwNgHqA+AMt/DHQEyuU+wvY3Yt9cDijpDCjzSz0LdhU6MHkmkW3EPrvTe+KQA===";
 	switch (type){
+		default:
 		case "Steroids":
+			this.displayName = 'a small ampule of dangerous performance-enhancing drugs';
 			this.attackType = 'poison';
 			this.targetStat = 'cha';
 			this.color = '#f83800';
