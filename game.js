@@ -135,6 +135,15 @@ var inventoryCanvases = [
 ]
 
 function Game (){
+	this.interface = {
+		element: document.getElementById('interface'),
+		pause: function(){
+			this.element.classList.add('wait');
+		},
+		unpause: function(){
+			this.element.classList.remove('wait');
+		}
+	};
 	this.log = {
 		element: document.getElementById('gameLog'),
 		add: function(message){
@@ -148,6 +157,7 @@ function Game (){
 		message: document.getElementById('dialog-text'),
 		buttons: document.getElementById('dialog-buttons'),
 		open: function(){
+			currentGame.interface.pause();
 			loadButtons(this.element);
 			this.element.classList.add('active');
 		},
@@ -164,13 +174,15 @@ function Game (){
 			setTimeout(function(){
 				thisDialog.message.innerHTML = "";
 				thisDialog.buttons.innerHTML = "";
-				},1000);
+				currentGame.interface.unpause();
+				},500);
 		}
 	};
 	this.router = function(command){
 		switch (command){
 			case 'closeDialog':
 				this.dialog.close();
+				currentGame.playerHero.offHand = "";
 				break;
 		}
 	};
@@ -226,11 +238,12 @@ function Game (){
 	};
 
 	this.runRound = function(playerChoice){
+		this.dialog.close();
 		intervalRelay = "Player turn";
 		var gameLoop = setInterval(function(){
 			if (intervalRelay === "Player turn"){
 				intervalRelay = "wait";
-				interfaceElement.classList.add("wait");
+				currentGame.interface.pause();
 				if(currentGame.everyoneIsAlive()){
 					currentGame.playerHero.runTurn(playerChoice);
 				} else {
@@ -247,7 +260,7 @@ function Game (){
 			} else if (intervalRelay === "End round"){
 				clearInterval(gameLoop);
 				intervalRelay = "wait";
-				interfaceElement.classList.remove("wait");
+				currentGame.interface.unpause();
 			}
 		},500);
 	};
@@ -538,6 +551,9 @@ Character.prototype.checkEquip = function(turnChoice){
 		case 'activate2':
 			item = this.hand2;
 			break;
+		case 'activateOffhand':
+			item = this.offHand;
+			break;
 		default:
 			intervalRelay = "End turn";
 			return;
@@ -606,19 +622,20 @@ Character.prototype.runAway = function(){
 
 Character.prototype.activateOffhand = function(){
 	this.useItem(this.offHand);
-	this.offHand = "";
 }
 
 Character.prototype.equip1Offhand = function(){
 	this.equip1(this.offHand);
-	currentGame.console.log.add(firstCap(this.selfStr) +' '+ conjugate('equip')+' a '+ this.offHand.shortName.toLowerCase()+'.' );
+	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('equip')+' the '+ this.offHand.shortName.toLowerCase()+'.' );
 	this.offHand = "";
+	setTimeout(function(){intervalRelay = "Check equip";},1000);
 }
 
 Character.prototype.equip2Offhand = function(){
 	this.equip2(this.offHand);
-	currentGame.console.log.add(firstCap(this.selfStr) +' '+ conjugate('equip')+' a '+ this.offHand.shortName.toLowerCase()+'.' );
+	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('equip')+' the '+ this.offHand.shortName.toLowerCase()+'.' );
 	this.offHand = "";
+	setTimeout(function(){intervalRelay = "Check equip";},1000);
 }
 
 Character.prototype.activate1 = function(){
@@ -669,6 +686,16 @@ Character.prototype.runTurn = function(turnChoice){
 		}
 	},250);
 };
+
+Character.prototype.addToInv = function(item){
+	if (this.inventory.length < 8){
+		item.owner = this;
+		this.inventory.push(item);
+		this.updateStatus();
+	} else{
+		console.log('full');
+	}
+}
 
 // A hero is the PlayerCharacter Object
 
@@ -1161,7 +1188,7 @@ Item.prototype.exhaust = function(){
 	}
 	var invIndex = this.owner.inventory.indexOf(this);
 	this.owner.inventory.splice(invIndex,1);
-	this.owner.updateStatus;
+	this.owner.updateStatus();
 	var message = firstCap(this.owner.possesive()) +" "+ this.shortName.toLowerCase() +' is '+ this.breakVerb + " and discarded.";
 	currentGame.log.add(message);
 };
@@ -1204,7 +1231,24 @@ Item.prototype.invDialog = function(){
 	if (this.owner.constructor.name !== "Hero"){
 		return;
 	} 
-	var message = this.shortName + ':<br />' + firstCap(this.displayName);
+	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.';
+	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
+		var hand = (this.owner.hand1 === this)?'right':'left';
+		var newLine = '<br><br> It is at the ready in your '+hand+' hand.'
+		message += newLine;
+	} else{
+		switch (this.itemType){
+		case "Consumable":
+			currentGame.dialog.addButton('Use without equipping','runRound activateOffhand');
+		case "Weapon":
+			var rHandStr = ( this.owner.hand2.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand2.shortName : 'in your left hand.'
+			var lHandStr = ( this.owner.hand1.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand1.shortName : 'in your right hand.'
+			currentGame.dialog.addButton('Equip '+lHandStr,'runRound equip1Offhand');
+			currentGame.dialog.addButton('Equip '+rHandStr,'runRound equip2Offhand');
+			break;
+		}
+	}
+	this.owner.offHand = this;
 	currentGame.dialog.setText(message);
 	currentGame.dialog.addButton('Cancel','router closeDialog');
 	currentGame.dialog.open();
@@ -1476,11 +1520,11 @@ function Potion(type){
 			this.attackType = 'physical';
 			this.color = '#f8d878';
 			this.shortName = "Potion of Regen";
-			this.displayName = "a fizzy green potion that sells like chalk";
+			this.displayName = "a fizzy yellowish potion that smells like chalk";
 			this.buffArr = ['Regenerating',1];
 			this.verbs = ['regenerate'];
 			this.attackVal = function(){
-				return Math.ceil(-1 * (roll('1d10')) * (this.owner.stats.maxHP/100));
+				return (-1 * roll('1d6'));
 			};
 			break;
 		default:
