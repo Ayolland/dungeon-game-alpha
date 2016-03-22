@@ -717,10 +717,11 @@ Character.prototype.die = function(){
 	if(this.constructor.name === 'Hero'){
 		currentGame.interface.pause();
 		setTimeout(function(){
-			currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters before perishing.');
+			currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters and found '+currentGame.playerHero.gold+' gold before perishing.');
 		},2000);
 	} else {
 		currentGame.playerHero.kills ++;
+		this.loot();
 		if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
 			setTimeout(currentGame.switchLocation, 2000);
 		} else {
@@ -781,8 +782,9 @@ Hero.prototype.debug = function(){
 	this.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
 	currentGame.currentMonster.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
 	this.wiggle('hit', 250);
+	var heroDamage = this.stats.HP - 10;
 	setTimeout(function(){
-		currentGame.playerHero.smite(12);
+		currentGame.playerHero.smite(heroDamage);
 		currentGame.currentMonster.smite(12);
 		intervalRelay = "End turn";
 	},1000);
@@ -812,10 +814,11 @@ Hero.prototype.dodge = function(){
 Hero.prototype.initialize = function(){
 	this.effectController = new Effect();
 	this.effectController.link(this);
-	this.inventory.push(new Sword());
-	this.inventory.push(new Potion('Health'));
+	this.addToInv(new Sword());
+	this.addToInv(new Potion('Health'));
 	this.equip1(this.inventory[0]);
 	this.equip2(this.inventory[1]);
+	this.gold = 0;
 	this.draw(this.canvas,this.spriteCompressed);
 	this.updateStatus();
 };
@@ -851,6 +854,7 @@ function Monster(){
 		name: document.getElementById('monster-name')
 	};
 	this.buffs = [];
+	this.inventory = [];
 }
 Monster.prototype = new Character ();
 Monster.prototype.constructor = Monster;
@@ -905,6 +909,7 @@ Monster.prototype.appear = function(){
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
 	this.stats.HP = this.stats.maxHP;
+	this.gold = roll('1d20');
 	this.updateStatus();
 };
 
@@ -924,6 +929,22 @@ Monster.prototype.dodge = function(){
 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
 	intervalRelay = "End turn";
 };
+
+Monster.prototype.loot = function(){
+	var gotItem = (rollHits('1d4',4)>0);
+	var message = "You found "
+	var lootedItem = randomEntry(this.inventory);
+	var thisMonster = this;
+	message += (!gotItem)? this.gold + " gold!" : "a "+lootedItem.shortName+"!";
+	setTimeout(function(){
+		currentGame.log.add(message);
+		if (gotItem){
+			currentGame.playerHero.receive(lootedItem);
+		} else {
+			currentGame.playerHero.gold += thisMonster.gold;
+		}
+	},1000);
+}
 
 // Types of Monsters
 
@@ -1606,7 +1627,7 @@ function Vial(type){
 			this.buffArr = ["Juiced",1];
 			this.verbs = ['inject'];
 			this.attackVal = function(){
-				return roll('1d3');
+				return roll('1d5');
 			};
 			break;
 	}
