@@ -37,17 +37,37 @@
 					<a class="button action" id="wait" click-data="runRound debug">Debug</a>
 					<a class="button action" id="run" click-data="runRound runAway">Run Away</a>
 				</div>
-<!-- 				<div id ="inventory">
-					<a class="button inventory" id="inv1" click-data=""></a>
-					<a class="button inventory" id="inv1" click-data=""></a>
-					<a class="button inventory" id="inv1" click-data=""></a>
-					<a class="button inventory" id="inv1" click-data=""></a>
-					<a class="button inventory" id="inv1" click-data=""></a>
-					<a class="button inventory" id="inv1" click-data=""></a>
-					<a class="button inventory" id="inv1" click-data=""></a>
-					<a class="button inventory" id="inv1" click-data=""></a>
-				</div> -->
+				<div id ="inventory">
+					<a class="button inventory" id="invButton1" click-data="inventoryRouter 1">
+						<canvas id="invSprite1" class="inv-sprite" width="16" height="16">
+					</a>
+					<a class="button inventory" id="invButton2" click-data="inventoryRouter 2">
+						<canvas id="invSprite2" class="inv-sprite" width="16" height="16">
+					</a>
+					<a class="button inventory" id="invButton3" click-data="inventoryRouter 3">
+						<canvas id="invSprite3" class="inv-sprite" width="16" height="16">
+					</a>
+					<a class="button inventory" id="invButton4" click-data="inventoryRouter 4">
+						<canvas id="invSprite4" class="inv-sprite" width="16" height="16">
+					</a>
+					<a class="button inventory" id="invButton5" click-data="inventoryRouter 5">
+						<canvas id="invSprite5" class="inv-sprite" width="16" height="16">
+					</a>
+					<a class="button inventory" id="invButton6" click-data="inventoryRouter 6">
+						<canvas id="invSprite6" class="inv-sprite" width="16" height="16">
+					</a>
+					<a class="button inventory" id="invButton7" click-data="inventoryRouter 7">
+						<canvas id="invSprite7" class="inv-sprite" width="16" height="16">
+					</a>
+					<a class="button inventory" id="invButton8" click-data="inventoryRouter 8">
+						<canvas id="invSprite8" class="inv-sprite" width="16" height="16">
+					</a>
+				</div>
 			</section><!-- /#interface-->
+			<section id="dialog">
+				<p id="dialog-text"></p>
+				<div id="dialog-buttons"></div>
+			</section>
 		</div><!-- /.wrapper -->
 		<script src="lz-string.min.js"></script>
 		<script src="game.js"></script>

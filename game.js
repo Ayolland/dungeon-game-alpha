@@ -122,12 +122,56 @@ var intervalRelay = "";
 var currentGame = new Game();
 var interfaceElement = document.getElementById('interface');
 
+var inventoryCanvases = [
+	document.getElementById('invSprite1').getContext('2d'),
+	document.getElementById('invSprite2').getContext('2d'),
+	document.getElementById('invSprite3').getContext('2d'),
+	document.getElementById('invSprite4').getContext('2d'),
+	document.getElementById('invSprite5').getContext('2d'),
+	document.getElementById('invSprite6').getContext('2d'),
+	document.getElementById('invSprite7').getContext('2d'),
+	document.getElementById('invSprite8').getContext('2d')
+
+]
+
 function Game (){
 	this.log = {
 		element: document.getElementById('gameLog'),
 		add: function(message){
 			this.element.innerHTML += ('<p>'+ message + '</p>');
 			this.element.scrollTop = this.element.scrollHeight;
+		}
+	};
+
+	this.dialog = {
+		element: document.getElementById('dialog'),
+		message: document.getElementById('dialog-text'),
+		buttons: document.getElementById('dialog-buttons'),
+		open: function(){
+			loadButtons(this.element);
+			this.element.classList.add('active');
+		},
+		setText: function(message){
+			this.message.innerHTML = message;
+		},
+		addButton: function(text,clickData){
+			var buttonStr = "<a class='button dialog' click-data='"+clickData+"'>"+text+"</a>"
+			this.buttons.innerHTML += buttonStr;
+		},
+		close: function(){
+			this.element.classList.remove('active');
+			var thisDialog = this;
+			setTimeout(function(){
+				thisDialog.message.innerHTML = "";
+				thisDialog.buttons.innerHTML = "";
+				},1000);
+		}
+	};
+	this.router = function(command){
+		switch (command){
+			case 'closeDialog':
+				this.dialog.close();
+				break;
 		}
 	};
 
@@ -208,6 +252,13 @@ function Game (){
 		},500);
 	};
 
+	this.inventoryRouter = function(number){
+		var item = this.playerHero.inventory[number - 1];
+		if (typeof(item) !== 'undefined'){
+			item.invDialog();
+		}
+	}
+
 }
 
 // A Displayable is an object with an associated canvas for drawing sprites
@@ -274,6 +325,7 @@ Location.prototype.constructor = Location;
 function Character (){
 	this.buffs = [];
 	this.resists = {};
+	this.inventory = [];
 }
 
 Character.prototype = new Displayable ();
@@ -289,6 +341,9 @@ Character.prototype.updateStatus = function(){
 	var percentage = Math.floor((this.stats.HP / this.stats.maxHP)*100);
 	this.displayElement.hpBar.style.width = percentage + "%";
 	this.displayElement.hpBar.className = "hp-bar hp-" + (Math.round(percentage / 10)*10);
+	if (this.constructor.name === "Hero"){
+		this.drawInventory();
+	}
 	if (this.stats.HP === 0){
 		this.die();
 	}
@@ -548,13 +603,23 @@ Character.prototype.runAway = function(){
 	}
 };
 
-Character.prototype.useHand1 = function(){
-	if (this.hand1){
-		return this.hand1.attackObj();
-	} else {
-		return this.punch();
-	}
-};
+
+Character.prototype.activateOffhand = function(){
+	this.useItem(this.offHand);
+	this.offHand = "";
+}
+
+Character.prototype.equip1Offhand = function(){
+	this.equip1(this.offHand);
+	currentGame.console.log.add(firstCap(this.selfStr) +' '+ conjugate('equip')+' a '+ this.offHand.shortName.toLowerCase()+'.' );
+	this.offHand = "";
+}
+
+Character.prototype.equip2Offhand = function(){
+	this.equip2(this.offHand);
+	currentGame.console.log.add(firstCap(this.selfStr) +' '+ conjugate('equip')+' a '+ this.offHand.shortName.toLowerCase()+'.' );
+	this.offHand = "";
+}
 
 Character.prototype.activate1 = function(){
 	if (typeof(this.hand1) === 'undefined' ){
@@ -636,6 +701,18 @@ function Hero(name){
 Hero.prototype = new Character ();
 Hero.prototype.constructor = Hero;
 
+Hero.prototype.drawInventory = function(){
+	for (var v = 7; v > 0; v--) {
+		inventoryCanvases[v].clearRect(0,0,16,16)
+	}
+	for (var x = this.inventory.length - 1; x >= 0; x--) {
+		var canvas = inventoryCanvases[x];
+		var sprite = this.inventory[x].smallSprite;
+		this.inventory[x].draw(canvas,sprite);
+
+	}
+}
+
 Hero.prototype.debug = function(){
 	// put some stuff you need to test here;
 	this.equip2(new Sword('Flame'));
@@ -683,8 +760,10 @@ Hero.prototype.die = function(){
 Hero.prototype.initialize = function(){
 	this.effectController = new Effect();
 	this.effectController.link(this);
-	this.equip1(new Sword());
-	this.equip2(new Potion('Health'));
+	this.inventory.push(new Sword());
+	this.inventory.push(new Potion('Health'));
+	this.equip1(this.inventory[0]);
+	this.equip2(this.inventory[1]);
 	this.draw(this.canvas,this.spriteCompressed);
 	this.updateStatus();
 };
@@ -1080,6 +1159,9 @@ Item.prototype.exhaust = function(){
 	} else if (this.owner.hand2 === this){
 		this.owner.equip2( new Punch() );
 	}
+	var invIndex = this.owner.inventory.indexOf(this);
+	this.owner.inventory.splice(invIndex,1);
+	this.owner.updateStatus;
 	var message = firstCap(this.owner.possesive()) +" "+ this.shortName.toLowerCase() +' is '+ this.breakVerb + " and discarded.";
 	currentGame.log.add(message);
 };
@@ -1117,6 +1199,16 @@ Item.prototype.attackObj = function(){
 	}
 	return attck;
 };
+
+Item.prototype.invDialog = function(){
+	if (this.owner.constructor.name !== "Hero"){
+		return;
+	} 
+	var message = this.shortName + ':<br />' + firstCap(this.displayName);
+	currentGame.dialog.setText(message);
+	currentGame.dialog.addButton('Cancel','router closeDialog');
+	currentGame.dialog.open();
+}
 
 function Buff(type,owner){
 	this.selfTargeted = true;
@@ -1206,6 +1298,7 @@ function Sword (type) {
 	this.sprite = "slash1";
 	this.attackType = "physical";
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
+	this.smallSprite = "IwNgHqA+AMt/DFOS1Dhrhz1ub2gchkSqcbvjrkA=";
 	switch (type){
 		case "Iron":
 			this.uses = 30;
@@ -1376,24 +1469,29 @@ function Potion(type){
 	this.uses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is empty";
+	var roundBottleSprite = "IwNgHqA+AMt/DFOS5x0ddYsdb3qgfvIYmbkhXNThprdvXVeSszkA";
+	this.smallSprite = roundBottleSprite;
 	switch (type){
-		case "Health":
-			this.attackType = 'physical';
-			this.color = '#58f898';
-			this.shortName = "Potion of Health";
-			this.verbs = ['heal'];
-			this.attackVal = function(){
-				return this.owner.stats.maxHP * -1;
-			};
-			break;
 		case "Regen":
 			this.attackType = 'physical';
 			this.color = '#f8d878';
 			this.shortName = "Potion of Regen";
+			this.displayName = "a fizzy green potion that sells like chalk";
 			this.buffArr = ['Regenerating',1];
 			this.verbs = ['regenerate'];
 			this.attackVal = function(){
 				return Math.ceil(-1 * (roll('1d10')) * (this.owner.stats.maxHP/100));
+			};
+			break;
+		default:
+		case "Health":
+			this.attackType = 'physical';
+			this.color = '#58f898';
+			this.shortName = "Potion of Health";
+			this.displayName = "a brilliant green potion, slightly warm to the touch";
+			this.verbs = ['heal'];
+			this.attackVal = function(){
+				return this.owner.stats.maxHP * -1;
 			};
 			break;
 	}
@@ -1471,8 +1569,8 @@ Effect.prototype.clear = function(){
 
 // event Listeners
 
-function loadButtons(){
-	var buttons = document.getElementsByClassName("button");
+function loadButtons(targetElement){
+	var buttons = targetElement.querySelectorAll(".button");
 	for (var i=0; i < buttons.length; i+=1){
 		buttons[i].addEventListener("click",(function(temp){
 			return function(){
@@ -1483,6 +1581,6 @@ function loadButtons(){
 	}
 }
 
-loadButtons();
+loadButtons(document);
 
 currentGame.initialize();

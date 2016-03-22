@@ -25,16 +25,15 @@ body{
 .wrapper{
   width: $small-width;
   margin: 0 auto;
+  position: relative;
+  overflow: hidden;
 }
 
 .button{
   display: inline-block;
   position: relative;
-  font-size: 1.25em;
-  width: 47.5%;
   border: 1px solid white;
-  padding: 0.25em 0 0.4em 0;
-  margin: 0.125em 0;
+  font-size: 1.25em;
 
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -42,6 +41,29 @@ body{
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+
+  &.action{
+    width: 47.5%;
+    padding: 0.25em 0 0.4em 0;
+    margin: 0.125em 0;
+  }
+
+  &.inventory{
+    width: 32px;
+    height: 32px;
+    border-color: gray;
+    canvas{
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &.dialog{
+    width: 100%;
+    text-align: center;
+    padding: 0.25em 0;
+    margin-top: .5em;
+  }
 
   &:active{
     color: black;
@@ -104,6 +126,10 @@ section#interface{
     }
   }
 
+  #inventory {
+    margin: 5px 0;
+  }
+
   &.wait{
     &::before{
       content: "";
@@ -132,8 +158,34 @@ section#interface{
       }
     }
   }
-  
+
 }
+
+#dialog{
+  position: absolute;
+  width: calc(100% - 2px - 2em);
+  height: calc(100% - 2px - 2em);
+  top: -105%;
+  background: black;
+  border: 1px solid white;
+  transition: top 0.5s;
+  padding: 1em;
+
+  &.active{
+    top: 0;
+  }
+}
+  #dialog-text{
+    margin: 0;
+  }
+
+  #dialog-buttons{
+    position: absolute;
+    width: calc(100% - 2em);
+    bottom: 0;
+    padding: 1em;
+    left: 0;
+  }
 
 
 @import 'partials/monsters';
