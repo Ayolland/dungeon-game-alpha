@@ -931,7 +931,7 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var gotItem = (rollHits('1d4',4)>0);
+	var gotItem = (rollHits('1d5',5)>0);
 	var message = "You found "
 	var lootedItem = randomEntry(this.inventory);
 	var thisMonster = this;
