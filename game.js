@@ -131,8 +131,7 @@ var inventoryCanvases = [
 	document.getElementById('invSprite6').getContext('2d'),
 	document.getElementById('invSprite7').getContext('2d'),
 	document.getElementById('invSprite8').getContext('2d')
-
-]
+];
 
 function Game (){
 	this.interface = {
@@ -165,7 +164,7 @@ function Game (){
 			this.message.innerHTML = message;
 		},
 		addButton: function(text,clickData){
-			var buttonStr = "<a class='button dialog' click-data='"+clickData+"'>"+text+"</a>"
+			var buttonStr = "<a class='button dialog' click-data='"+clickData+"'>"+text+"</a>";
 			this.buttons.innerHTML += buttonStr;
 		},
 		close: function(){
@@ -179,9 +178,13 @@ function Game (){
 		}
 	};
 	this.router = function(command){
+		this.dialog.close();
 		switch (command){
+			case 'takeFoundItem':
+				this.playerHero.addToInv(this.foundItem);
+				break;
 			case 'closeDialog':
-				this.dialog.close();
+			default:
 				currentGame.playerHero.offHand = "";
 				break;
 		}
@@ -270,7 +273,7 @@ function Game (){
 		if (typeof(item) !== 'undefined'){
 			item.invDialog();
 		}
-	}
+	};
 
 }
 
@@ -601,21 +604,21 @@ Character.prototype.runAway = function(){
 
 Character.prototype.activateOffhand = function(){
 	this.useItem(this.offHand);
-}
+};
 
 Character.prototype.equip1Offhand = function(){
 	this.equip1(this.offHand);
 	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('equip')+' the '+ this.offHand.shortName.toLowerCase()+'.' );
 	this.offHand = "";
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
-}
+};
 
 Character.prototype.equip2Offhand = function(){
 	this.equip2(this.offHand);
 	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('equip')+' the '+ this.offHand.shortName.toLowerCase()+'.' );
 	this.offHand = "";
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
-}
+};
 
 Character.prototype.activate1 = function(){
 	if (typeof(this.hand1) === 'undefined' ){
@@ -671,26 +674,30 @@ Character.prototype.addToInv = function(item){
 		item.owner = this;
 		this.inventory.push(item);
 		this.updateStatus();
-	} else{
-		console.log('full');
+	} else if (this.constructor.name === "Hero"){
+		var thisCharacter = this;
+		setTimeout(function(){
+			thisCharacter.inventoryFull(item);
+		},600)
 	}
-}
+};
 
 Character.prototype.die = function(){
 	intervalRelay = "End round";
 	this.addClass('dead');
+	var message = "";
 	switch (this.lastHitBy.itemType){
 		case 'Consumable':
-			var message = this.selfStr() + " died of self-inflicted wounds.";
+			message = this.selfStr() + " died of self-inflicted wounds.";
 			break;
 		case 'Buff':
-			var message = this.selfStr() + " died " + this.lastHitBy.killStr + '.';
+			message = this.selfStr() + " died " + this.lastHitBy.killStr + '.';
 			break;
 		case 'Weapon':
 			if(this.constructor.name === 'Hero'){
-				var message = 'You were slain by the ' + this.getEnemy().shortName + '.';
+				message = 'You were slain by the ' + this.getEnemy().shortName + '.';
 			} else {
-				var message = 'You slayed the ' + this.shortName + '.';
+				message = 'You slayed the ' + this.shortName + '.';
 			}
 			break;
 	}
@@ -743,7 +750,7 @@ Hero.prototype.constructor = Hero;
 
 Hero.prototype.drawInventory = function(){
 	for (var v = 7; v > 0; v--) {
-		inventoryCanvases[v].clearRect(0,0,16,16)
+		inventoryCanvases[v].clearRect(0,0,16,16);
 	}
 	for (var x = this.inventory.length - 1; x >= 0; x--) {
 		var canvas = inventoryCanvases[x];
@@ -751,7 +758,7 @@ Hero.prototype.drawInventory = function(){
 		this.inventory[x].draw(canvas,sprite);
 
 	}
-}
+};
 
 Hero.prototype.debug = function(){
 	// put some stuff you need to test here;
@@ -801,6 +808,25 @@ Hero.prototype.initialize = function(){
 	this.updateStatus();
 };
 
+Hero.prototype.receive = function(item){
+	currentGame.foundItem = item;
+	var message = "You find a " + item.shortName + "!";
+	currentGame.dialog.addButton("Take the " + item.shortName, "router takeFoundItem");
+	currentGame.dialog.addButton("Leave it", "router closeDialog");
+	currentGame.dialog.setText(message);
+	currentGame.dialog.open();
+};
+
+Hero.prototype.inventoryFull = function(item){
+	var message = "You don't have room in your knapsack for the "+ item.shortName + "!<br> Would you like to drop something?"
+	for (var q = 0; q <= this.inventory.length - 1; q++) {
+		currentGame.dialog.addButton("Drop your "+ this.inventory[q].shortName, "dropItem " + q);
+	}
+	currentGame.dialog.addButton("Leave the "+ item.shortName +" behind", "router closeDialog");
+	currentGame.dialog.setText(message);
+	currentGame.dialog.open();
+}
+
 // A Monster is an enemy the PlayerCharacter fights one at a time
 
 function Monster(){
@@ -828,21 +854,17 @@ Monster.prototype.ai = function(){
 	switch(this.aiType){
 		case "simple":
 			return 'activate1';
-			break;
 		case "random":
 			return (Math.random() > 0.5)? 'activate1' : 'activate2';
-			break;
 		case "switch":
 			if (typeof(this.switchTrigger) === 'undefined'){
 				this.switchTrigger = Math.round(this.maxHP / 2);
 			}
 			return ( this.stats.HP >= this.switchTrigger )? 'activate1' : 'activate2';
-			break;
 		case "buffer":
 			return ( this.hand1.constructor.name !== 'Punch') ? 'activate1' : 'activate2';
-			break;
 	}
-}
+};
 
 Monster.prototype.announce = function(){
 	var article = "";
@@ -863,30 +885,16 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.announce();
-	if (this.hand1){
-		this.equip1(this.hand1);
-	}
-	if (this.hand2){
-		this.equip2(this.hand2);
-	}
+	var grab1 = (this.inventory[0])? this.inventory[0] : new Punch();
+	var grab2 = (this.inventory[1])? this.inventory[1] : new Punch();
+	this.equip1(grab1);
+	this.equip2(grab2);
 	this.effectController = new Effect();
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
 	this.stats.HP = this.stats.maxHP;
 	this.updateStatus();
 };
-
-// Monster.prototype.die = function(){
-// 	intervalRelay = "End round";
-// 	this.addClass('dead');
-// 	currentGame.log.add('You slayed the ' + this.shortName + '.');
-// 	currentGame.playerHero.kills ++;
-// 	if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
-// 		setTimeout(currentGame.switchLocation, 2000);
-// 	} else {
-// 		setTimeout(currentGame.switchMonster, 2000);
-// 	}
-// };
 
 Monster.prototype.calcDodge = function(){
 	var possibilities = [];
@@ -920,8 +928,8 @@ function Axedude (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3wdqNQh1I8qY8UVlScnaelVr1GzVu07VAviX3jJUscEpFpDRXmb5hzK3RPyTsoe6FOjxkfZXGNrbyaGbKTEA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
-	this.hand2 = new Sword('Iron');
-	this.hand1 = new Vial('Steroids');
+	this.addToInv(new Sword('Iron'));
+	this.addToInv(new Vial('Steroids'));
 	this.aiType = 'buffer';
 }
 Axedude.prototype = new Monster();
@@ -955,7 +963,7 @@ function Ball (type) {
 			this.displayName = "floating orb of fire";
 			this.shortName = "Fireball";
 			this.color = "#f83800";
-			this.hand1 = new Hose('Fire');
+			this.addToInv(new Hose('Fire'));
 			break;
 	}
 }
@@ -975,7 +983,7 @@ function Scamp (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
 	this.displayName = "Scamp";
 	this.color = '#b8f818';
-	this.hand2 = new Potion('Regen');
+	this.addToInv(new Potion('Regen'));
 	this.aiType = 'random';
 }
 Scamp.prototype = new Monster();
@@ -1003,7 +1011,7 @@ function Skele (type) {
 			this.stats.phys = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
-			this.hand1 = new Sword();
+			this.addToInv(new Sword());
 			break;
 		case "Archer":
 			this.stats.agi = 10;
@@ -1018,7 +1026,7 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Monk";
-			this.hand1 = new Staff();
+			this.addToInv(new Staff());
 			break;
 		case "Bruiser":
 			this.stats.maxHP = 18;
@@ -1027,14 +1035,14 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
-			this.hand1 = new Sword('Iron');
+			this.addToInv(new Sword('Iron'));
 			break;
 		case "Flaming":
 			this.stats.maxHP = 20;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GYBMe+CwxxW+55xpNld1uGh9yZVqmuH2XBdASoC+LMuz6kx0qXKGDJEpctlr1GzVvaj+unMhLTWR6hVPoKTfuZr0W+iVguDx+3aJEiF4+Qb/cikqOciECjuFAA";
 			this.displayName = "Skelebones who is on fire";
 			this.shortName = "Flaming Skelebones";
-			this.buffs.push("Aflame");
+			this.addBuff("Aflame");
 			this.color = "#ff5000";
 			break;
 		case "Bones":
@@ -1075,7 +1083,7 @@ function Snek (type) {
 			break;
 		case 'Small':
 		default:
-			this.hand1 = new Claws('Venom');
+			this.addToInv(new Claws('Venom'));
 			this.spriteCompressed = smallSprite;
 			this.displayName = "Snek";
 			break;
@@ -1095,7 +1103,7 @@ function Jelly (type) {
 		maxHP: 20
 	};
 	this.resists = { fire: 1.25 };
-	this.hand1 = new Hose('Acid');
+	this.addToInv(new Hose('Acid'));
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
 	this.displayName = "quivering, gelatinous cube";
 	this.shortName = "Box Jelly";
@@ -1125,7 +1133,7 @@ function Were (type) {
 			this.spriteCompressed = wolfSprite;
 			this.displayName = "Werewolf";
 			this.color = "#ac7c00";
-			this.hand1 = new Claws();
+			this.addToInv(new Claws());
 			break;
 		case "Goat":
 			this.stats.maxHP = 22;
@@ -1160,8 +1168,8 @@ function Mage (type) {
 		magi: 2,
 		maxHP: 12
 	};
-	this.hand1 = new Staff('Thunder');
-	this.hand2 = new Potion('Health');
+	this.addToInv(new Staff('Thunder'));
+	this.addToInv(new Potion('Health'));
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HgeV7dgEF75K4oEBMuwV5hRJd9WZiLzjpCh3DbCFQfy7da3NJQatSVMdLY0e8/MxapVPHBr7Fde/QcNGJe5UymY2YrdeWrx5peRUacvMvNyCKw4Yo/q/r4yisEKVBZaHJwK9tLafEA==";
 	this.displayName = "Wiz";
 	this.color = '#0058f8';
@@ -1241,15 +1249,15 @@ Item.prototype.invDialog = function(){
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.';
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand = (this.owner.hand1 === this)?'right':'left';
-		var newLine = '<br><br> It is at the ready in your '+hand+' hand.'
+		var newLine = '<br><br> It is at the ready in your '+hand+' hand.';
 		message += newLine;
 	} else{
 		switch (this.itemType){
 		case "Consumable":
 			currentGame.dialog.addButton('Use without equipping','runRound activateOffhand');
 		case "Weapon":
-			var rHandStr = ( this.owner.hand2.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand2.shortName : 'in your left hand.'
-			var lHandStr = ( this.owner.hand1.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand1.shortName : 'in your right hand.'
+			var rHandStr = ( this.owner.hand2.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand2.shortName : 'in your left hand.';
+			var lHandStr = ( this.owner.hand1.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand1.shortName : 'in your right hand.';
 			currentGame.dialog.addButton('Equip '+lHandStr,'runRound equip1Offhand');
 			currentGame.dialog.addButton('Equip '+rHandStr,'runRound equip2Offhand');
 			break;
@@ -1259,7 +1267,7 @@ Item.prototype.invDialog = function(){
 	currentGame.dialog.setText(message);
 	currentGame.dialog.addButton('Cancel','router closeDialog');
 	currentGame.dialog.open();
-}
+};
 
 function Buff(type,owner){
 	this.selfTargeted = true;
@@ -1271,7 +1279,7 @@ function Buff(type,owner){
  	this.owner = owner;
  	this.buffArr = [];
  	this.killStr = "from inexplicable causes";
- 	this.attackVal = function(){ return 0 };
+ 	this.attackVal = function(){ return 0; };
 	switch (type){
 		case 'Smite':
 			this.killStr = "by the hand of the divine";
@@ -1562,7 +1570,7 @@ function Vial(type){
 	this.uses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is used-up";
-	this.shortName = "Vial of"
+	this.shortName = "Vial of";
 	switch (type){
 		case "Steroids":
 			this.attackType = 'poison';
@@ -1573,7 +1581,7 @@ function Vial(type){
 			this.verbs = ['inject'];
 			this.attackVal = function(){
 				return roll('1d3');
-			}
+			};
 			break;
 	}
 }
