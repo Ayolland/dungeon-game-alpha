@@ -782,7 +782,7 @@ Hero.prototype.debug = function(){
 	this.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
 	currentGame.currentMonster.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
 	this.wiggle('hit', 250);
-	var heroDamage = this.stats.HP - 10;
+	var heroDamage = (this.stats.HP < 10 )? 10 : this.stats.HP - 10;
 	setTimeout(function(){
 		currentGame.playerHero.smite(heroDamage);
 		currentGame.currentMonster.smite(12);
