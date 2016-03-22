@@ -719,7 +719,7 @@ Character.prototype.die = function(){
 		setTimeout(function(){
 			currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters and found '+currentGame.playerHero.gold+' gold before perishing.');
 		},2000);
-	} else {
+	} else if (currentGame.playerHero.stats.HP > 0) {
 		currentGame.playerHero.kills ++;
 		this.loot();
 		if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
