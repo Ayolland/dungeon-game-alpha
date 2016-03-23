@@ -931,14 +931,14 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var gotItem = (rollHits('1d5',5)>0);
+	var gotItem = (rollHits('1d1',1)>0);
 	var message = "You found "
-	var lootedItem = randomEntry(this.inventory);
+	var lootedItem = (this.inventory.length > 0) ? randomEntry(this.inventory) : false;
 	var thisMonster = this;
-	message += (!gotItem)? this.gold + " gold!" : "a "+lootedItem.shortName+"!";
+	message += (gotItem&&lootedItem)? "a "+lootedItem.shortName+"!" : this.gold + " gold!";
 	setTimeout(function(){
 		currentGame.log.add(message);
-		if (gotItem){
+		if (gotItem&&lootedItem){
 			currentGame.playerHero.receive(lootedItem);
 		} else {
 			currentGame.playerHero.gold += thisMonster.gold;
@@ -949,6 +949,7 @@ Monster.prototype.loot = function(){
 // Types of Monsters
 
 function Axedude (type) {
+	this.inventory = [];
 	this.stats = {
 		str: 10,
 		agi: 5,
@@ -969,6 +970,7 @@ Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
 
 function Ball (type) {
+	this.inventory = [];
 	this.stats = {
 		str: 7,
 		agi: 7,
@@ -1004,6 +1006,7 @@ Ball.prototype = new Monster();
 Ball.prototype.constructor = Ball;
 
 function Scamp (type) {
+	this.inventory = [];
 	this.stats = {
 		str: 2,
 		agi: 12,
@@ -1023,6 +1026,7 @@ Scamp.prototype = new Monster();
 Scamp.prototype.constructor = Scamp;
 
 function Skele (type) {
+	this.inventory = [];
 	this.stats = {
 		str: 6,
 		agi: 6,
@@ -1088,6 +1092,7 @@ Skele.prototype = new Monster();
 Skele.prototype.constructor = Skele;
 
 function Snek (type) {
+	this.inventory = [];
 	var smallSprite = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
 	var bigSprite = "IwNgHgLAHAPgDAxTktW9HNOD4HcHrABMpxuqBFeKJZ5RVmdD+hzpNzJXyvFtWjkGIqAuMLFMEU6VnkLFS5StVqhwxnNr1x2MRMr1WlbUc7c9aOr0YnRGyo776DMvLPGeBQA=";
 	this.stats = {
@@ -1126,6 +1131,7 @@ Snek.prototype = new Monster();
 Snek.prototype.constructor = Snek;
 
 function Jelly (type) {
+	this.inventory = [];
 	this.stats = {
 		str: 7,
 		agi: 10,
@@ -1147,6 +1153,7 @@ Jelly.prototype.constructor = Jelly;
 
 
 function Were (type) {
+	this.inventory = [];
 	this.stats = {
 		str: 12,
 		agi: 7,
@@ -1192,6 +1199,7 @@ Were.prototype = new Monster();
 Were.prototype.constructor = Were;
 
 function Mage (type) {
+	this.inventory = [];
 	this.stats = {
 		str: 5,
 		agi: 8,
