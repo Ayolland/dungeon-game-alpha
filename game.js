@@ -912,6 +912,7 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.announce();
+	this.buffs = [];
 	this.inventory = [];
 	if( typeof(this.item1) !== "undefined"){
 		this.addToInv(this.item1);
@@ -1103,7 +1104,6 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxdhNW4KVqRj3GYBMe+CwxxW+55xpNld1uGh9yZVqmuH2XBdASoC+LMuz6kx0qXKGDJEpctlr1GzVvaj+unMhLTWR6hVPoKTfuZr0W+iVguDx+3aJEiF4+Qb/cikqOciECjuFAA";
 			this.displayName = "Skelebones who is on fire";
 			this.shortName = "Flaming Skelebones";
-			this.addBuff("Aflame");
 			this.color = "#ff5000";
 			break;
 		case "Bones":
