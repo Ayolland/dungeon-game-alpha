@@ -901,6 +901,13 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.announce();
+	this.inventory = [];
+	if( typeof(this.item1) !== "undefined"){
+		this.addToInv(this.item1);
+	}
+	if( typeof(this.item2) !== "undefined"){
+		this.addToInv(this.item2);
+	}
 	var grab1 = (this.inventory[0])? this.inventory[0] : new Punch();
 	var grab2 = (this.inventory[1])? this.inventory[1] : new Punch();
 	this.equip1(grab1);
@@ -949,7 +956,6 @@ Monster.prototype.loot = function(){
 // Types of Monsters
 
 function Axedude (type) {
-	this.inventory = [];
 	this.stats = {
 		str: 10,
 		agi: 5,
@@ -962,15 +968,14 @@ function Axedude (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3wdqNQh1I8qY8UVlScnaelVr1GzVu07VAviX3jJUscEpFpDRXmb5hzK3RPyTsoe6FOjxkfZXGNrbyaGbKTEA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
-	this.addToInv(new Sword('Iron'));
-	this.addToInv(new Vial('Steroids'));
+	this.item1 = (new Sword('Iron'));
+	this.item2 = (new Vial('Steroids'));
 	this.aiType = 'buffer';
 }
 Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
 
 function Ball (type) {
-	this.inventory = [];
 	this.stats = {
 		str: 7,
 		agi: 7,
@@ -998,7 +1003,7 @@ function Ball (type) {
 			this.displayName = "floating orb of fire";
 			this.shortName = "Fireball";
 			this.color = "#f83800";
-			this.addToInv(new Hose('Fire'));
+			this.item1 = (new Hose('Fire'));
 			break;
 	}
 }
@@ -1006,7 +1011,6 @@ Ball.prototype = new Monster();
 Ball.prototype.constructor = Ball;
 
 function Scamp (type) {
-	this.inventory = [];
 	this.stats = {
 		str: 2,
 		agi: 12,
@@ -1019,14 +1023,13 @@ function Scamp (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNbcY2G7a6EbHFYmll47WVI1kHpNWu170qU2q/P5BQ4SNFjxEyVypFybOTMx0WdfokZy1ydhwV9C0hry3rtk8xcuIgA=";
 	this.displayName = "Scamp";
 	this.color = '#b8f818';
-	this.addToInv(new Potion('Regen'));
+	this.item1 = (new Potion('Regen'));
 	this.aiType = 'random';
 }
 Scamp.prototype = new Monster();
 Scamp.prototype.constructor = Scamp;
 
 function Skele (type) {
-	this.inventory = [];
 	this.stats = {
 		str: 6,
 		agi: 6,
@@ -1048,7 +1051,7 @@ function Skele (type) {
 			this.stats.phys = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
-			this.addToInv(new Sword());
+			this.item1 = (new Sword());
 			break;
 		case "Archer":
 			this.stats.agi = 10;
@@ -1063,7 +1066,7 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Monk";
-			this.addToInv(new Staff());
+			this.item1 = (new Staff());
 			break;
 		case "Bruiser":
 			this.stats.maxHP = 18;
@@ -1072,7 +1075,7 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
-			this.addToInv(new Sword('Iron'));
+			this.item1 = (new Sword('Iron'));
 			break;
 		case "Flaming":
 			this.stats.maxHP = 20;
@@ -1092,7 +1095,6 @@ Skele.prototype = new Monster();
 Skele.prototype.constructor = Skele;
 
 function Snek (type) {
-	this.inventory = [];
 	var smallSprite = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
 	var bigSprite = "IwNgHgLAHAPgDAxTktW9HNOD4HcHrABMpxuqBFeKJZ5RVmdD+hzpNzJXyvFtWjkGIqAuMLFMEU6VnkLFS5StVqhwxnNr1x2MRMr1WlbUc7c9aOr0YnRGyo776DMvLPGeBQA=";
 	this.stats = {
@@ -1121,7 +1123,7 @@ function Snek (type) {
 			break;
 		case 'Small':
 		default:
-			this.addToInv(new Claws('Venom'));
+			this.item1 = (new Claws('Venom'));
 			this.spriteCompressed = smallSprite;
 			this.displayName = "Snek";
 			break;
@@ -1131,7 +1133,6 @@ Snek.prototype = new Monster();
 Snek.prototype.constructor = Snek;
 
 function Jelly (type) {
-	this.inventory = [];
 	this.stats = {
 		str: 7,
 		agi: 10,
@@ -1142,7 +1143,7 @@ function Jelly (type) {
 		maxHP: 20
 	};
 	this.resists = { fire: 1.25 };
-	this.addToInv(new Hose('Acid'));
+	this.item1 = (new Hose('Acid'));
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
 	this.displayName = "quivering, gelatinous cube";
 	this.shortName = "Box Jelly";
@@ -1153,7 +1154,6 @@ Jelly.prototype.constructor = Jelly;
 
 
 function Were (type) {
-	this.inventory = [];
 	this.stats = {
 		str: 12,
 		agi: 7,
@@ -1173,7 +1173,7 @@ function Were (type) {
 			this.spriteCompressed = wolfSprite;
 			this.displayName = "Werewolf";
 			this.color = "#ac7c00";
-			this.addToInv(new Claws());
+			this.item1 = (new Claws());
 			break;
 		case "Goat":
 			this.stats.maxHP = 22;
@@ -1209,8 +1209,8 @@ function Mage (type) {
 		magi: 2,
 		maxHP: 12
 	};
-	this.addToInv(new Staff('Thunder'));
-	this.addToInv(new Potion('Health'));
+	this.item1 = (new Staff('Thunder'));
+	this.item2 = (new Potion('Health'));
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HgeV7dgEF75K4oEBMuwV5hRJd9WZiLzjpCh3DbCFQfy7da3NJQatSVMdLY0e8/MxapVPHBr7Fde/QcNGJe5UymY2YrdeWrx5peRUacvMvNyCKw4Yo/q/r4yisEKVBZaHJwK9tLafEA==";
 	this.displayName = "Wiz";
 	this.color = '#0058f8';
