@@ -1342,7 +1342,7 @@ function Buff(type,owner){
 		case 'Poisoned':
 			this.killStr = "of internal injuries";
 			this.cureChance = 4;
-			this.attackVal = function(){ roll('1d3'); };
+			this.attackVal = function(){ return roll('1d3'); };
  			this.attackType = 'poison';
  			this.sprite = 'bubble';
  			this.color = '#d800cc';
