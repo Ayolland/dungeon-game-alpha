@@ -163,8 +163,9 @@ function Game (){
 		setText: function(message){
 			this.message.innerHTML = message;
 		},
-		addButton: function(text,clickData){
-			var buttonStr = "<a class='button dialog' click-data='"+clickData+"'>"+text+"</a>";
+		addButton: function(text,clickData,className){
+			className = (className+"" === "undefined")? "" : className;
+			var buttonStr = "<a class='button dialog "+className+"' click-data='"+clickData+"'>"+text+"</a>";
 			this.buttons.innerHTML += buttonStr;
 		},
 		close: function(){
@@ -456,6 +457,21 @@ Character.prototype.smite = function(num){
 	this.updateStatus();
 };
 
+Character.prototype.calcDodge = function(){
+	if ((this.offHand !== "")&&(typeof(this.offHand) !== "undefined")){
+		return false;
+	}
+	var possibilities = [];
+	for (var j = this.getEnemy().stats.agi - 1; j >= 0; j--) {
+		possibilities.push(false);
+	}
+	var softener = (this.hand1.ranged||this.hand2.ranged)? 2 : 3;
+	for (var k = (this.stats.agi/softener) - 1; k >= 0; k--) {
+		possibilities.push(true);
+	}
+	return randomEntry(possibilities);
+}
+
 Character.prototype.hit = function(atkObj){
 	intervalRelay = 'wait';
 	var defense = this.defense(atkObj.type);
@@ -642,6 +658,7 @@ Character.prototype.equip2Offhand = function(){
 };
 
 Character.prototype.activate1 = function(){
+	this.offHand = "";
 	if (typeof(this.hand1) === 'undefined' ){
 		this.equip1(new Punch());
 	}
@@ -649,6 +666,7 @@ Character.prototype.activate1 = function(){
 };
 
 Character.prototype.activate2 = function(){
+	this.offHand = "";
 	if (typeof(this.hand2) === 'undefined' ){
 		this.equip2(new Punch());
 	}
@@ -805,17 +823,6 @@ Hero.prototype.possesive = function(){
 	return "your";
 };
 
-Hero.prototype.calcDodge = function(){
-	var possibilities = [];
-	for (var j = currentGame.currentMonster.stats.agi - 1; j >= 0; j--) {
-		possibilities.push(false);
-	}
-	for (var k = (this.stats.agi/2) - 1; k >= 0; k--) {
-		possibilities.push(true);
-	}
-	return randomEntry(possibilities);
-};
-
 Hero.prototype.dodge = function(){
 	this.wiggle('dodge', 500);
 	currentGame.log.add("You dodge the "+ currentGame.currentMonster.shortName +"'s attack.");
@@ -932,17 +939,6 @@ Monster.prototype.appear = function(){
 	this.updateStatus();
 };
 
-Monster.prototype.calcDodge = function(){
-	var possibilities = [];
-	for (var l = currentGame.playerHero.stats.agi - 1; l >= 0; l--) {
-		possibilities.push(false);
-	}
-	for (var m = (this.stats.agi/2) - 1; m >= 0; m--) {
-		possibilities.push(true);
-	}
-	return randomEntry(possibilities);
-};
-
 Monster.prototype.dodge = function(){
 	this.wiggle('dodge', 500);
 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
@@ -960,7 +956,7 @@ Monster.prototype.loot = function(){
 	for (var e = numRare.length - 1; e >= 0; e--) {
 		this.addToInv(currentGame.itemFromString(randomEntry(tempRareArr)));
 	}
-	var gotItem = (rollHits('1d3',3)>0);
+	var gotItem = (rollHits('1d2',2)>0);
 	var message = "You found "
 	var lootedItem = (this.inventory.length > 0) ? randomEntry(this.inventory) : false;
 	var thisMonster = this;
@@ -990,7 +986,7 @@ function Axedude (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3wdqNQh1I8qY8UVlScnaelVr1GzVu07VAviX3jJUscEpFpDRXmb5hzK3RPyTsoe6FOjxkfZXGNrbyaGbKTEA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
-	this.item1 = (new Sword('Iron'));
+	this.item1 = (new Axe());
 	this.item2 = (new Vial('Steroids'));
 	this.aiType = 'buffer';
 }
@@ -1079,6 +1075,7 @@ function Skele (type) {
 			this.stats.agi = 10;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW4aUY5xP/pLaFFzA57lXVWl5kIWPLVZ2YFlOn62oWdcgksw7t+4tpNwzZc+QsVKps4qtHd69TaO3caB8uLX6WfYzM5GJvayuETdInVqcq3knEA";
 			this.displayName = "Skelebones Archer";
+			this.item1 = (new Bow());
 			break;
 		case "Monk":
 			this.stats.agi = 16;
@@ -1312,12 +1309,15 @@ Item.prototype.invDialog = function(){
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.';
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand = (this.owner.hand1 === this)?'right':'left';
+		var equipNum = (this.owner.hand1 === this)?'equp1':'equip2';
 		var newLine = '<br><br> It is at the ready in your '+hand+' hand.';
 		message += newLine;
+
+		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+equipNum,"suggest");
 	} else{
 		switch (this.itemType){
 		case "Consumable":
-			currentGame.dialog.addButton('Use without equipping','runRound activateOffhand');
+			currentGame.dialog.addButton('Use without equipping','runRound activateOffhand',"caution");
 		case "Weapon":
 			var rHandStr = ( this.owner.hand2.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand2.shortName : 'in your left hand.';
 			var lHandStr = ( this.owner.hand1.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand1.shortName : 'in your right hand.';
@@ -1329,7 +1329,7 @@ Item.prototype.invDialog = function(){
 	this.owner.offHand = this;
 	var invIndex = this.owner.inventory.indexOf(this)
 	currentGame.dialog.setText(message);
-	currentGame.dialog.addButton('Drop this '+this.shortName,'dropItem '+invIndex);
+	currentGame.dialog.addButton('Drop this '+this.shortName,'dropItem '+invIndex,"warning");
 	currentGame.dialog.addButton('Cancel','router closeDialog');
 	currentGame.dialog.open();
 };
@@ -1401,6 +1401,8 @@ function Weapon(){
 	this.natural = 1;
 	this.buffArr = [];
 	this.uses = true;
+	this.flammable = false;
+	this.ranged = false;
 	this.targetStat = "HP";
 	this.itemType = "Weapon";
 }
@@ -1471,6 +1473,59 @@ function Sword (type) {
 Sword.prototype = new Weapon();
 Sword.prototype.constructor = Sword;
 
+function Axe (type) {
+	this.sprite = 'slash1';
+	this.attackType = "physical";
+	this.verbs = ['strike','hit','chop','hack','cleave'];
+	this.ranged = true;
+	var simpleAxe = "IwNgHqA+AMt/DFOS1xWOOjsvbQEx4ErAnRmnnTWa1U4UFA==";
+	var axe2 = "";
+	switch (type){
+		case "Brass":
+		default:
+			this.smallSprite = simpleAxe;
+			this.uses = 10;
+			this.breakVerb = "is bent beyond recognition";
+			this.displayName = "an axe made of polished brass, prettier than it is functional";
+			this.shortName = "Brass Axe";
+			this.color = "#f8d878";
+			this.attackVal = function(){
+				var str = this.owner.stats.str;
+				return Math.ceil(str / roll('1d5'));
+			};
+			break;
+	}
+}
+Axe.prototype = new Weapon();
+Axe.prototype.constructor = Axe;
+
+function Bow (type) {
+	this.sprite = 'star';
+	this.attackType = "physical";
+	this.verbs = ['strike','hit','bullseye','arrow','snipe'];
+	this.ranged = true;
+	var simpleBow = "IwNgHqA+AMt/DFOS11gYyrsBM359lhDUS8y4iDpqC7sHsg==";
+	var bow2 = "";
+	switch (type){
+		case "Wood":
+		default:
+			this.smallSprite = simpleBow;
+			this.flammable = true;
+			this.uses = 25;
+			this.breakVerb = "breaks with a 'sproing'";
+			this.displayName = "a simple wooden bow, used by hunters";
+			this.shortName = "Wooden Bow";
+			this.color = "#f8b800";
+			this.attackVal = function(){
+				var agi = this.owner.stats.agi;
+				return rollHits( (agi) + "d4",4);
+			};
+			break;
+	}
+}
+Bow.prototype = new Weapon();
+Bow.prototype.constructor = Bow;
+
 function Staff (type) {
 	this.sprite = 'kapow';
 	this.attackType = "physical";
@@ -1479,6 +1534,7 @@ function Staff (type) {
 	var decoStick = "IwNgHqA+AMt/DFOcgTMF9itZ26M91cjs9YzzCryLbpq9HNmVCg==";
 	switch (type){
 		case "Thunder":
+			this.ranged = true;
 			this.smallSprite = decoStick;
 			this.uses = 25;
 			this.breakVerb = "splits down the middle";

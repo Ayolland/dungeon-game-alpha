@@ -65,6 +65,18 @@ body{
     margin-top: .5em;
   }
 
+  &.warning{
+    background: #881400;
+  }
+
+  &.suggest{
+    background: #006800;
+  }
+
+  &.caution{
+    background: #f8b800;
+  }
+
   &:active{
     color: black;
     background-color: white;
