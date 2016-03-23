@@ -1314,12 +1314,12 @@ Item.prototype.invDialog = function(){
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.';
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand = (this.owner.hand1 === this)?'right':'left';
-		var equipNum = (this.owner.hand1 === this)?'equp1':'equip2';
+		var activateNum = (this.owner.hand1 === this)?'activate1':'activate2';
 		var newLine = '<br><br> It is at the ready in your '+hand+' hand.';
 		message += newLine;
 		message += '<br><br>Uses left: '+this.uses;
 
-		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+equipNum,"suggest");
+		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+activateNum,"suggest");
 	} else{
 		switch (this.itemType){
 		case "Consumable":
