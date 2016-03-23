@@ -35,6 +35,9 @@ function rollHits(diceStr,target){
 // used to change the tense of used verbs
 function thirdPerson(verb){
 	switch (verb){
+		case 'chow down':
+		verb = firstWord(verb)+'s '+secondWord(verb);
+			break;
 		case "bash":
 		case "punch":
 		case "slash":
@@ -274,7 +277,9 @@ function Game (){
 			} else if (intervalRelay === "End round"){
 				clearInterval(gameLoop);
 				intervalRelay = "wait";
-				currentGame.interface.unpause();
+				if(currentGame.playerHero.stats.HP > 0){
+					currentGame.interface.unpause();
+				}
 			}
 		},500);
 	};
@@ -946,7 +951,7 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids"];
+	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids","Food","Food Rotten"];
 	var tempRareArr = ["Potion Health","Sword Flame","Staff Thunder"];
 	var numUncommon = roll('1d3') - 1;
 	var numRare = roll('1d2') - 1;
@@ -986,8 +991,8 @@ function Axedude (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW1xPGdx2u5IF5yF4BMZZCBx1tdODxTtpmGWJKbNnL/Xq3wdqNQh1I8qY8UVlScnaelVr1GzVu07VAviX3jJUscEpFpDRXmb5hzK3RPyTsoe6FOjxkfZXGNrbyaGbKTEA==";
 	this.displayName = "Axedude";
 	this.color = '#f8d878';
-	this.item1 = (new Axe());
-	this.item2 = (new Vial('Steroids'));
+	this.item2 = (new Axe());
+	this.item1 = (new Vial('Steroids'));
 	this.aiType = 'buffer';
 }
 Axedude.prototype = new Monster();
@@ -1312,6 +1317,7 @@ Item.prototype.invDialog = function(){
 		var equipNum = (this.owner.hand1 === this)?'equp1':'equip2';
 		var newLine = '<br><br> It is at the ready in your '+hand+' hand.';
 		message += newLine;
+		message += '<br><br>Uses left: '+this.uses;
 
 		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+equipNum,"suggest");
 	} else{
@@ -1720,6 +1726,43 @@ function Vial(type){
 
 Vial.prototype = new Consumable();
 Vial.prototype.constructor = Vial;
+
+function Food(type){
+	this.uses = 1;
+	this.sprite = "poof";
+	this.breakVerb = "is consumed";
+	this.verbs = ['eat','smash','chow down','consume'];
+	var meatSprite = "IwNgHqA+AMt/DFOY4aWzVgTCrO9htsjdki1jDKrzTbyG8yNojW32Ppsg";
+	switch (type){
+		case "Rotten":
+			this.smallSprite = meatSprite;
+			this.displayName = 'a hunk of raw, slightly decomposed meat';
+			this.attackType = 'physical';
+			this.targetStat = 'HP';
+			this.color = '#b8f8b8';
+			this.shortName = "Questionable Meat";
+			this.buffArr = ["Poisoned",3];
+			this.attackVal = function(){
+				return (10 + roll('2d5')) * -1;
+			};
+			break;
+		case "Meat":
+		default:
+			this.smallSprite = meatSprite;
+			this.displayName = 'a savory grilled drumstick of some unknown animal';
+			this.attackType = 'physical';
+			this.targetStat = 'HP';
+			this.color = '#e45c10';
+			this.shortName = "Tasty Meat";
+			this.attackVal = function(){
+				return -20;
+			};
+			break;
+	}
+}
+
+Food.prototype = new Consumable();
+Food.prototype.constructor = Food;
 
 // an Effect is a Displayable that visually displays the type of damage to the player
 
