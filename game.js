@@ -1317,8 +1317,6 @@ Item.prototype.invDialog = function(){
 		var activateNum = (this.owner.hand1 === this)?'activate1':'activate2';
 		var newLine = '<br><br> It is at the ready in your '+hand+' hand.';
 		message += newLine;
-		message += '<br><br>Uses left: '+this.uses;
-
 		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+activateNum,"suggest");
 	} else{
 		switch (this.itemType){
@@ -1332,6 +1330,7 @@ Item.prototype.invDialog = function(){
 			break;
 		}
 	}
+	message += '<br><br>Uses left: '+this.uses;
 	this.owner.offHand = this;
 	var invIndex = this.owner.inventory.indexOf(this)
 	currentGame.dialog.setText(message);
