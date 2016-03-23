@@ -205,17 +205,26 @@ function Game (){
 
 	this.enterMonster = function(monsterType){
 		this.previousMonsterName = this.currentMonster.displayName;
-		var monsterClass = monsterType.slice(0,monsterType.indexOf(" "));
-		var monsterVariant = monsterType.slice(monsterType.indexOf(" ") + 1);
-		if (monsterType.indexOf(" ") === -1){
+		var monsterClass = firstWord(monsterType);
+		var monsterVariant = secondWord(monsterType);
+		if (monsterVariant === monsterType){
 			monsterClass = monsterType;
 			monsterVariant = "";
 		}
 		var newMonster = new window[monsterClass](monsterVariant);
 		newMonster.div.className = "";
-		newMonster.buffs = [];
 		newMonster.appear();
 		currentGame.currentMonster = newMonster;
+	};
+
+	this.itemFromString = function(itemType){
+		var itemClass = firstWord(itemType);
+		var itemVariant = secondWord(itemType);
+		if (itemVariant === itemType){
+			itemClass = itemType;
+			itemVariant = "";
+		}
+		return new window[itemClass](itemVariant);
 	};
 
 	this.switchMonster = function(){
@@ -685,7 +694,9 @@ Character.prototype.addToInv = function(item){
 	if (this.inventory.length < 8){
 		item.owner = this;
 		this.inventory.push(item);
-		this.updateStatus();
+		if (this.constructor.name === "Hero"){
+			this.updateStatus();
+		}
 	} else if (this.constructor.name === "Hero"){
 		var thisCharacter = this;
 		setTimeout(function(){
@@ -938,7 +949,17 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var gotItem = (rollHits('1d1',1)>0);
+	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids"];
+	var tempRareArr = ["Potion Health","Sword Flame","Staff Thunder"];
+	var numUncommon = roll('1d3') - 1;
+	var numRare = roll('1d2') - 1;
+	for (var w = numUncommon - 1; w >= 0; w--) {
+		this.addToInv(currentGame.itemFromString(randomEntry(tempUncommonArr)));
+	}
+	for (var e = numRare.length - 1; e >= 0; e--) {
+		this.addToInv(currentGame.itemFromString(randomEntry(tempRareArr)));
+	}
+	var gotItem = (rollHits('1d3',3)>0);
 	var message = "You found "
 	var lootedItem = (this.inventory.length > 0) ? randomEntry(this.inventory) : false;
 	var thisMonster = this;
