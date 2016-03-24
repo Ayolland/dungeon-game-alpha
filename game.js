@@ -237,6 +237,7 @@ function Game (){
 	};
 
 	this.switchLocation = function(locationName){
+		currentGame.interface.pause();
 		var oldLocationName = (typeof(currentGame.currentLocation) === "undefined") ? "" : currentGame.currentLocation.shortName;
 		var validLocations = ["Dungeon", "Volcano", "Forest", "Graveyard", "Mine"];
 		validLocations.splice(validLocations.indexOf(oldLocationName),1);
@@ -246,7 +247,10 @@ function Game (){
 		currentGame.currentLocation.draw(currentGame.currentLocation.canvas, currentGame.currentLocation.spriteCompressed);
 		currentGame.currentLocation.canvas.fillRect(0,40,160,50);
 		currentGame.log.add("You enter the " +locationName+'...');
-		setTimeout(function(){currentGame.switchMonster();},2000);
+		setTimeout(function(){
+			currentGame.switchMonster();
+			currentGame.interface.unpause();
+		},2000);
 	};
 
 	this.everyoneIsAlive = function(){
@@ -796,7 +800,7 @@ Hero.prototype = new Character ();
 Hero.prototype.constructor = Hero;
 
 Hero.prototype.drawInventory = function(){
-	for (var v = 7; v > 0; v--) {
+	for (var v = 7; v >= 0; v--) {
 		inventoryCanvases[v].clearRect(0,0,16,16);
 	}
 	for (var x = this.inventory.length - 1; x >= 0; x--) {
