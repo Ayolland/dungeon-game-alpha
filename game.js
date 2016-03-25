@@ -452,7 +452,7 @@ Character.prototype.burnItems = function(){
 	for (var i = items.length - 1; i >= 0; i--) {
 		if (typeof( items[i] ) !== "undefined" ){
 			if (items[i].flammable === true){
-				items[i].uses -= roll('1d10');
+				items[i].uses -= roll('2d3');
 				items[i].uses = (items[i].uses > 0) ? items[i].uses : items[i].uses;
 				items[i].breakVerb = 'is charred to a crisp';
 			}
@@ -466,7 +466,7 @@ Character.prototype.smite = function(num){
 	this.updateStatus();
 };
 
-Character.prototype.calcDodge = function(){
+Character.prototype.calcDodge = function(fleeing){
 	if ((this.offHand !== "")&&(typeof(this.offHand) !== "undefined")){
 		return false;
 	}
@@ -475,6 +475,7 @@ Character.prototype.calcDodge = function(){
 		possibilities.push(false);
 	}
 	var softener = (this.hand1.ranged||this.hand2.ranged)? 2 : 3;
+	softener -= (fleeing === true)? 0.5 : 0;
 	for (var k = (this.stats.agi/softener) - 1; k >= 0; k--) {
 		possibilities.push(true);
 	}
@@ -626,7 +627,7 @@ Character.prototype.checkEquip = function(turnChoice){
 };
 
 Character.prototype.runAway = function(){
-	var success = this.calcDodge();
+	var success = this.calcDodge(true);
 	var conjugated = "", message = "";
 	if (success){
 		conjugated = (this.constructor.name === "Hero") ? 'manage' : 'manages';
@@ -1315,7 +1316,8 @@ Item.prototype.invDialog = function(){
 	if (this.owner.constructor.name !== "Hero"){
 		return;
 	} 
-	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.';
+	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br>';
+	message += ('<br>' + this.infoStr())
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand = (this.owner.hand1 === this)?'right':'left';
 		var activateNum = (this.owner.hand1 === this)?'activate1':'activate2';
@@ -1413,10 +1415,22 @@ function Weapon(){
 	this.flammable = false;
 	this.ranged = false;
 	this.targetStat = "HP";
+	this.attackType = "physical";
 	this.itemType = "Weapon";
 }
 Weapon.prototype = new Item();
 Weapon.prototype.constructor = Weapon;
+
+Weapon.prototype.infoStr = function(){
+	var str = "Attacks enemy's " +this.targetStat;
+	str += " with "+this.attackType+" damage, using your ";
+	str += this.userTraits.join(' and ')+".";
+	if (this.buffArr.length > 1){
+		var odds = (this.buffArr[1] > 1)? " 1 in "+this.buffArr[1]+" chance to cause" : " Causes";
+		str += odds + " enemy to be "+this.buffArr[0].toLowerCase()+".";
+	}
+	return str;
+};
 
 function Punch(){
 	this.uses = true;
@@ -1442,6 +1456,7 @@ function Sword (type) {
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
 	var simpleSword = "IwNgHqA+AMt/DFOS18BMw20+7v9g9liDUijtpLsss17pjlgg";
 	this.smallSprite = simpleSword;
+	this.userTraits = ['STR'];
 	switch (type){
 		case "Iron":
 			this.uses = 30;
@@ -1450,11 +1465,12 @@ function Sword (type) {
 			this.shortName = "Iron Sword";
 			this.color = "#008888";
 			this.attackVal = function(){
-				return roll("3d3") - 2;	
+				var diceNum = Math.round((this.owner.stats.STR / 4)*1.5);
+				return roll(diceNum+"d3") - 2;	
 			};
 			break;
 		case "Flame":
-			this.uses = 20;
+			this.uses = 25;
 			this.breakVerb = "glows red-hot, shatters,";
 			this.displayName = "a shining red sword that smells of sulfur";
 			this.shortName = "Flame Sword";
@@ -1462,19 +1478,21 @@ function Sword (type) {
 			this.attackType = "fire";
 			this.buffArr = ["Aflame",8];
 			this.attackVal = function(){
-				return roll("3d3") - 1;	
+				var diceNum = Math.round((this.owner.stats.STR / 4)*1.5);
+				return roll(diceNum+"d3") - 1;	
 			};
 			break;
 		case "Wood":
 		default:
 			this.flammable = true;
 			this.breakVerb = "splinters into bits";
-			this.uses = 25;
+			this.uses = 20;
 			this.displayName = "a wooden sword meant for practice";
 			this.shortName = "Wooden Sword";
 			this.color = "#f8b800";
 			this.attackVal = function(){
-				return roll("2d3");	
+				var diceNum = Math.round(this.owner.stats.STR / 4);
+				return roll(diceNum+"d3");	
 			};
 			break;
 	}
@@ -1498,6 +1516,7 @@ function Axe (type) {
 			this.displayName = "an axe made of polished brass, prettier than it is functional";
 			this.shortName = "Brass Axe";
 			this.color = "#f8d878";
+			this.userTraits = ['STR'];
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
 				return Math.ceil(str / roll('1d5'));
@@ -1525,6 +1544,7 @@ function Bow (type) {
 			this.displayName = "a simple wooden bow, used by hunters";
 			this.shortName = "Wooden Bow";
 			this.color = "#f8b800";
+			this.userTraits = ['AGI'];
 			this.attackVal = function(){
 				var agi = this.owner.stats.agi;
 				return rollHits( (agi) + "d4",4);
@@ -1553,6 +1573,7 @@ function Staff (type) {
 			this.attackType = "lightning";
 			this.targetStat = "HP";
 			this.color = "#b8f8d8";
+			this.userTraits = ['INT'];
 			this.verbs = ['blast','electrocute','zap','smite'];
 			this.attackVal = function(){
 				return Math.floor(1.5 * rollHits( this.owner.stats.int + "d3",3));
@@ -1567,6 +1588,7 @@ function Staff (type) {
 			this.displayName = "a solid, wooden staff";
 			this.shortName = "Wooden Staff";
 			this.color = "#f8b800";
+			this.userTraits = ['STR','AGI'];
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
 				var agi = this.owner.stats.agi;
@@ -1591,6 +1613,7 @@ function Claws (type) {
 			this.displayName = "a pair of fangs with the venom sac still attached";
 			this.shortName = "Venom Fang";
 			this.color = "#00b800";
+			this.userTraits = ['STR','AGI'];
 			this.attackType = "poison";
 			this.buffArr = ["Poisoned",6];
 			this.attackVal = function(){
@@ -1606,6 +1629,7 @@ function Claws (type) {
 			this.displayName = "a set of sharp bone claws";
 			this.shortName = "Bone Claw";
 			this.color = "#f0d0b0";
+			this.userTraits = ['STR','AGI'];
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
 				var agi = this.owner.stats.agi;
@@ -1661,12 +1685,24 @@ function Consumable(){
 	this.natural = 0;
 	this.buffArr = [];
 	this.uses = 1;
+	this.hurts = false;
 	this.targetStat = "HP";
+	this.amountDmg = "a random amount of"
 	this.attackVal = function(){return 0;};
 	this.itemType = "Consumable";
 }
 Consumable.prototype = new Item();
 Consumable.prototype.constructor = Consumable;
+
+Consumable.prototype.infoStr = function(){
+	var verb = (this.hurts)? 'Damages' : 'Heals';
+	var str = verb + " you for "+this.amountDmg+ ' ' +this.targetStat.toUpperCase()+'.';
+	if (this.buffArr.length > 1){
+		var odds = (this.buffArr[1] > 1)? " 1 in "+this.buffArr[1]+" chance to cause" : " Causes";
+		str += odds + " you to be "+this.buffArr[0].toLowerCase()+".";
+	}
+	return str;
+};
 
 function Potion(type){
 	this.uses = 1;
@@ -1679,6 +1715,7 @@ function Potion(type){
 		case "Regen":
 			this.attackType = 'physical';
 			this.color = '#f8d878';
+			this.amountDmg = '1-6';
 			this.shortName += "Regen";
 			this.displayName = "a fizzy yellowish potion that smells like chalk";
 			this.buffArr = ['Regenerating',1];
@@ -1691,6 +1728,7 @@ function Potion(type){
 		case "Health":
 			this.attackType = 'physical';
 			this.color = '#58f898';
+			this.amountDmg = 'your entire';
 			this.shortName += "Health";
 			this.displayName = "a brilliant green potion, slightly warm to the touch";
 			this.verbs = ['heal'];
@@ -1713,14 +1751,16 @@ function Vial(type){
 	switch (type){
 		default:
 		case "Steroids":
+			this.hurts = true;
 			this.displayName = 'a small ampule of dangerous performance-enhancing drugs';
 			this.attackType = 'poison';
 			this.targetStat = 'cha';
+			this.amountDmg = '1-5';
 			this.color = '#f83800';
 			this.shortName += " Steroids";
 			this.buffArr = ["Juiced",1];
 			this.verbs = ['inject'];
-			this.attackVal = function(){
+			this.attackVal = function(val){
 				return roll('1d5');
 			};
 			break;
@@ -1743,9 +1783,10 @@ function Food(type){
 			this.attackType = 'physical';
 			this.targetStat = 'HP';
 			this.color = '#b8f8b8';
+			this.amountDmg = '12-20';
 			this.shortName = "Questionable Meat";
 			this.buffArr = ["Poisoned",3];
-			this.attackVal = function(){
+			this.attackVal = function(val){
 				return (10 + roll('2d5')) * -1;
 			};
 			break;
@@ -1756,8 +1797,9 @@ function Food(type){
 			this.attackType = 'physical';
 			this.targetStat = 'HP';
 			this.color = '#e45c10';
+			this.amountDmg = 20;
 			this.shortName = "Tasty Meat";
-			this.attackVal = function(){
+			this.attackVal = function(val){
 				return -20;
 			};
 			break;
