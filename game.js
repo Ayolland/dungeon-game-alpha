@@ -956,8 +956,8 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids","Food","Food Rotten"];
-	var tempRareArr = ["Potion Health","Sword Flame","Staff Thunder"];
+	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids","Food","Food Rotten","Bow Wood"];
+	var tempRareArr = ["Potion Health","Sword Flame","Staff Thunder","Bow Poison"];
 	var numUncommon = roll('1d3') - 1;
 	var numRare = roll('1d2') - 1;
 	for (var w = numUncommon - 1; w >= 0; w--) {
@@ -1469,6 +1469,7 @@ function Sword (type) {
 				return roll(diceNum+"d3") - 2;	
 			};
 			break;
+		case 'Fire':
 		case "Flame":
 			this.uses = 25;
 			this.breakVerb = "glows red-hot, shatters,";
@@ -1535,11 +1536,26 @@ function Bow (type) {
 	var simpleBow = "IwNgHqA+AMt/DFOS11gYyrsBM359lhDUS8y4iDpqC7sHsg==";
 	var bow2 = "";
 	switch (type){
+		case "Poison":
+			this.smallSprite = simpleBow;
+			this.flammable = true;
+			this.uses = 20;
+			this.breakVerb = "is bent, arrowless";
+			this.displayName = "a oily green bow whose arrows are laced with a toxic venom";
+			this.shortName = "Poison Bow";
+			this.color = "#005800";
+			this.buffArr = ["Poisoned",3];
+			this.userTraits = ['AGI'];
+			this.attackVal = function(){
+				var agi = this.owner.stats.agi;
+				return rollHits( (agi) + "d5",5);
+			};
+			break;
 		case "Wood":
 		default:
 			this.smallSprite = simpleBow;
 			this.flammable = true;
-			this.uses = 25;
+			this.uses = 20;
 			this.breakVerb = "breaks with a 'sproing'";
 			this.displayName = "a simple wooden bow, used by hunters";
 			this.shortName = "Wooden Bow";
@@ -1562,6 +1578,7 @@ function Staff (type) {
 	var plainStick = "IwNgHqA+AMt/DFOgJmYlx309uu9UtCC9Ttz1LlqlaNiysg==";
 	var decoStick = "IwNgHqA+AMt/DFOcgTMF9itZ26M91cjs9YzzCryLbpq9HNmVCg==";
 	switch (type){
+		case 'Lightning':
 		case "Thunder":
 			this.ranged = true;
 			this.smallSprite = decoStick;
@@ -1583,7 +1600,7 @@ function Staff (type) {
 		default:
 			this.smallSprite = plainStick;
 			this.flammable = true;
-			this.uses = 25;
+			this.uses = 20;
 			this.breakVerb = "snaps like a twig";
 			this.displayName = "a solid, wooden staff";
 			this.shortName = "Wooden Staff";
@@ -1607,6 +1624,7 @@ function Claws (type) {
 	this.verbs = ['maul','savage','lacerate','wound','cut'];
 	this.smallSprite = "IwNgHqA+AMt/DFKcATMxaMK/XPgd0VC59tphSLYqb66bGniX7L0g";
 	switch (type){
+		case 'Poison':
 		case "Venom":
 			this.uses = 10;
 			this.breakVerb = "snaps with a sickening crunch";
@@ -1624,7 +1642,7 @@ function Claws (type) {
 			break;
 		case "Bone":
 		default:
-			this.uses = 15;
+			this.uses = 10;
 			this.breakVerb = "is worn to stumps";
 			this.displayName = "a set of sharp bone claws";
 			this.shortName = "Bone Claw";
@@ -1647,6 +1665,7 @@ function Hose (type) {
 	this.verbs = ['splash','douse'];
 	this.smallSprite = "IwNgHqA+AMt/DFOQ4wBMLZp8ZvM1F1c9oj5STZrKSMLp7sH7H1Ny0PTECCk/boP6d8HDnCA=";
 	switch (type){
+		case 'Flame':
 		case "Fire":
 			this.uses = 15;
 			this.breakVerb = ", empty and starting to smell,";
