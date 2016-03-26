@@ -36,6 +36,8 @@ function rollHits(diceStr,target){
 function thirdPerson(verb){
 	switch (verb){
 		case 'chow down':
+		case 'doze off':
+		case 'zonk out':
 		verb = firstWord(verb)+'s '+secondWord(verb);
 			break;
 		case "bash":
@@ -974,7 +976,7 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids","Food","Food Rotten","Bow Wood"];
+	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids","Food","Food Rotten","Bow Wood","Food Spinach","Vial Opiates"];
 	var tempRareArr = ["Potion Health","Sword Flame","Staff Thunder","Bow Poison"];
 	var numUncommon = roll('1d3') - 1;
 	var numRare = roll('1d2') - 1;
@@ -1290,7 +1292,7 @@ Item.prototype.exhaust = function(){
 	var invIndex = this.owner.inventory.indexOf(this);
 	this.owner.inventory.splice(invIndex,1);
 	this.owner.updateStatus();
-	var message = firstCap(this.owner.possesive()) +" "+ this.shortName.toLowerCase() +' is '+ this.breakVerb + " and discarded.";
+	var message = firstCap(this.owner.possesive()) +" "+ this.shortName.toLowerCase() +" "+ this.breakVerb + " and is discarded.";
 	currentGame.log.add(message);
 };
 
@@ -1320,12 +1322,7 @@ Item.prototype.attackObj = function(){
 	if ((this.owner.buffs.includes('Aflame'))&&(this.itemType === 'Weapon')){
 		attck.buffArr = ['Aflame',3];
 	}
-	// Physical damage always targets HP, other do not.
-	if (this.attackType === 'physical'){
-		attck.targetStat = "HP";
-	} else {
-		attck.targetStat = this.targetStat;
-	}
+	attck.targetStat = this.targetStat;
 	return attck;
 };
 
@@ -1412,13 +1409,24 @@ function Buff(type,owner){
  		case 'Juiced':
  			this.cureChance = 2;
  			this.attackVal = function(){
- 				return roll('1d2') * -1;
+ 				return -1;
  			};
  			this.attackType = 'poison';
  			this.targetStat = 'str';
  			this.sprite = 'bubble';
  			this.color = '#f83800';
  			this.verbs = ['gain','rage'];
+ 			break;
+ 		case 'Sedated':
+ 			this.cureChance = 2;
+ 			this.attackVal = function(){
+ 				return 1;
+ 			};
+ 			this.attackType = 'poison';
+ 			this.targetStat = 'agi';
+ 			this.sprite = 'bubble';
+ 			this.color = '#00e8d8';
+ 			this.verbs = ['doze off','zonk out'];
  			break;
 	}
 }
@@ -1558,6 +1566,7 @@ function Bow (type) {
 			this.smallSprite = simpleBow;
 			this.flammable = true;
 			this.uses = 20;
+			this.attackType = 'poison';
 			this.breakVerb = "is bent, arrowless";
 			this.displayName = "a oily green bow whose arrows are laced with a toxic venom";
 			this.shortName = "Poison Bow";
@@ -1686,7 +1695,7 @@ function Hose (type) {
 		case 'Flame':
 		case "Fire":
 			this.uses = 15;
-			this.breakVerb = ", empty and starting to smell,";
+			this.breakVerb = "is empty, starting to smell,";
 			this.displayName = "a glowing bladder of sorts, hot to the touch";
 			this.shortName = "Lava Sac";
 			this.attackType = "fire";
@@ -1786,7 +1795,6 @@ function Vial(type){
 	this.shortName = "Vial of";
 	this.smallSprite = "IwNgHqA+AMt/DHQEyuU+wvY3Yt9cDijpDCjzSz0LdhU6MHkmkW3EPrvTe+KQA===";
 	switch (type){
-		default:
 		case "Steroids":
 			this.hurts = true;
 			this.displayName = 'a small ampule of dangerous performance-enhancing drugs';
@@ -1801,6 +1809,21 @@ function Vial(type){
 				return roll('1d5');
 			};
 			break;
+		default:
+		case "Opiates":
+			this.hurts = false;
+			this.displayName = 'a tiny vial of powerful pain-killers';
+			this.attackType = 'poison';
+			this.targetStat = 'HP';
+			this.amountDmg = 'your entire';
+			this.color = '#00e8d8';
+			this.shortName += " Opiates";
+			this.buffArr = ["Sedated",2];
+			this.verbs = ['injest'];
+			this.attackVal = function(val){
+				return this.owner.stats.maxHP * -1;
+			};
+			break;
 	}
 }
 
@@ -1813,7 +1836,21 @@ function Food(type){
 	this.breakVerb = "is consumed";
 	this.verbs = ['eat','smash','chow down','consume'];
 	var meatSprite = "IwNgHqA+AMt/DFOY4aWzVgTCrO9htsjdki1jDKrzTbyG8yNojW32Ppsg";
+	var canSprite = "IwNgHqA+AMt/DHWC4S4oEzcypwdDdFVDUTtUDiFqib5Sdzaq2S2qPO9bKm0feg0Z1cg9F2hA";
 	switch (type){
+		case "Spinach":
+			this.smallSprite = canSprite;
+			this.displayName = "a tin of creamed spinach: unpleasant but hearty.";
+			this.attackType = 'physical';
+			this.targetStat = 'maxHP';
+			this.color = '#00a844';
+			this.amountDmg = '2-10';
+			this.shortName = "Can of Spinach";
+			this.buffArr = ["Juiced",5];
+			this.attackVal = function(val){
+				return roll('2d5') * -1;
+			};
+			break;
 		case "Rotten":
 			this.smallSprite = meatSprite;
 			this.displayName = 'a hunk of raw, slightly decomposed meat';
