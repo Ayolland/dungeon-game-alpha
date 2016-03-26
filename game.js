@@ -205,6 +205,11 @@ function Game (){
 		currentGame.previousMonsterName = "";
 		this.switchLocation();
 		this.playerHero.initialize();
+		document.getElementById('headsdown').addEventListener('click',(function(hero){
+			return function(){
+				hero.infoDialog();
+			}
+		})(currentGame.playerHero));
 	};
 
 	this.enterMonster = function(monsterType){
@@ -774,7 +779,7 @@ Character.prototype.die = function(){
 function Hero(name){
 	this.div = document.getElementById('hero');
 	this.canvas = document.getElementById('hero-sprite').getContext('2d');
-	this.heroName = name;
+	this.name = name;
 	this.displayElement = {
 		hpText: document.getElementById('hero-hp-text'),
 		hpBar: document.getElementById('hero-hp-bar'),
@@ -866,6 +871,19 @@ Hero.prototype.inventoryFull = function(item){
 		currentGame.dialog.addButton("Drop your "+ this.inventory[q].shortName, "dropItem " + q);
 	}
 	currentGame.dialog.addButton("Leave the "+ item.shortName +" behind", "router closeDialog");
+	currentGame.dialog.setText(message);
+	currentGame.dialog.open();
+}
+
+Hero.prototype.infoDialog = function(){
+	var message = this.name + '<br>' + 'HP: '+this.stats.HP+'/'+this.stats.maxHP+'<br><br>';
+	message += 'STR: '+this.stats.str+' | '+'AGI :'+this.stats.agi+'<br>';
+	message += 'INT: '+this.stats.int+' | '+'CHA :'+this.stats.cha+'<br><br>';
+	message += 'Physical Def: '+this.stats.phys+'<br>'+'Magical Def: '+this.stats.magi+'<br><br>';
+	if (this.buffs.length > 0){
+		message += 'Currently: '+ this.buffs.join(', ')+'<br><br>';
+	}
+	currentGame.dialog.addButton("Back to game","router closeDialog");
 	currentGame.dialog.setText(message);
 	currentGame.dialog.open();
 }
