@@ -1522,7 +1522,7 @@ function Sword (type) {
 			this.shortName = "Iron Sword";
 			this.color = "#008888";
 			this.attackVal = function(){
-				var diceNum = Math.round((this.owner.stats.STR / 4)*1.5);
+				var diceNum = Math.round((this.owner.stats.str / 4)*1.5);
 				return roll(diceNum+"d3") - 2;	
 			};
 			break;
@@ -1536,7 +1536,7 @@ function Sword (type) {
 			this.attackType = "fire";
 			this.buffArr = ["Aflame",8];
 			this.attackVal = function(){
-				var diceNum = Math.round((this.owner.stats.STR / 4)*1.5);
+				var diceNum = Math.round((this.owner.stats.str / 4)*1.5);
 				return roll(diceNum+"d3") - 1;	
 			};
 			break;
@@ -1549,7 +1549,7 @@ function Sword (type) {
 			this.shortName = "Wooden Sword";
 			this.color = "#f8b800";
 			this.attackVal = function(){
-				var diceNum = Math.round(this.owner.stats.STR / 4);
+				var diceNum = Math.round(this.owner.stats.str / 4);
 				return roll(diceNum+"d3");	
 			};
 			break;
