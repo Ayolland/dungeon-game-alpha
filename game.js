@@ -38,6 +38,7 @@ function thirdPerson(verb){
 		case 'chow down':
 		case 'doze off':
 		case 'zonk out':
+		case 'lunge at':
 		verb = firstWord(verb)+'s '+secondWord(verb);
 			break;
 		case "bash":
@@ -1176,6 +1177,7 @@ Skele.prototype.constructor = Skele;
 function Snek (type) {
 	var smallSprite = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
 	var bigSprite = "IwNgHgLAHAPgDAxTktW9HNOD4HcHrABMpxuqBFeKJZ5RVmdD+hzpNzJXyvFtWjkGIqAuMLFMEU6VnkLFS5StVqhwxnNr1x2MRMr1WlbUc7c9aOr0YnRGyo776DMvLPGeBQA=";
+	var stripeSprite = "IwNgHgLAHAPgDAxTktW9HNe1gTMfTA44YNfMuUylAnUnOXXehjG5m5Lqt7y4vha1qQuowmSp0mbLnyF8sUTF9kFBNTTisazM1boenHpv6nemscPOCdQA";
 	this.stats = {
 		str: 5,
 		agi: 9,
@@ -1190,14 +1192,25 @@ function Snek (type) {
 		type = randomEntry(["Big","Small"]);
 	}
 	switch (type){
+		case 'Sleeper':
+			this.item1 = new Claws('Sleeper');
+			this.item2 = new Vial('Opiates');
+			this.aiType = 'switch';
+			this.switchTrigger = 4;
+			this.color = '#881400';
+			this.spriteCompressed = stripeSprite;
+			this.displayName = "eastern blue-tongued shingleback";
+			this.shortName = "Sleeper Snek";
+			this.stats.agi = 11;
+			this.stats.maxHP = 14;
+			break;
 		case 'Big':
-			this.hand1 = new Claws();
 			this.spriteCompressed = bigSprite;
 			this.displayName = "distressingly large Snek";
 			this.shortName = "Really Big Snek";
 			this.stats.str = 9;
 			this.stats.agi = 12;
-			this.stats.cha = 12;
+			this.stats.cha = 11;
 			this.stats.maxHP = 18;
 			break;
 		case 'Small':
@@ -1679,7 +1692,7 @@ function Claws (type) {
 	this.sprite = 'claws';
 	this.attackType = "physical";
 	this.targetStat = "HP";
-	this.verbs = ['maul','savage','lacerate','wound','cut'];
+	this.verbs = ['maul','savage','lacerate','wound','lunge at'];
 	this.smallSprite = "IwNgHqA+AMt/DFKcATMxaMK/XPgd0VC59tphSLYqb66bGniX7L0g";
 	switch (type){
 		case 'Poison':
@@ -1696,6 +1709,21 @@ function Claws (type) {
 				var str = this.owner.stats.str;
 				var agi = this.owner.stats.agi;
 				return roll( Math.ceil((str + agi)/12) + 'd4');	
+			};
+			break;
+		case "Sleeper":
+			this.uses = 10;
+			this.breakVerb = "is hollowed out, broken";
+			this.displayName = "a pair of needle-like fangs dripping with noxious poison";
+			this.shortName = "Sleeper Fang";
+			this.color = "#00e8d8";
+			this.userTraits = ['CHA','AGI'];
+			this.attackType = "poison";
+			this.buffArr = ["Sedated",4];
+			this.attackVal = function(){
+				var cha = this.owner.stats.cha;
+				var agi = this.owner.stats.agi;
+				return roll( Math.ceil((cha + agi)/12) + 'd4');	
 			};
 			break;
 		case "Bone":
@@ -1850,7 +1878,7 @@ function Vial(type){
 			this.color = '#00e8d8';
 			this.shortName += " Opiates";
 			this.buffArr = ["Sedated",2];
-			this.verbs = ['injest'];
+			this.verbs = ['medicate'];
 			this.attackVal = function(val){
 				return this.owner.stats.maxHP * -1;
 			};
