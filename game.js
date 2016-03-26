@@ -177,9 +177,9 @@ function Game (){
 		close: function(){
 			this.element.classList.remove('active');
 			var thisDialog = this;
+			thisDialog.message.innerHTML = "";
+			thisDialog.buttons.innerHTML = "";
 			setTimeout(function(){
-				thisDialog.message.innerHTML = "";
-				thisDialog.buttons.innerHTML = "";
 				currentGame.interface.unpause();
 				},500);
 		}
@@ -189,7 +189,8 @@ function Game (){
 		switch (command){
 			case 'takeFoundItem':
 				this.playerHero.addToInv(this.foundItem);
-				break;
+			case 'newMonster':
+				this.switchMonster();
 			case 'closeDialog':
 			default:
 				currentGame.playerHero.offHand = "";
@@ -240,8 +241,12 @@ function Game (){
 	};
 
 	this.switchMonster = function(){
-		var monsterType = randomEntry(currentGame.currentLocation.monsterArray);
-		currentGame.enterMonster(monsterType);
+		if (currentGame.currentLocation.switchTrigger <= 0){
+			currentGame.crossroadDialog();
+		} else {
+			var monsterType = randomEntry(currentGame.currentLocation.monsterArray);
+			currentGame.enterMonster(monsterType);
+		}
 	};
 
 	this.validLocations = ["Dungeon", "Volcano", "Forest", "Graveyard", "Mine"];
@@ -800,11 +805,6 @@ Character.prototype.die = function(){
 		currentGame.playerHero.kills ++;
 		currentGame.currentLocation.switchTrigger --;
 		this.loot();
-		if (currentGame.currentLocation.switchTrigger <= 0){
-			setTimeout(currentGame.crossroadDialog, 2000);
-		} else {
-			setTimeout(currentGame.switchMonster, 2000);
-		}
 	}
 };
 
@@ -890,11 +890,12 @@ Hero.prototype.initialize = function(){
 	this.updateStatus();
 };
 
-Hero.prototype.receive = function(item){
+Hero.prototype.receive = function(item,looted){
 	currentGame.foundItem = item;
 	var message = "You find a " + item.shortName + "!";
 	currentGame.dialog.addButton("Take the " + item.shortName, "router takeFoundItem");
-	currentGame.dialog.addButton("Leave it", "router closeDialog");
+	var afterwards = (looted === true)? "newMonster" : "closeDialog"
+	currentGame.dialog.addButton("Leave it", "router "+afterwards);
 	currentGame.dialog.setText(message);
 	currentGame.dialog.open();
 };
@@ -1026,9 +1027,10 @@ Monster.prototype.loot = function(){
 	setTimeout(function(){
 		currentGame.log.add(message);
 		if (gotItem&&lootedItem){
-			currentGame.playerHero.receive(lootedItem);
+			currentGame.playerHero.receive(lootedItem,true);
 		} else {
 			currentGame.playerHero.gold += thisMonster.gold;
+			setTimeout(currentGame.switchMonster, 2000);
 		}
 	},1000);
 }
@@ -1189,7 +1191,7 @@ function Snek (type) {
 	};
 	this.color = '#58d854';
 	if ( type === ""){
-		type = randomEntry(["Big","Small"]);
+		type = randomEntry(["Big","Small","Sleeper"]);
 	}
 	switch (type){
 		case 'Sleeper':
