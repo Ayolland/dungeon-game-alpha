@@ -243,14 +243,41 @@ function Game (){
 		currentGame.enterMonster(monsterType);
 	};
 
+	this.validLocations = ["Dungeon", "Volcano", "Forest", "Graveyard", "Mine"];
+
+	this.crossroadDialog = function(){
+		var oldLocationName = currentGame.currentLocation.shortName;
+		var location1 = new Location(currentGame.differentLocation([oldLocationName]));
+		var location2 = new Location(currentGame.differentLocation([oldLocationName,location1.shortName]));
+		var message = "You come to a crossroads.<br><br>";
+		message += "One path leads to "+ location1.displayName +".<br><br>";
+		message += "The other path heads towards "+ location2.displayName +'.<br><br>';
+		message += "What path do you choose?"
+		currentGame.dialog.addButton('Head for the '+location1.shortName,'switchLocation '+location1.shortName);
+		currentGame.dialog.addButton('Take the path to the '+location2.shortName,'switchLocation '+location2.shortName);
+		currentGame.dialog.setText(message);
+		currentGame.dialog.open();
+		currentGame.currentMonster.addClass('dead');
+	}
+
+	this.differentLocation = function(locationArr){
+		var validLocations = currentGame.validLocations.slice(0);
+		if (locationArr.length > 0){
+			for (var a = locationArr.length - 1; a >= 0; a--) {
+				validLocations.splice(validLocations.indexOf(locationArr[a]),1);
+			}
+		}
+		return randomEntry(validLocations);
+	}
+
 	this.switchLocation = function(locationName){
+		currentGame.dialog.close();
 		currentGame.interface.pause();
-		var oldLocationName = (typeof(currentGame.currentLocation) === "undefined") ? "" : currentGame.currentLocation.shortName;
-		var validLocations = ["Dungeon", "Volcano", "Forest", "Graveyard", "Mine"];
-		validLocations.splice(validLocations.indexOf(oldLocationName),1);
-		locationName = randomEntry(validLocations);
+		locationName = (typeof(locationName) === "undefined") ? randomEntry(currentGame.validLocations) : locationName;
 		currentGame.currentLocation = new Location(locationName);
-		currentGame.currentLocation.switchTrigger = currentGame.playerHero.kills + 6 + roll('1d4');
+		document.body.className = currentGame.currentLocation.shortName;
+		document.getElementById('level-text').innerHTML = "LVL: " + currentGame.currentLocation.shortName;
+		currentGame.currentLocation.switchTrigger = 5 + roll('1d3');
 		currentGame.currentLocation.draw(currentGame.currentLocation.canvas, currentGame.currentLocation.spriteCompressed);
 		currentGame.currentLocation.canvas.fillRect(0,40,160,50);
 		currentGame.log.add("You enter the " +locationName+'...');
@@ -348,27 +375,30 @@ function Location(type){
 	switch (type){
 		case "Dungeon":
 			this.spriteCompressed = "BwBgHgLCA+CM8MU5LVvRzCQi3/qORxJ2JuuBV1Z5xNDjTzLjOsFlhKnXrzFDojod2ddvwFCu40fXKSpg+LPFEhittLIqkvBX00FBM9WpESdGo8hO195+rvXabw13Idq5K0hsNGdtJi3q6UYs7WbtoBUU7y4WbhUW5BngmO6aKR0ZGmBo6JITm5aYXmWRJpNmUWfnEu7rGaQXwy6UkVHrkeGRWFJT3Knh11Xe09ur4hmaQKMZPDffPWhm3dgRtT0zPL2QvRteVjEXbN/K3Hqgl5pWFXJ5y3h/fl7u9xW4rV9iM+c8UDqlep0vLsvM9gUtvJ1Kn4fjVVjCTA4dtgvpIjqjGjxuMNEfjcW0ClVkoSWiCSflQU8gQSGgD2stlKdzgIUfYkilbJZJsZ5Gwut9ZPzkZlWG8dgogA==";
+			this.displayName = "a musty, dark and ancient dungeon, full of cobwebs and lurking monsters"
 			this.monsterArray = ["Axedude", "Ball Goo", "Skele Bones", "Skele Footman", "Mage","Jelly"];
 			break;
 		case "Volcano":
 			this.spriteCompressed = "BwBgHgLCA+CM8MUpJWpWz6308/sWBxJuRiIhWO6ZupF5peGTC1eLhD+Ht7fSgLZV6VfjlE9kg2XK5Txk7rSHTW8zW1XVGQ/uuFatRpQtOGZus8bJrlBvWssantxwedXHLuhs1iAhTM5r5eRnKBQezM0b7cBCYJesHEXuHx3pG8lM4ZUX6ZidmJij4FcUX+1qWeaWn5mSXeKLHFjS5MHQrlMSGhhgM5fCQdbiIMyqM9vcnSM+qzbhj1nRljlrPdYflLi43bO6NFU627J8fxuZfhGyGXm3uKMU8POYP2kzIVg22TdV8+j8eKdvl9JHcIalNkDhg9VPNxND5ulpuU8qD2n5XnZeKtPOlMVkOPtdgdscM9kQSf1Kb0JHMIh5BDYMSy7CMwT9jJyeXztMjWazqcyAvyWKiObj5P8ablOMSaRyFsKBhMmrJVWzleqqnT3Di9SdsJq7kbzfR5aggA==";
+			this.displayName = "a fiery volcano flowing with glowing magma, and wandered by hellish sprites"
 			this.monsterArray = ["Axedude","Ball Fire","Skele Monk","Skele Bruiser", "Were Hellbeast"];
 			break;
 		case "Forest":
 			this.spriteCompressed = "IwNgDAHgLGA+ZmE5TEOOhiUrVj+ORWJhq2OpFlBtZxBm9R5V6y7lpLrjtPeJpx6M2IjlRH5p1GiVHjWYxcpZC8U3vPFtuapc1yCNArYa67huA+bq3rgvjstXiqrgpUY+9m5Of+DKKyDMK+we7WEa6oBl5hMUYuptEhsZFy2okSyQF6oYH6etl++QIZSdpqxkwqLmkUMiUV5BH8UvX6Zmnejfbq7D053FUcEp6hceVt3nnyo7GtC4sDPauKw01W1NjLs7tlRjMbYoc7SkGW5TUlmwNyFiEHNdfRG29ns8MdLXaH11tXLJ/nd+jchpV1jRIUVdK97nV5iCdntwYkZMETiNkTCCr9MMc5lMojZYfi0ISfoNliiaaCOulCgC/g07kE3tNekzqrUnNCOWM/Az6Yj2oY+kyJXtWiKAnygaDgbK3Iqsd0npDtsqPKU1al2QKxjdhYbNJjxftuRTueMhSdShrnnTjZzTYirZrHZSjnb3qkNdqViClm7LlcHqGndkCb9BbkHL6ovMflzpW5w2GcQohtJvQCWlGYk6vpMXViM9CKsWc708zy4V0q3E1rWbemK0mbVGSwmy3MC6TG8mk/w248Gyq292lVzB+6Jx4xy8Z1k0+Ou4y08vK4Rg+2m6nwhNBZ58hCfHvLUe6RdMYsU2Or+fbz6CXf3qsGhTj1SVXRiWqVbfmu3w6k4Z51ISfRPh+4oSsS55Qveb5rtBf7gfQiF1sOvhoWBu6YfEwY4ay6EkqeYSwQsuwUV0YHkau5zlswNGrnRjRmhR8HuuyxgniSHEpFxOTMbxEwBuB/HnJwwG3DKKR7txgn3rO6S8HqCkgVoXipoG1Q6ABD46Y4iYmkO17UZc6mbPanGPu+KkrNZhl0exl7tPyRQebafoGoezhCV5RbPgZDi2OFpEoq8vkMtG6KRT66YxbFIVJX5BxEj4PZBclfLkZamW5s+1rJVmnawfxxm5WVcYhTJvk0Q1M6eTKb65QFpXNflo7fu1Zl9aFA0DalfUjUNrnjZNU3TTNs0sEAA=";
+			this.displayName = "a murky forest dappled with leafy shadows and populated with wild, untamed creatures"
 			this.monsterArray =["Axedude","Scamp","Were Wolf","Skele Archer","Snek"];
 			break;
 		case "Graveyard":
 			this.spriteCompressed = "IwNgDAHgLGA+wMU5LVjKzn3HXrCGBxJuRp2GeOB5F9ZDKV+1Ny7TFdXZbO+Zp2I9+fYb1zjWYsSVFtpkjtIGzF86lObblSGQfUy0/HoQnKWppaYkG9XQatVWt+tWYcj2RrbZdevMK+hqEWgd4citb+4Qxu8bYhSQmWTvQxKX7WEXJRSYzuyXmBGvku6eZZHhGESkUeqfnZ0Z6W9YitZUJdbm1BjbKahbTOub3impUmOV6Z3SZRtK5xTPNNQktYg6He6yuC0Z0+flVhVss2sQmzTjnZAd3Fjzd1x+lE5PuDDTsHK503mc6J93r1zi9wT9lv06t9/pCWkjYXwRBVrtV/hiUdwEZi/tj/HN8fDCSlAT0LJ8oVjSaSgb80MDyfDERC7Colqzuc9Mjp9Jt5pMWedDOi3tTQdp2QVkRMRQIJXClc4yXjeUNKhcqBKNTS2X8pFrUTrpcVdrK5YdWCMGgzGPrLaKATtbUaNszrY69X0Pe6bUUDervRoFoCjoG1UHo4rdBTTu5/VaYxrpfyE8ck1a1bF3YUWCoI4Lac7zTqaKDgv644mCeiy8ZOLGBUX7QSc+sHSD7Vma03JSHkWbbWo9KPwz6LeYRwW0iPPWKWV3l1LtrOuavF07XCvTc3KNN8yNk/th+WHbUCwPDafqUa8ziMheg4qvc/12s/dPXyETdaV6ijiHrWV6/uWhwAT2tQwkO4EVpBNbQdsiL5gGqwDI+OidhWaGYRk6EHsYJpYXhSGXI2AYtqRZGUH+gE0biQF0cBDGLJ+gGmqxXE1PeXHcdq1HtNwiR0XxUHYAMYlSVs0myXJ/JrPJjhBEpqlqepGmaVp2k6bpen6QZgRAA===";
+			this.displayName = "a lonesome, rainswept graveyard, lit only by lightning and haunted by wicked undead spirits"
 			this.monsterArray = ["Were","Skele"];
 			break;
 		case "Mine":
 			this.spriteCompressed = "IwNgDAHgLGA+wMU5LVvRzXs93/BhRxJpZ5FlV1Ntd9DjTzLrb7HnX3PvfwYJIITCyo0QP4lx7MIPlUFc2YgljJ9GSgWUdyLXT3k1Q46bTLVeCZdQ2zF3RhOlLc2wJf4P74R4eOrl5CwdbKvr6q/rjuURHy0YSJ+qFJsYbx6YqZycZZtDkp3rY5kbqlJbkWaoVBKbFlGmmeES1ZVdrirZmexF3hjSKpdiED7X0JFW7DnUNTCX1xY/ZJSw3pM9U9kw1EO+FtrXtz+yWLhz0ix/PxezeRm9prl49PJ7VNYRcVn9bfpb0CP0AVdVu9LqC/v9Cq9TPc3EDRiDfjgajtARQHuszt4lm18eV8f5Yb98vlzkd3lZcVS1pDpD5iXkQjRBoMUc56jZycyok59PShmlgSc+c1RQSWuLzCYSccGXE5mK7oqpULpFJqDVBXKBTK9ZrDUbjSbTWbzRbLVbrTbbXb7Q7HU7nS7XW73R7PV7vT7fX7/QggA=";
+			this.displayName = 'an abandoned mineshaft leading deep into the earth, now the lair of many sinister beasts'
 			this.monsterArray = ["Skele Footman","Were Goat","Jelly","Snek"];
 			break;
 	}
-	document.body.className = this.shortName;
-	document.getElementById('level-text').innerHTML = "LVL: " + this.shortName;
 }
 
 Location.prototype = new Displayable ();
@@ -767,9 +797,10 @@ Character.prototype.die = function(){
 		},2000);
 	} else if (currentGame.playerHero.stats.HP > 0) {
 		currentGame.playerHero.kills ++;
+		currentGame.currentLocation.switchTrigger --;
 		this.loot();
-		if (currentGame.playerHero.kills >= currentGame.currentLocation.switchTrigger){
-			setTimeout(currentGame.switchLocation, 2000);
+		if (currentGame.currentLocation.switchTrigger <= 0){
+			setTimeout(currentGame.crossroadDialog, 2000);
 		} else {
 			setTimeout(currentGame.switchMonster, 2000);
 		}
