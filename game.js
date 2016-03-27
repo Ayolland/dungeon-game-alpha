@@ -343,9 +343,6 @@ function Game (){
 			this.playerHero.addToInv(this.foundItem);
 		}
 	}
-
-	this.replace
-
 }
 
 // A Displayable is an object with an associated canvas for drawing sprites
@@ -381,27 +378,27 @@ function Location(type){
 	switch (type){
 		case "Dungeon":
 			this.spriteCompressed = "BwBgHgLCA+CM8MU5LVvRzCQi3/qORxJ2JuuBV1Z5xNDjTzLjOsFlhKnXrzFDojod2ddvwFCu40fXKSpg+LPFEhittLIqkvBX00FBM9WpESdGo8hO195+rvXabw13Idq5K0hsNGdtJi3q6UYs7WbtoBUU7y4WbhUW5BngmO6aKR0ZGmBo6JITm5aYXmWRJpNmUWfnEu7rGaQXwy6UkVHrkeGRWFJT3Knh11Xe09ur4hmaQKMZPDffPWhm3dgRtT0zPL2QvRteVjEXbN/K3Hqgl5pWFXJ5y3h/fl7u9xW4rV9iM+c8UDqlep0vLsvM9gUtvJ1Kn4fjVVjCTA4dtgvpIjqjGjxuMNEfjcW0ClVkoSWiCSflQU8gQSGgD2stlKdzgIUfYkilbJZJsZ5Gwut9ZPzkZlWG8dgogA==";
-			this.displayName = "a musty, dark and ancient dungeon, full of cobwebs and lurking monsters"
+			this.displayName = "a musty, dark and ancient dungeon, full of cobwebs and lurking monsters";
 			this.monsterArray = ["Axedude", "Ball Goo", "Skele Bones", "Skele Footman", "Mage","Jelly"];
 			break;
 		case "Volcano":
 			this.spriteCompressed = "BwBgHgLCA+CM8MUpJWpWz6308/sWBxJuRiIhWO6ZupF5peGTC1eLhD+Ht7fSgLZV6VfjlE9kg2XK5Txk7rSHTW8zW1XVGQ/uuFatRpQtOGZus8bJrlBvWssantxwedXHLuhs1iAhTM5r5eRnKBQezM0b7cBCYJesHEXuHx3pG8lM4ZUX6ZidmJij4FcUX+1qWeaWn5mSXeKLHFjS5MHQrlMSGhhgM5fCQdbiIMyqM9vcnSM+qzbhj1nRljlrPdYflLi43bO6NFU627J8fxuZfhGyGXm3uKMU8POYP2kzIVg22TdV8+j8eKdvl9JHcIalNkDhg9VPNxND5ulpuU8qD2n5XnZeKtPOlMVkOPtdgdscM9kQSf1Kb0JHMIh5BDYMSy7CMwT9jJyeXztMjWazqcyAvyWKiObj5P8ablOMSaRyFsKBhMmrJVWzleqqnT3Di9SdsJq7kbzfR5aggA==";
-			this.displayName = "a fiery volcano flowing with glowing magma, and wandered by hellish sprites"
+			this.displayName = "a fiery volcano flowing with glowing magma, and wandered by hellish sprites";
 			this.monsterArray = ["Axedude","Ball Fire","Skele Monk","Skele Bruiser", "Were Hellbeast"];
 			break;
 		case "Forest":
 			this.spriteCompressed = "IwNgDAHgLGA+ZmE5TEOOhiUrVj+ORWJhq2OpFlBtZxBm9R5V6y7lpLrjtPeJpx6M2IjlRH5p1GiVHjWYxcpZC8U3vPFtuapc1yCNArYa67huA+bq3rgvjstXiqrgpUY+9m5Of+DKKyDMK+we7WEa6oBl5hMUYuptEhsZFy2okSyQF6oYH6etl++QIZSdpqxkwqLmkUMiUV5BH8UvX6Zmnejfbq7D053FUcEp6hceVt3nnyo7GtC4sDPauKw01W1NjLs7tlRjMbYoc7SkGW5TUlmwNyFiEHNdfRG29ns8MdLXaH11tXLJ/nd+jchpV1jRIUVdK97nV5iCdntwYkZMETiNkTCCr9MMc5lMojZYfi0ISfoNliiaaCOulCgC/g07kE3tNekzqrUnNCOWM/Az6Yj2oY+kyJXtWiKAnygaDgbK3Iqsd0npDtsqPKU1al2QKxjdhYbNJjxftuRTueMhSdShrnnTjZzTYirZrHZSjnb3qkNdqViClm7LlcHqGndkCb9BbkHL6ovMflzpW5w2GcQohtJvQCWlGYk6vpMXViM9CKsWc708zy4V0q3E1rWbemK0mbVGSwmy3MC6TG8mk/w248Gyq292lVzB+6Jx4xy8Z1k0+Ou4y08vK4Rg+2m6nwhNBZ58hCfHvLUe6RdMYsU2Or+fbz6CXf3qsGhTj1SVXRiWqVbfmu3w6k4Z51ISfRPh+4oSsS55Qveb5rtBf7gfQiF1sOvhoWBu6YfEwY4ay6EkqeYSwQsuwUV0YHkau5zlswNGrnRjRmhR8HuuyxgniSHEpFxOTMbxEwBuB/HnJwwG3DKKR7txgn3rO6S8HqCkgVoXipoG1Q6ABD46Y4iYmkO17UZc6mbPanGPu+KkrNZhl0exl7tPyRQebafoGoezhCV5RbPgZDi2OFpEoq8vkMtG6KRT66YxbFIVJX5BxEj4PZBclfLkZamW5s+1rJVmnawfxxm5WVcYhTJvk0Q1M6eTKb65QFpXNflo7fu1Zl9aFA0DalfUjUNrnjZNU3TTNs0sEAA=";
-			this.displayName = "a murky forest dappled with leafy shadows and populated with wild, untamed creatures"
+			this.displayName = "a murky forest dappled with leafy shadows and populated with wild, untamed creatures";
 			this.monsterArray =["Axedude","Scamp","Were Wolf","Skele Archer","Snek"];
 			break;
 		case "Graveyard":
 			this.spriteCompressed = "IwNgDAHgLGA+wMU5LVjKzn3HXrCGBxJuRp2GeOB5F9ZDKV+1Ny7TFdXZbO+Zp2I9+fYb1zjWYsSVFtpkjtIGzF86lObblSGQfUy0/HoQnKWppaYkG9XQatVWt+tWYcj2RrbZdevMK+hqEWgd4citb+4Qxu8bYhSQmWTvQxKX7WEXJRSYzuyXmBGvku6eZZHhGESkUeqfnZ0Z6W9YitZUJdbm1BjbKahbTOub3impUmOV6Z3SZRtK5xTPNNQktYg6He6yuC0Z0+flVhVss2sQmzTjnZAd3Fjzd1x+lE5PuDDTsHK503mc6J93r1zi9wT9lv06t9/pCWkjYXwRBVrtV/hiUdwEZi/tj/HN8fDCSlAT0LJ8oVjSaSgb80MDyfDERC7Colqzuc9Mjp9Jt5pMWedDOi3tTQdp2QVkRMRQIJXClc4yXjeUNKhcqBKNTS2X8pFrUTrpcVdrK5YdWCMGgzGPrLaKATtbUaNszrY69X0Pe6bUUDervRoFoCjoG1UHo4rdBTTu5/VaYxrpfyE8ck1a1bF3YUWCoI4Lac7zTqaKDgv644mCeiy8ZOLGBUX7QSc+sHSD7Vma03JSHkWbbWo9KPwz6LeYRwW0iPPWKWV3l1LtrOuavF07XCvTc3KNN8yNk/th+WHbUCwPDafqUa8ziMheg4qvc/12s/dPXyETdaV6ijiHrWV6/uWhwAT2tQwkO4EVpBNbQdsiL5gGqwDI+OidhWaGYRk6EHsYJpYXhSGXI2AYtqRZGUH+gE0biQF0cBDGLJ+gGmqxXE1PeXHcdq1HtNwiR0XxUHYAMYlSVs0myXJ/JrPJjhBEpqlqepGmaVp2k6bpen6QZgRAA===";
-			this.displayName = "a lonesome, rainswept graveyard, lit only by lightning and haunted by wicked undead spirits"
+			this.displayName = "a lonesome, rainswept graveyard, lit only by lightning and haunted by wicked undead spirits";
 			this.monsterArray = ["Were","Skele"];
 			break;
 		case "Mine":
 			this.spriteCompressed = "IwNgDAHgLGA+wMU5LVvRzXs93/BhRxJpZ5FlV1Ntd9DjTzLrb7HnX3PvfwYJIITCyo0QP4lx7MIPlUFc2YgljJ9GSgWUdyLXT3k1Q46bTLVeCZdQ2zF3RhOlLc2wJf4P74R4eOrl5CwdbKvr6q/rjuURHy0YSJ+qFJsYbx6YqZycZZtDkp3rY5kbqlJbkWaoVBKbFlGmmeES1ZVdrirZmexF3hjSKpdiED7X0JFW7DnUNTCX1xY/ZJSw3pM9U9kw1EO+FtrXtz+yWLhz0ix/PxezeRm9prl49PJ7VNYRcVn9bfpb0CP0AVdVu9LqC/v9Cq9TPc3EDRiDfjgajtARQHuszt4lm18eV8f5Yb98vlzkd3lZcVS1pDpD5iXkQjRBoMUc56jZycyok59PShmlgSc+c1RQSWuLzCYSccGXE5mK7oqpULpFJqDVBXKBTK9ZrDUbjSbTWbzRbLVbrTbbXb7Q7HU7nS7XW73R7PV7vT7fX7/QggA=";
-			this.displayName = 'an abandoned mineshaft leading deep into the earth, now the lair of many sinister beasts'
+			this.displayName = 'an abandoned mineshaft leading deep into the earth, now the lair of many sinister beasts';
 			this.monsterArray = ["Skele Footman","Were Goat","Jelly","Snek"];
 			break;
 	}
@@ -523,7 +520,7 @@ Character.prototype.calcDodge = function(fleeing){
 		possibilities.push(true);
 	}
 	return randomEntry(possibilities);
-}
+};
 
 Character.prototype.hit = function(atkObj){
 	intervalRelay = 'wait';
@@ -600,7 +597,7 @@ Character.prototype.addBuff = function(buff){
 	if (!this.buffs.includes(buff)){
 		this.buffs.push(buff);
 	}
-}
+};
 
 Character.prototype.runBuffs = function(){
 	var nextStep = "Use equip";
@@ -773,7 +770,7 @@ Character.prototype.addToInv = function(item){
 		setTimeout(function(){
 			thisCharacter.inventoryFull(item);
 		},600)
-	}
+	};
 };
 
 Character.prototype.die = function(){
@@ -894,21 +891,21 @@ Hero.prototype.receive = function(item,looted){
 	currentGame.foundItem = item;
 	var message = "You find a " + item.shortName + "!";
 	currentGame.dialog.addButton("Take the " + item.shortName, "router takeFoundItem");
-	var afterwards = (looted === true)? "newMonster" : "closeDialog"
+	var afterwards = (looted === true)? "newMonster" : "closeDialog";
 	currentGame.dialog.addButton("Leave it", "router "+afterwards);
 	currentGame.dialog.setText(message);
 	currentGame.dialog.open();
 };
 
 Hero.prototype.inventoryFull = function(item){
-	var message = "You don't have room in your knapsack for the "+ item.shortName + "!<br> Would you like to drop something?"
+	var message = "You don't have room in your knapsack for the "+ item.shortName + "!<br> Would you like to drop something?";
 	for (var q = 0; q <= this.inventory.length - 1; q++) {
 		currentGame.dialog.addButton("Drop your "+ this.inventory[q].shortName, "dropItem " + q);
 	}
 	currentGame.dialog.addButton("Leave the "+ item.shortName +" behind", "router closeDialog");
 	currentGame.dialog.setText(message);
 	currentGame.dialog.open();
-}
+};
 
 Hero.prototype.infoDialog = function(){
 	var message = this.name + '<br>' + 'HP: '+this.stats.HP+'/'+this.stats.maxHP+'<br><br>';
@@ -921,7 +918,7 @@ Hero.prototype.infoDialog = function(){
 	currentGame.dialog.addButton("Back to game","router closeDialog");
 	currentGame.dialog.setText(message);
 	currentGame.dialog.open();
-}
+};
 
 // A Monster is an enemy the PlayerCharacter fights one at a time
 
@@ -1033,7 +1030,7 @@ Monster.prototype.loot = function(){
 			setTimeout(currentGame.switchMonster, 2000);
 		}
 	},1000);
-}
+};
 
 // Types of Monsters
 
@@ -1177,9 +1174,9 @@ Skele.prototype = new Monster();
 Skele.prototype.constructor = Skele;
 
 function Snek (type) {
-	var smallSprite = "IwNgHgLAHAPgDAxTktW9HNe14fib77pEEFpG7FXmF6ELWq2P0q2kuKdM5/8DBQ4SNFjx7Xs1IlKXJJTpsl2KQoXL2yNXA4zJPREA";
-	var bigSprite = "IwNgHgLAHAPgDAxTktW9HNOD4HcHrABMpxuqBFeKJZ5RVmdD+hzpNzJXyvFtWjkGIqAuMLFMEU6VnkLFS5StVqhwxnNr1x2MRMr1WlbUc7c9aOr0YnRGyo776DMvLPGeBQA=";
-	var stripeSprite = "IwNgHgLAHAPgDAxTktW9HNe1gTMfTA44YNfMuUylAnUnOXXehjG5m5Lqt7y4vha1qQuowmSp0mbLnyF8sUTF9kFBNTTisazM1boenHpv6nemscPOCdQA";
+	var smallSprite = "IwNgHgLAHAPgDAxTktW9HNez3vgHCaGHolFFolbU0HakaWOqWItJvluff14DBQ4SNFjxEhh1bky1HslpNpVfsTWLFGzloUIuslHzVA==";
+	var bigSprite = "IwNgHgLAHAPgDAxTktW9HPOD4HcHrABMpxuqBFeKJZ5RVmdD+hzpNbOaXcFtWj2xIqA/njFMEU6VnkLFS5StVqhw3mKL1xo7X0QtOjdjpPdN5w1qsyNlByKNSXE2Vw8CgA==";
+	var stripeSprite = "IwNgHgLAHAPgDAxTktW9HNez3uBMwhmRpwwahFc51KRO5B+jTGd+xqdCt31pQi3q0hDPBMlTpM2XPkLsYkmLYoqvNcnFYtmTq3Q84nY4mN8RvMcO2jBiIA==";
 	this.stats = {
 		str: 5,
 		agi: 9,
@@ -1228,7 +1225,7 @@ Snek.prototype.constructor = Snek;
 
 function Jelly (type) {
 	this.stats = {
-		str: 7,
+		str: 1,
 		agi: 10,
 		int: 0,
 		cha: 0,
@@ -1238,6 +1235,7 @@ function Jelly (type) {
 	};
 	this.resists = { fire: 1.25 };
 	this.item1 = (new Hose('Acid'));
+	this.aiType ='random';
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
 	this.displayName = "quivering, gelatinous cube";
 	this.shortName = "Box Jelly";
@@ -1378,7 +1376,7 @@ Item.prototype.invDialog = function(){
 		return;
 	} 
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br>';
-	message += ('<br>' + this.infoStr())
+	message += ('<br>' + this.infoStr());
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand = (this.owner.hand1 === this)?'right':'left';
 		var activateNum = (this.owner.hand1 === this)?'activate1':'activate2';
@@ -1399,7 +1397,7 @@ Item.prototype.invDialog = function(){
 	}
 	message += '<br><br>Uses left: '+this.uses;
 	this.owner.offHand = this;
-	var invIndex = this.owner.inventory.indexOf(this)
+	var invIndex = this.owner.inventory.indexOf(this);
 	currentGame.dialog.setText(message);
 	currentGame.dialog.addButton('Drop this '+this.shortName,'dropItem '+invIndex,"warning");
 	currentGame.dialog.addButton('Cancel','router closeDialog');
@@ -1483,6 +1481,7 @@ function Weapon(){
 	this.selfTargeted = false;
 	this.natural = 1;
 	this.buffArr = [];
+	this.userTraits = [];
 	this.uses = true;
 	this.flammable = false;
 	this.ranged = false;
@@ -1495,8 +1494,9 @@ Weapon.prototype.constructor = Weapon;
 
 Weapon.prototype.infoStr = function(){
 	var str = "Attacks enemy's " +this.targetStat;
-	str += " with "+this.attackType+" damage, using your ";
-	str += this.userTraits.join(' and ')+".";
+	str += " with "+this.attackType+" damage, using ";
+	var traits = "your "+ this.userTraits.join(' and ')+".";
+	str += (this.userTraits.length > 0)? traits : "complete chance.";
 	if (this.buffArr.length > 1){
 		var odds = (this.buffArr[1] > 1)? " 1 in "+this.buffArr[1]+" chance to cause" : " Causes";
 		str += odds + " enemy to be "+this.buffArr[0].toLowerCase()+".";
@@ -1772,8 +1772,8 @@ function Hose (type) {
 		default:
 			this.uses = 30;
 			this.breakVerb = "melts into a puddle of goo";
-			this.displayName = "a slimy, acidic appendage";
-			this.shortName = "Acid Whip";
+			this.displayName = "a Box Jelly's acid generating organ: pretty useless as a weapon";
+			this.shortName = "Acid Bladder";
 			this.attackType = "acid";
 			this.targetStat = "maxHP";
 			this.color = 'rgba(88,216,84,0.5)';
@@ -1794,7 +1794,7 @@ function Consumable(){
 	this.uses = 1;
 	this.hurts = false;
 	this.targetStat = "HP";
-	this.amountDmg = "a random amount of"
+	this.amountDmg = "a random amount of";
 	this.attackVal = function(){return 0;};
 	this.itemType = "Consumable";
 }
@@ -1866,7 +1866,7 @@ function Vial(type){
 			this.shortName += " Steroids";
 			this.buffArr = ["Juiced",1];
 			this.verbs = ['inject'];
-			this.attackVal = function(val){
+			this.attackVal = function(){
 				return roll('1d5');
 			};
 			break;
@@ -1881,7 +1881,7 @@ function Vial(type){
 			this.shortName += " Opiates";
 			this.buffArr = ["Sedated",2];
 			this.verbs = ['medicate'];
-			this.attackVal = function(val){
+			this.attackVal = function(){
 				return this.owner.stats.maxHP * -1;
 			};
 			break;
@@ -1908,7 +1908,7 @@ function Food(type){
 			this.amountDmg = '2-10';
 			this.shortName = "Can of Spinach";
 			this.buffArr = ["Juiced",5];
-			this.attackVal = function(val){
+			this.attackVal = function(){
 				return roll('2d5') * -1;
 			};
 			break;
@@ -1921,7 +1921,7 @@ function Food(type){
 			this.amountDmg = '12-20';
 			this.shortName = "Questionable Meat";
 			this.buffArr = ["Poisoned",3];
-			this.attackVal = function(val){
+			this.attackVal = function(){
 				return (10 + roll('2d5')) * -1;
 			};
 			break;
@@ -1934,7 +1934,7 @@ function Food(type){
 			this.color = '#e45c10';
 			this.amountDmg = 20;
 			this.shortName = "Tasty Meat";
-			this.attackVal = function(val){
+			this.attackVal = function(){
 				return -20;
 			};
 			break;
