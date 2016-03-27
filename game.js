@@ -187,6 +187,12 @@ function Game (){
 	this.router = function(command){
 		this.dialog.close();
 		switch (command){
+			case 'unEquipleft':
+				this.playerHero.equip2( new Punch() );
+				break;
+			case 'unEquipright':
+				this.playerHero.equip1( new Punch() );
+				break;
 			case 'takeFoundItem':
 				this.playerHero.addToInv(this.foundItem);
 			case 'newMonster':
@@ -911,10 +917,12 @@ Hero.prototype.infoDialog = function(){
 	var message = this.name + '<br>' + 'HP: '+this.stats.HP+'/'+this.stats.maxHP+'<br><br>';
 	message += 'STR: '+this.stats.str+' | '+'AGI :'+this.stats.agi+'<br>';
 	message += 'INT: '+this.stats.int+' | '+'CHA :'+this.stats.cha+'<br><br>';
-	message += 'Physical Def: '+this.stats.phys+'<br>'+'Magical Def: '+this.stats.magi+'<br><br>';
+	message += 'Physical Defense: '+this.stats.phys+'<br>'+'Magical Defense: '+this.stats.magi+'<br><br>';
 	if (this.buffs.length > 0){
 		message += 'Currently: '+ this.buffs.join(', ')+'<br><br>';
 	}
+	message += 'Right hand: '+this.hand1.shortName+'<br>Left hand: '+this.hand2.shortName+'<br><br>';
+	message += 'Kills: '+this.kills+'<br>Gold: '+this.gold;
 	currentGame.dialog.addButton("Back to game","router closeDialog");
 	currentGame.dialog.setText(message);
 	currentGame.dialog.open();
@@ -1383,6 +1391,7 @@ Item.prototype.invDialog = function(){
 		var newLine = '<br><br> It is at the ready in your '+hand+' hand.';
 		message += newLine;
 		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+activateNum,"suggest");
+		currentGame.dialog.addButton('Un-equip this item','router unEquip'+hand,'caution');
 	} else{
 		switch (this.itemType){
 		case "Consumable":
