@@ -985,7 +985,7 @@ Hero.prototype.initialize = function(){
 	this.effectController.link(this);
 	this.addToInv(new Sword());
 	this.addToInv(new Potion('Health'));
-	this.addToInv(new Cloth('Rags'));
+	this.addToInv(new Cloth('Shirt'));
 	this.equip1(this.inventory[0]);
 	this.equip2(this.inventory[1]);
 	this.wear(this.inventory[2]);
@@ -1109,7 +1109,12 @@ Monster.prototype.appear = function(){
 	var grab2 = (this.inventory[1])? this.inventory[1] : new Punch();
 	this.equip1(grab1);
 	this.equip2(grab2);
-	this.wear(new Nude())
+	if (typeof(this.garment) !== "undefined"){
+		this.wear(this.garment);
+		this.addToInv(this.garment);
+	} else {
+		this.wear(new Nude());
+	}
 	this.effectController = new Effect();
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
@@ -1125,8 +1130,8 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids","Food","Food Rotten","Bow Wood","Food Spinach","Vial Opiates"];
-	var tempRareArr = ["Potion Health","Sword Flame","Staff Thunder","Bow Poison"];
+	var tempUncommonArr = ["Potion Regen","Sword Iron","Vial Steroids","Food","Food Rotten","Bow Wood","Food Spinach","Vial Opiates","Cloth Shirt","Cloth Rags"];
+	var tempRareArr = ["Potion Health","Sword Flame","Staff Thunder","Bow Poison","Cloth Robes","Plate Brass"];
 	var numUncommon = roll('1d3') - 1;
 	var numRare = roll('1d2') - 1;
 	for (var w = numUncommon - 1; w >= 0; w--) {
@@ -1159,7 +1164,7 @@ function Axedude (type) {
 		agi: 5,
 		int: 5,
 		cha: 2,
-		phys: 2,
+		phys: 0,
 		magi: 0,
 		maxHP: 16
 	};
@@ -1168,6 +1173,7 @@ function Axedude (type) {
 	this.color = '#f8d878';
 	this.item2 = (new Axe());
 	this.item1 = (new Vial('Steroids'));
+	this.garment = new Plate('Brass');
 	this.aiType = 'buffer';
 }
 Axedude.prototype = new Monster();
@@ -1237,19 +1243,19 @@ function Skele (type) {
 		magi: 0,
 		maxHP: 12
 	};
-	this.naturalResists = { fire: 1.5 };
 	if ( type === ""){
 		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming", "Bones"]);
 	}
 	this.color = '#f0d0b0';
+	this.naturalResists = { fire: 1.25 };
 	switch (type){
 		case "Footman":
 			this.stats.maxHP = 14;
 			this.stats.str = 8;
-			this.stats.phys = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
 			this.item1 = (new Sword());
+			this.garment = new Cloth('Rags');
 			break;
 		case "Archer":
 			this.stats.agi = 10;
@@ -1260,21 +1266,22 @@ function Skele (type) {
 		case "Monk":
 			this.stats.agi = 16;
 			this.stats.int = 9;
-			this.stats.phys = 1;
 			this.stats.magi = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Monk";
 			this.item1 = (new Staff());
+			this.garment = new Cloth('Rags');
 			break;
 		case "Bruiser":
 			this.stats.maxHP = 18;
 			this.stats.str = 10;
-			this.stats.phys = 2;
+			this.stats.phys = 1;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9biKxux+o5JHIl55kXb40pFY4Gnk0PnbulML28mO0KldvUw9c/DJPTSxxXAsVLlK1WvUdxE7vOaFmOnn0G6WRui1psOwk5252BTO5tEWtMzXI/7T77EA=";
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
 			this.item1 = (new Sword('Iron'));
+			this.garment = new Cloth('Rags');
 			break;
 		case "Flaming":
 			this.stats.maxHP = 20;
@@ -1384,7 +1391,9 @@ function Were (type) {
 			this.spriteCompressed = wolfSprite;
 			this.displayName = "Werewolf";
 			this.color = "#ac7c00";
+			this.stats.phys = 0;
 			this.item1 = (new Claws());
+			this.garment = new Cloth('Rags');
 			break;
 		case "Goat":
 			this.stats.maxHP = 22;
@@ -1417,11 +1426,12 @@ function Mage (type) {
 		int: 12,
 		cha: 8,
 		phys: 0,
-		magi: 2,
+		magi: 1,
 		maxHP: 12
 	};
 	this.item1 = (new Staff('Thunder'));
 	this.item2 = (new Potion('Health'));
+	this.garment = new Cloth('Robes');
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HgeV7dgEF75K4oEBMuwV5hRJd9WZiLzjpCh3DbCFQfy7da3NJQatSVMdLY0e8/MxapVPHBr7Fde/QcNGJe5UymY2YrdeWrx5peRUacvMvNyCKw4Yo/q/r4yisEKVBZaHJwK9tLafEA==";
 	this.displayName = "Wiz";
 	this.color = '#0058f8';
@@ -1521,7 +1531,7 @@ Item.prototype.invDialog = function(){
 			if (this.owner.armor === this){
 				currentGame.dialog.addButton('Remove ' + this.shortName,'runRound removeOffhand');
 			} else {
-				var armorStr = ( this.owner.armor.constructor.name !== 'Nude')? 'this instead of ' + this.owner.hand2.shortName : 'the '+ this.shortName;
+				var armorStr = ( this.owner.armor.constructor.name !== 'Nude')? 'instead of ' + this.owner.armor.shortName : 'the '+ this.shortName;
 				currentGame.dialog.addButton('Wear ' + armorStr,'runRound wearOffhand');
 			}
 			break;
@@ -2107,7 +2117,9 @@ Armor.prototype.infoStr = function(){
 		str += key.toUpperCase() +": "+signfier+this.stats[key]+joiner;
 		counter++;
 	}
-	str += "<br>";
+	if (Object.keys(this.resists) > 0){
+		str += "<br>";
+	}
 	counter = 1;
 	for (var key in this.resists) {
 		var signfier = (this.resists[key] > 0)? "" : "-";
@@ -2133,20 +2145,54 @@ function Cloth(type){
 	this.flammable = true;
 	this.breakVerb = "is shredded beyond recognition"
 	var shirtSprite = "IwNgHqA+AMt/DFOSlxbrcATMHek89tcjEiKz4DjToC4bL7MFLXz2O3nULYgA";
+	var robe1Sprite = "IwNgHqA+AMt/DG2MJjgCYOrcrWddNtdoVtMUkVyKqEbGaHUnXCz3HPqmi2O8AYOTCRnNqW7QgA==";
+	this.stats = { phys: 1 };
+	this.smallSprite = shirtSprite;
 	switch (type){
+		case 'Robes':
+			this.smallSprite = robe1Sprite;
+			this.stats.magi = 1;
+			this.color = '#0000bc';
+			this.uses = 40;
+			this.displayName = "a garment made for apprentice spellcasters";
+			this.shortName = "Magician's Robe";
+			break;
+		case 'Shirt':
+			this.color = '#a4e4fc';
+			this.uses = 40;
+			this.displayName = "a decently sewn linen garment";
+			this.shortName = "Linen Tunic";
+			break;
+		default:
 		case 'Rags':
-			this.smallSprite = shirtSprite;
 			this.color = '#503000';
 			this.uses = 30;
 			this.displayName = "a few scraps of burlap and linen";
 			this.shortName = "Sackcloth Tunic";
-			this.stats = { phys: 1 };
-			this.resists = { poison: 1.5 };
+			this.resists = { fire: 1.25 };
 			break;
 	}
 }
 Cloth.prototype = new Armor();
 Cloth.prototype.constructor = Cloth;
+
+function Plate(type){
+	var hornedSprite = "IwNgHqA+AMt/DFOSpxro1xxcCZ9dM5Dg8Czd5zKiDz4qL8NjWMKD2cyKVS+yfIP5FYQA";
+	this.breakVerb = "falls dented and broken to the ground";
+	this.stats = { phys: 2 };
+	this.smallSprite = hornedSprite;
+	switch (type){
+		default:
+		case 'Brass':
+			this.color = "#f8d878";
+			this.uses = 25;
+			this.displayName = "shiny, brass plates formed into a decorative, muscular, but somewhat flimsy chestplate";
+			this.shortName = "Brass Platemail";
+			break;
+	}
+}
+Plate.prototype = new Armor();
+Plate.prototype.constructor = Plate;
 
 // an Effect is a Displayable that visually displays the type of damage to the player
 
