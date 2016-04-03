@@ -35,12 +35,6 @@ function rollHits(diceStr,target){
 // used to change the tense of used verbs
 function thirdPerson(verb){
 	switch (verb){
-		case 'chow down':
-		case 'doze off':
-		case 'zonk out':
-		case 'lunge at':
-		verb = firstWord(verb)+'s '+secondWord(verb);
-			break;
 		case "bash":
 		case "punch":
 		case "slash":
@@ -51,7 +45,11 @@ function thirdPerson(verb){
 			verb = "is";
 			break;
 		default:
-			verb += 's';
+			if (verb.indexOf(' ') !== -1){
+				verb = firstWord(verb)+'s '+secondWord(verb);
+			} else {
+				verb += 's';
+			}
 			break;
 	}
 	return verb;
@@ -343,8 +341,22 @@ function Game (){
 
 	this.dropItem = function(number){
 		this.dialog.close();
+		var item = this.playerHero.inventory[number];
 		this.playerHero.inventory.splice(number,1);
 		this.playerHero.updateStatus();
+		switch (item){
+			case this.playerHero.armor:
+				this.playerHero.switchArmor();
+				break;
+			case this.playerHero.accessory:
+				break;
+			case this.playerHero.hand1:
+				this.playerHero.equip1( new Punch() );
+				break;
+			case this.playerHero.hand2:
+				this.playerHero.equip2( new Punch() );
+				break;
+		}
 		if (this.foundItem.sprite){
 			this.playerHero.addToInv(this.foundItem);
 		}
@@ -453,6 +465,9 @@ Character.prototype.wiggle = function(tempClass, time){
 };
 
 Character.prototype.equip1 = function(item){
+	if ((item.itemType !== "Weapon")&&(item.itemType !== "Consumable")){
+		return;
+	}
 	item.owner = this;
 	this.hand1 = item;
 	if (this.constructor.name === "Hero"){
@@ -461,12 +476,46 @@ Character.prototype.equip1 = function(item){
 };
 
 Character.prototype.equip2 = function(item){
+	if ((item.itemType !== "Weapon")&&(item.itemType !== "Consumable")){
+		return;
+	}
 	item.owner = this;
 	this.hand2 = item;
 	if (this.constructor.name === "Hero"){
 		document.getElementById('equip2').innerHTML = shorten(item.shortName,17);
 	}
 };
+
+Character.prototype.wear = function(item){
+	if (((item.itemType !== "Armor")&&(item.itemType !== "Accessory"))||((this.armor === item)||(false))){
+		return;
+	}
+	item.owner = this;
+	if (item.itemType === "Armor"){
+		this.armor = item;
+	} else if (item.itemType === "Accessory"){
+		this.accessory = item;
+	}
+	for (var key in item.stats) {
+	  if (item.stats.hasOwnProperty(key)) {
+	    this.stats[key] += item.stats[key];
+	  }
+	}
+}
+
+Character.prototype.remove = function(item){
+	if (((item.itemType !== "Armor")&&(item.itemType !== "Accessory"))||((this.armor !== item)&&(true))){
+		return;
+	}
+	if (this.armor === item){
+		this.armor = {};
+	}
+	for (var key in item.stats) {
+	  if (item.stats.hasOwnProperty(key)) {
+	    this.stats[key] -= item.stats[key];
+	  }
+	}
+}
 
 Character.prototype.getEnemy = function(){
 	if (this.constructor.name === 'Hero'){
@@ -713,6 +762,28 @@ Character.prototype.equip2Offhand = function(){
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
 };
 
+Character.prototype.wearOffhand = function(){
+	if (this.offHand.itemType === "Armor"){
+		this.switchArmor(this.offHand);
+	} else {
+
+	}
+	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('put on')+' the '+ this.offHand.shortName.toLowerCase()+'.' );
+	this.offHand = "";
+	setTimeout(function(){intervalRelay = "Check equip";},1000);
+};
+
+Character.prototype.removeOffhand = function(){
+	if (this.offHand.itemType === "Armor"){
+		this.switchArmor();
+	} else {
+		
+	}
+	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('remove')+' the '+ this.offHand.shortName.toLowerCase()+'.' );
+	this.offHand = "";
+	setTimeout(function(){intervalRelay = "Check equip";},1000);
+};
+
 Character.prototype.activate1 = function(){
 	this.offHand = "";
 	if (typeof(this.hand1) === 'undefined' ){
@@ -828,7 +899,7 @@ function Hero(name){
 		agi: 8,
 		int: 8,
 		cha: 8,
-		phys: 1,
+		phys: 0,
 		magi: 0,
 		maxHP: 50
 	};
@@ -888,10 +959,20 @@ Hero.prototype.initialize = function(){
 	this.addToInv(new Potion('Health'));
 	this.equip1(this.inventory[0]);
 	this.equip2(this.inventory[1]);
+	this.armor = {};
+	this.wear(new Nude());
 	this.gold = 0;
 	this.draw(this.canvas,this.spriteCompressed);
 	this.updateStatus();
 };
+
+Hero.prototype.switchArmor = function(item){
+	if (typeof(item) === "undefined"){
+		item = new Nude();
+	}
+	this.remove(this.armor);
+	this.wear(item);
+}
 
 Hero.prototype.receive = function(item,looted){
 	currentGame.foundItem = item;
@@ -921,7 +1002,8 @@ Hero.prototype.infoDialog = function(){
 	if (this.buffs.length > 0){
 		message += 'Currently: '+ this.buffs.join(', ')+'<br><br>';
 	}
-	message += 'Right hand: '+this.hand1.shortName+'<br>Left hand: '+this.hand2.shortName+'<br><br>';
+	message += 'Right hand: '+this.hand1.shortName+'<br>Left hand: '+this.hand2.shortName+'<br>';
+	message += 'Armor: '+this.armor.shortName+'<br><br>';
 	message += 'Kills: '+this.kills+'<br>Gold: '+this.gold;
 	currentGame.dialog.addButton("Back to game","router closeDialog");
 	currentGame.dialog.setText(message);
@@ -1394,11 +1476,19 @@ Item.prototype.invDialog = function(){
 		currentGame.dialog.addButton('Un-equip this item','router unEquip'+hand,'caution');
 	} else{
 		switch (this.itemType){
+		case "Armor":
+			if (this.owner.armor === this){
+				currentGame.dialog.addButton('Remove ' + this.shortName,'runRound removeOffhand');
+			} else {
+				var armorStr = ( this.owner.armor.constructor.name !== 'Nude')? 'this instead of ' + this.owner.hand2.shortName : 'the '+ this.shortName;
+				currentGame.dialog.addButton('Wear ' + armorStr,'runRound wearOffhand');
+			}
+			break;
 		case "Consumable":
 			currentGame.dialog.addButton('Use without equipping','runRound activateOffhand',"caution");
 		case "Weapon":
-			var rHandStr = ( this.owner.hand2.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand2.shortName : 'in your left hand.';
-			var lHandStr = ( this.owner.hand1.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand1.shortName : 'in your right hand.';
+			var rHandStr = ( this.owner.hand2.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand2.shortName : 'in your left hand';
+			var lHandStr = ( this.owner.hand1.constructor.name !== 'Punch')? 'instead of ' + this.owner.hand1.shortName : 'in your right hand';
 			currentGame.dialog.addButton('Equip '+lHandStr,'runRound equip1Offhand');
 			currentGame.dialog.addButton('Equip '+rHandStr,'runRound equip2Offhand');
 			break;
@@ -1408,7 +1498,7 @@ Item.prototype.invDialog = function(){
 	this.owner.offHand = this;
 	var invIndex = this.owner.inventory.indexOf(this);
 	currentGame.dialog.setText(message);
-	currentGame.dialog.addButton('Drop this '+this.shortName,'dropItem '+invIndex,"warning");
+	currentGame.dialog.addButton('Drop the '+this.shortName,'dropItem '+invIndex,"warning");
 	currentGame.dialog.addButton('Cancel','router closeDialog');
 	currentGame.dialog.open();
 };
@@ -1952,6 +2042,69 @@ function Food(type){
 
 Food.prototype = new Consumable();
 Food.prototype.constructor = Food;
+
+// Armor are items that can be equipped to modify stats and resistances
+
+function Armor(){
+	this.selfTargeted = false;
+	this.uses = true;
+	this.flammable = false;
+	this.ranged = false;
+	this.itemType = "Armor";
+	this.stats = {};
+	this.resists = {};
+}
+Armor.prototype = new Item();
+Armor.prototype.constructor = Armor;
+
+Armor.prototype.infoStr = function(){
+	var str = "";
+	var counter = 1;
+	for (var key in this.stats) {
+		var signfier = (this.stats[key] > 0)? "+" : "-";
+		var joiner = (counter >= Object.keys(this.stats).length)? "" : ", "
+		str += key.toUpperCase() +": "+signfier+this.stats[key]+joiner;
+		counter++;
+	}
+	str += "<br>";
+	counter = 1;
+	for (var key in this.resists) {
+		var signfier = (this.resists[key] > 0)? "" : "-";
+		var joiner = (counter >= Object.keys(this.resists).length)? "" : ", "
+		str += key.toUpperCase() +": "+signfier+(this.resists[key]*100)+'%'+joiner;
+		counter++;
+	}
+	return str;
+};
+
+function Nude(){
+	this.uses = true;
+	this.smallSprite = "";
+	this.color = 'white';
+	this.displayName = "just as god made ya'";
+	this.shortName = "Birthday Suit";
+	this.stats = { cha: 1 };
+}
+Nude.prototype = new Armor();
+Nude.prototype.constructor = Nude;
+
+function Cloth(type){
+	this.flammable = true;
+	var shirtSprite = "IwNgHqA+AMt/DFOSlxbrcATMHek89tcjEiKz4DjToC4bL7MFLXz2O3nULYgA";
+	switch (type){
+		case 'Rags':
+			this.smallSprite = shirtSprite;
+			this.color = '#503000';
+			this.uses = 30;
+			this.displayName = "a few scraps of burlap and linen";
+			this.shortName = "Rags";
+			this.stats = { phys: 1 };
+			this.resists = { poison: 1.5 };
+			break;
+	}
+}
+Cloth.prototype = new Armor();
+Cloth.prototype.constructor = Cloth;
 
 // an Effect is a Displayable that visually displays the type of damage to the player
 
