@@ -193,6 +193,9 @@ function Game (){
 				break;
 			case 'takeFoundItem':
 				this.playerHero.addToInv(this.foundItem);
+				break;
+			case 'takeLootedItem':
+				this.playerHero.addToInv(this.foundItem);
 			case 'newMonster':
 				this.switchMonster();
 			case 'closeDialog':
@@ -922,6 +925,7 @@ function Hero(name){
 		name: document.getElementById('hero-name')
 	};
 	this.displayElement.name.innerHTML = name;
+	this.unlucky = 0;
 	this.stats = {
 		str: 8,
 		agi: 8,
@@ -1005,9 +1009,10 @@ Hero.prototype.switchArmor = function(item){
 Hero.prototype.receive = function(item,looted){
 	currentGame.foundItem = item;
 	var message = "You find a " + item.shortName + "!";
-	currentGame.dialog.addButton("Take the " + item.shortName, "router takeFoundItem");
-	var afterwards = (looted === true)? "newMonster" : "closeDialog";
-	currentGame.dialog.addButton("Leave it", "router "+afterwards);
+	var takeAction = (looted === true)? "takeLootedItem" : "takeFoundItem";
+	var dropAction = (looted === true)? "newMonster" : "closeDialog";
+	currentGame.dialog.addButton("Take the " + item.shortName, "router "+takeAction);
+	currentGame.dialog.addButton("Leave it", "router "+dropAction);
 	currentGame.dialog.setText(message);
 	currentGame.dialog.open();
 };
@@ -1140,7 +1145,8 @@ Monster.prototype.loot = function(){
 	for (var e = numRare.length - 1; e >= 0; e--) {
 		this.addToInv(currentGame.itemFromString(randomEntry(tempRareArr)));
 	}
-	var gotItem = (rollHits('1d2',2)>0);
+	var gotItem = (currentGame.playerHero.unlucky >= 5) ? (rollHits('1d5',3)>0) : true;
+	var gotItem = (currentGame.currentLocation.switchTrigger <= 0) ? false : gotItem;
 	var message = "You found "
 	var lootedItem = (this.inventory.length > 0) ? randomEntry(this.inventory) : false;
 	var thisMonster = this;
@@ -1148,8 +1154,10 @@ Monster.prototype.loot = function(){
 	setTimeout(function(){
 		currentGame.log.add(message);
 		if (gotItem&&lootedItem){
+			currentGame.playerHero.unlucky = 0;
 			currentGame.playerHero.receive(lootedItem,true);
 		} else {
+			currentGame.playerHero.unlucky++;
 			currentGame.playerHero.gold += thisMonster.gold;
 			setTimeout(currentGame.switchMonster, 2000);
 		}
