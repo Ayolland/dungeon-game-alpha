@@ -342,21 +342,7 @@ function Game (){
 	this.dropItem = function(number){
 		this.dialog.close();
 		var item = this.playerHero.inventory[number];
-		this.playerHero.inventory.splice(number,1);
-		this.playerHero.updateStatus();
-		switch (item){
-			case this.playerHero.armor:
-				this.playerHero.switchArmor();
-				break;
-			case this.playerHero.accessory:
-				break;
-			case this.playerHero.hand1:
-				this.playerHero.equip1( new Punch() );
-				break;
-			case this.playerHero.hand2:
-				this.playerHero.equip2( new Punch() );
-				break;
-		}
+		item.destroy();
 		if (this.foundItem.sprite){
 			this.playerHero.addToInv(this.foundItem);
 		}
@@ -543,12 +529,12 @@ Character.prototype.defense = function(attackType){
 };
 
 Character.prototype.burnItems = function(){
-	var items = [this.hand1,this.hand2];
+	var items = [this.hand1,this.hand2,this.armor,this.accessory];
 	for (var i = items.length - 1; i >= 0; i--) {
 		if (typeof( items[i] ) !== "undefined" ){
 			if (items[i].flammable === true){
 				items[i].uses -= roll('2d3');
-				items[i].uses = (items[i].uses > 0) ? items[i].uses : items[i].uses;
+				items[i].uses = (items[i].uses > 0) ? items[i].uses : 1;
 				items[i].breakVerb = 'is charred to a crisp';
 			}
 		}
@@ -616,6 +602,9 @@ Character.prototype.hit = function(atkObj){
 		case 'Weapon':
 			message = firstCap(this.getEnemy().selfStr())+' '+ this.getEnemy().conjugate(verb) +' '+ this.selfStr().toLowerCase() + ' for ' + appliedDmg + atkObj.targetStat.toUpperCase() + '.';
 			break;
+	}
+	if (this.armor.uses !== true){
+		this.armor.uses--;
 	}
 	currentGame.log.add(message);
 	this.updateStatus();
@@ -698,13 +687,28 @@ Character.prototype.runBuffs = function(){
 };
 
 Character.prototype.checkEquip = function(turnChoice){
-	var item = "";
+	var item = new Nude();
+	var checkArr = [this.hand1,this.hand2,this.armor,this.accessory];
+	var exhaustedArr = [];
+	for (var e = checkArr.length - 1; e >= 0; e--) {
+		if (typeof(checkArr[e]) !== 'undefined'){
+			if (checkArr[e].checkExhausted()) {
+				exhaustedArr.push(checkArr[e])
+			}
+		}
+	}
 	switch (turnChoice){
 		case 'activate1':
-			item = this.hand1;
-			break;
 		case 'activate2':
-			item = this.hand2;
+			if (exhaustedArr.length > 0){
+				item = randomEntry(exhaustedArr);
+				exhaustedArr.splice(exhaustedArr.indexOf(item),1);
+				for (var r = exhaustedArr.length - 1; r >= 0; r--) {
+					exhaustedArr[r].uses = 1;
+				}
+			} else {
+				intervalRelay = "End turn";
+			}
 			break;
 		case 'activateOffhand':
 			item = this.offHand;
@@ -957,10 +961,10 @@ Hero.prototype.initialize = function(){
 	this.effectController.link(this);
 	this.addToInv(new Sword());
 	this.addToInv(new Potion('Health'));
+	this.addToInv(new Cloth('Rags'));
 	this.equip1(this.inventory[0]);
 	this.equip2(this.inventory[1]);
-	this.armor = {};
-	this.wear(new Nude());
+	this.wear(this.inventory[2]);
 	this.gold = 0;
 	this.draw(this.canvas,this.spriteCompressed);
 	this.updateStatus();
@@ -1081,6 +1085,7 @@ Monster.prototype.appear = function(){
 	var grab2 = (this.inventory[1])? this.inventory[1] : new Punch();
 	this.equip1(grab1);
 	this.equip2(grab2);
+	this.wear(new Nude())
 	this.effectController = new Effect();
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
@@ -1418,17 +1423,29 @@ Item.prototype.exhaust = function(){
 	if (this.uses === true){
 		return;
 	}
-	if (this.owner.hand1 === this){
-		this.owner.equip1( new Punch() );
-	} else if (this.owner.hand2 === this){
-		this.owner.equip2( new Punch() );
+	this.destroy();
+	var message = firstCap(this.owner.possesive()) +" "+ this.shortName.toLowerCase() +" "+ this.breakVerb + " and is discarded.";
+	currentGame.log.add(message);
+};
+
+Item.prototype.destroy = function(){
+	switch (this){
+		case this.owner.armor:
+			this.owner.switchArmor();
+			break;
+		case this.owner.accessory:
+			break;
+		case this.owner.hand1:
+			this.owner.equip1( new Punch() );
+			break;
+		case this.owner.hand2:
+			this.owner.equip2( new Punch() );
+			break;
 	}
 	var invIndex = this.owner.inventory.indexOf(this);
 	this.owner.inventory.splice(invIndex,1);
 	this.owner.updateStatus();
-	var message = firstCap(this.owner.possesive()) +" "+ this.shortName.toLowerCase() +" "+ this.breakVerb + " and is discarded.";
-	currentGame.log.add(message);
-};
+}
 
 Item.prototype.target = function(){
 	return (this.selfTargeted) ? this.owner : this.owner.getEnemy();
@@ -2090,6 +2107,7 @@ Nude.prototype.constructor = Nude;
 
 function Cloth(type){
 	this.flammable = true;
+	this.breakVerb = "is shredded beyond recognition"
 	var shirtSprite = "IwNgHqA+AMt/DFOSlxbrcATMHek89tcjEiKz4DjToC4bL7MFLXz2O3nULYgA";
 	switch (type){
 		case 'Rags':
@@ -2097,7 +2115,7 @@ function Cloth(type){
 			this.color = '#503000';
 			this.uses = 30;
 			this.displayName = "a few scraps of burlap and linen";
-			this.shortName = "Rags";
+			this.shortName = "Sackcloth Tunic";
 			this.stats = { phys: 1 };
 			this.resists = { poison: 1.5 };
 			break;
