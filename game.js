@@ -416,6 +416,7 @@ Location.prototype.constructor = Location;
 function Character (){
 	this.buffs = [];
 	this.resists = {};
+	this.naturalResists = {};
 	this.inventory = [];
 }
 
@@ -487,6 +488,7 @@ Character.prototype.wear = function(item){
 	    this.stats[key] += item.stats[key];
 	  }
 	}
+	this.calcResists();
 }
 
 Character.prototype.remove = function(item){
@@ -501,6 +503,28 @@ Character.prototype.remove = function(item){
 	    this.stats[key] -= item.stats[key];
 	  }
 	}
+	this.calcResists();
+}
+
+Character.prototype.calcResists = function(){
+	this.resists = {};
+	var itemArr = [this.armor];
+	var resistsArr = [this.naturalResists];
+	for (var t = itemArr.length - 1; t >= 0; t--) {
+		if(itemArr[t].resists !== {}){
+			resistsArr.push(itemArr[t].resists);
+		}
+	}
+	for (var y = resistsArr.length - 1; y >= 0; y--) {
+		for (var key in resistsArr[y]) {
+		  if (this.resists.hasOwnProperty(key)) {
+		    this.resists[key] = (this.resists[key] < resistsArr[y][key])? this.resists[key] : resistsArr[y][key];
+		  } else {
+		  	this.resists[key] = resistsArr[y][key];
+		  }
+		}
+	}
+
 }
 
 Character.prototype.getEnemy = function(){
@@ -1172,7 +1196,7 @@ function Ball (type) {
 			this.color = '#d800cc';
 			break;
 		case 'Fire':
-			this.resists = { fire: -0.5 };
+			this.naturalResists = { fire: -0.5 };
 			this.spriteCompressed = burnSprite;
 			this.displayName = "floating orb of fire";
 			this.shortName = "Fireball";
@@ -1213,7 +1237,7 @@ function Skele (type) {
 		magi: 0,
 		maxHP: 12
 	};
-	this.resists = { fire: 1.5 };
+	this.naturalResists = { fire: 1.5 };
 	if ( type === ""){
 		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming", "Bones"]);
 	}
@@ -1328,7 +1352,7 @@ function Jelly (type) {
 		magi: 0,
 		maxHP: 20
 	};
-	this.resists = { fire: 1.25 };
+	this.naturalResists = { fire: 1.25 };
 	this.item1 = (new Hose('Acid'));
 	this.aiType ='random';
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
