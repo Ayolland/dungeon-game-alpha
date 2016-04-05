@@ -1159,9 +1159,10 @@ Monster.prototype.dodge = function(){
 
 Monster.prototype.loot = function(){
 	this.addToInv(currentGame.itemFromString(randomEntry(this.common)));
-	this.addToInv(currentGame.itemFromString(randomEntry(this.common)));
-	this.addToInv(currentGame.itemFromString(randomEntry(this.uncommon)));
 	if ( roll('1d2') === 2) {
+		this.addToInv(currentGame.itemFromString(randomEntry(this.uncommon)));
+	}
+	if ( roll('1d3') === 3) {
 		this.addToInv(currentGame.itemFromString(randomEntry(this.rare)));
 	}
 	var gotItem = (currentGame.playerHero.unlucky >= 4) ? true : (rollHits('1d2',2)>0);
@@ -1201,6 +1202,7 @@ function Axedude (type) {
 	this.item2 = (new Axe());
 	this.item1 = (new Vial('Steroids'));
 	this.garment = new Plate('Brass');
+	this.trinket = new Ring('Brass');
 	this.aiType = 'buffer';
 	this.purseStr = '2d20';
 	this.common = ['Food','Axe Brass','Ring Brass'];
@@ -1289,8 +1291,8 @@ function Skele (type) {
 	this.color = '#f0d0b0';
 	this.naturalResists = { fire: 1.25 };
 	this.purseStr = '1d10';
-	this.common = ['Food Rotten'];
-	this.uncommon = ['Sword Wood','Potion Health','Ring Wood'];
+	this.common = ['Food Rotten','Ring Wood'];
+	this.uncommon = ['Sword Iron','Potion Health'];
 	this.rare = ['Plate Brass'];
 	switch (type){
 		case "Footman":
@@ -1503,8 +1505,8 @@ function Mage (type) {
 	this.switchTrigger = 5;
 	this.purseStr = '2d20';
 	this.common = ['Ring Wood','Potion Regen','Staff Wood'];
-	this.uncommon = ['Potion Health','Cloth Robes'];
-	this.rare = ['Staff Thunder','Sword Fire'];
+	this.uncommon = ['Potion Health'];
+	this.rare = ['Sword Fire'];
 }
 Mage.prototype = new Monster();
 Mage.prototype.constructor = Mage;
