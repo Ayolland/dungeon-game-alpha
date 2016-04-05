@@ -1158,16 +1158,10 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	var numUncommon = roll('1d3') - 1;
-	var numRare = roll('1d2') - 1;
-	var numCommon = 4 - numUncommon - numRare;
-	for (var h = numCommon - 1; h >= 0; h--) {
-		this.addToInv(currentGame.itemFromString(randomEntry(this.common)));
-	}
-	for (var w = numUncommon - 1; w >= 0; w--) {
-		this.addToInv(currentGame.itemFromString(randomEntry(this.uncommon)));
-	}
-	for (var e = numRare.length - 1; e >= 0; e--) {
+	this.addToInv(currentGame.itemFromString(randomEntry(this.common)));
+	this.addToInv(currentGame.itemFromString(randomEntry(this.common)));
+	this.addToInv(currentGame.itemFromString(randomEntry(this.uncommon)));
+	if ( roll('1d2') === 2) {
 		this.addToInv(currentGame.itemFromString(randomEntry(this.rare)));
 	}
 	var gotItem = (currentGame.playerHero.unlucky >= 4) ? true : (rollHits('1d2',2)>0);
@@ -1209,7 +1203,7 @@ function Axedude (type) {
 	this.garment = new Plate('Brass');
 	this.aiType = 'buffer';
 	this.purseStr = '2d20';
-	this.common = ['Food','Axe Brass'];
+	this.common = ['Food','Axe Brass','Ring Brass'];
 	this.uncommon = ['Vial Steroids','Plate Brass'];
 	this.rare = ['Vial Opiates','Food Spinach'];
 }
@@ -1232,8 +1226,8 @@ function Ball (type) {
 	var dripSprite = "IwNgHgLAHAPgDAxTktW9HNe54fd6HBpGkpEBMwVhyhVDtipFrZCl1XTc+ejfJMVK1izDuzF1ewrGKnoFuHCtVr1GzVvU8SIvSKUzD+IZyJn63HiJoWJxsguGHeQifaNvByt7+zAQA===";
 	var burnSprite = "IwNgHgLAHAPgDAxTktWxx0YZrTi7qYHFrElyH7kmnW22Ua0BMwbBTOJbvj3PFhwrN2Y4clZiR9BlVkyynPCtVr1GzVu06t8rLn3ZKR/CbooaF6uYry5jQg8eiec1+IYLhyj+8nOSl4GvkA==";
 	this.purseStr = '1d10';
-	this.common = ['Food Rotten','Sword Wood'];
-	this.uncommon = ['Vial Opiates','Sword Iron'];
+	this.common = ['Axe Brass','Sword Iron'];
+	this.uncommon = ['Vial Opiates','Ring Brass'];
 	switch (type){
 		case 'Goo':
 			this.spriteCompressed = dripSprite;
@@ -1249,7 +1243,7 @@ function Ball (type) {
 			this.shortName = "Fireball";
 			this.color = "#f83800";
 			this.item1 = (new Hose('Fire'));
-			this.rare = ['Sword Fire'];
+			this.rare = ['Sword Fire','Ring Fire'];
 			break;
 	}
 }
@@ -1272,7 +1266,7 @@ function Scamp (type) {
 	this.item1 = (new Potion('Regen'));
 	this.aiType = 'random';
 	this.purseStr = '3d10';
-	this.common = ['Food','Potion Regen'];
+	this.common = ['Food','Potion Regen','Ring Wood'];
 	this.uncommon = ['Potion Health','Cloth Shirt','Staff Wood'];
 	this.rare = ['Vial Steroids','Food Spinach'];
 }
@@ -1295,8 +1289,8 @@ function Skele (type) {
 	this.color = '#f0d0b0';
 	this.naturalResists = { fire: 1.25 };
 	this.purseStr = '1d10';
-	this.common = ['Food Rotten','Cloth Rags'];
-	this.uncommon = ['Sword Wood','Potion Health'];
+	this.common = ['Food Rotten'];
+	this.uncommon = ['Sword Wood','Potion Health','Ring Wood'];
 	this.rare = ['Plate Brass'];
 	switch (type){
 		case "Footman":
@@ -1334,7 +1328,7 @@ function Skele (type) {
 			this.shortName = "Skelebones Bruiser";
 			this.item1 = (new Sword('Iron'));
 			this.garment = new Cloth('Rags');
-			this.rare = ['Sword Flame'];
+			this.rare = ['Sword Flame','Ring Brass'];
 			break;
 		case "Flaming":
 			this.stats.maxHP = 20;
@@ -1343,7 +1337,7 @@ function Skele (type) {
 			this.shortName = "Flaming Skelebones";
 			this.trinket = new Ring('Flame');
 			this.color = "#ff5000";
-			this.rare = ['Sword Flame'];
+			this.rare = ['Sword Flame','Ring Flame'];
 			break;
 		case "Bones":
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOFxPc7D7pGnGqEJFqGlzlINUrHXPZV30nsb5Mc8fRsKE8RuSVOkzZc+Qt5YBFeirxl13fitrVdqwWrESySwVu7mWJw9Ym2jVIA";
@@ -1403,7 +1397,7 @@ function Snek (type) {
 			this.item1 = (new Claws('Venom'));
 			this.spriteCompressed = smallSprite;
 			this.displayName = "Snek";
-			this.rare = ['Potion Health'];
+			this.rare = ['Food Spinach'];
 			break;
 	}
 }
@@ -1428,8 +1422,8 @@ function Jelly (type) {
 	this.shortName = "Box Jelly";
 	this.color = 'rgba(88,216,84,0.5)';
 	this.purseStr = '3d20';
-	this.common = ['Potion Health','Potion Regen'];
-	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach'];
+	this.common = ['Potion Health','Potion Regen','Ring Brass'];
+	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
 	this.rare = ['Sword Fire','Bow Poison'];
 }
 Jelly.prototype = new Monster();
@@ -1448,7 +1442,7 @@ function Were (type) {
 	};
 	this.purseStr = '1d20';
 	this.common = ['Food','Food Rotten','Sword Wood'];
-	this.uncommon = ['Potion Health','Cloth Rags'];
+	this.uncommon = ['Potion Health','Cloth Rags','Ring Wood'];
 	this.rare = ['Vial Steroids','Food Spinach'];
 	if( type === ''){
     	type = randomEntry(["Wolf","Goat","Hellbeast"]);
@@ -1508,7 +1502,7 @@ function Mage (type) {
 	this.aiType = 'switch';
 	this.switchTrigger = 5;
 	this.purseStr = '2d20';
-	this.common = ['Food','Potion Regen','Staff Wood'];
+	this.common = ['Ring Wood','Potion Regen','Staff Wood'];
 	this.uncommon = ['Potion Health','Cloth Robes'];
 	this.rare = ['Staff Thunder','Sword Fire'];
 }
@@ -2199,7 +2193,7 @@ Wearable.prototype.infoStr = function(){
 		str += key.toUpperCase() +": "+signfier+this.stats[key]+joiner;
 		counter++;
 	}
-	if (Object.keys(this.resists).length > 0){
+	if ((Object.keys(this.resists).length > 0)&&(Object.keys(this.stats).length > 0)){
 		str += "<br>";
 	}
 	counter = 1;
@@ -2329,7 +2323,7 @@ function Ring(type){
 		case 'Wood':
 			this.flammable = true;
 			this.stats = { maxHP: 5 };
-			this.color = "#f8d878";
+			this.color = "#f8b800";
 			this.uses = 30;
 			this.breakVerb = "snaps in half";
 			this.displayName = "a solid, oaken ring: not very useful, but wearing it gives you a feeling of fortitude";
