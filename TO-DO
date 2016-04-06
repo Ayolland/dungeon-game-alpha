@@ -1,0 +1,38 @@
+TO-DO List:
+
+Features:
+- Add items with unique use actions;
+- Non-damaging buffs
+- Make equipped items affect appearance;
+- Give choice of classes at game start;
+- Add 'Peace and Quiet' Monster;
+- Add 'Talk' choice;
+- More Items;
+- Add merchants;
+- Better death animations, other wiggles?
+- More Levels, More Monsters
+- Add Bosses
+- Intro Screen
+- Save Function
+- Cumulative Stats
+
+Bugs:
+- Possible to do negative physical damage (seen in the wild while fighting Skele Monk)
+- Multiple game-state changing dialog boxes at end of turn conflict
+- Overhaul game engine to remove setTimeouts
+
+Content Ideas:
+
+Locations:
+- Sewer
+- Desert
+- Underwater
+- Mountains
+- Void
+- Snakepit
+- City
+
+Buffs:
+- Scamped
+- Bleeding
+- Smokey

@@ -391,12 +391,12 @@ function Location(type){
 		case "Volcano":
 			this.spriteCompressed = "BwBgHgLCA+CM8MUpJWpWz6308/sWBxJuRiIhWO6ZupF5peGTC1eLhD+Ht7fSgLZV6VfjlE9kg2XK5Txk7rSHTW8zW1XVGQ/uuFatRpQtOGZus8bJrlBvWssantxwedXHLuhs1iAhTM5r5eRnKBQezM0b7cBCYJesHEXuHx3pG8lM4ZUX6ZidmJij4FcUX+1qWeaWn5mSXeKLHFjS5MHQrlMSGhhgM5fCQdbiIMyqM9vcnSM+qzbhj1nRljlrPdYflLi43bO6NFU627J8fxuZfhGyGXm3uKMU8POYP2kzIVg22TdV8+j8eKdvl9JHcIalNkDhg9VPNxND5ulpuU8qD2n5XnZeKtPOlMVkOPtdgdscM9kQSf1Kb0JHMIh5BDYMSy7CMwT9jJyeXztMjWazqcyAvyWKiObj5P8ablOMSaRyFsKBhMmrJVWzleqqnT3Di9SdsJq7kbzfR5aggA==";
 			this.displayName = "a fiery volcano flowing with glowing magma, and wandered by hellish sprites";
-			this.monsterArray = ["Axedude","Ball Fire","Skele Monk","Skele Bruiser", "Were Hellbeast"];
+			this.monsterArray = ["Axedude","Ball Fire","Skele Bruiser","Skele Flaming","Were Hellbeast"];
 			break;
 		case "Forest":
 			this.spriteCompressed = "IwNgDAHgLGA+ZmE5TEOOhiUrVj+ORWJhq2OpFlBtZxBm9R5V6y7lpLrjtPeJpx6M2IjlRH5p1GiVHjWYxcpZC8U3vPFtuapc1yCNArYa67huA+bq3rgvjstXiqrgpUY+9m5Of+DKKyDMK+we7WEa6oBl5hMUYuptEhsZFy2okSyQF6oYH6etl++QIZSdpqxkwqLmkUMiUV5BH8UvX6Zmnejfbq7D053FUcEp6hceVt3nnyo7GtC4sDPauKw01W1NjLs7tlRjMbYoc7SkGW5TUlmwNyFiEHNdfRG29ns8MdLXaH11tXLJ/nd+jchpV1jRIUVdK97nV5iCdntwYkZMETiNkTCCr9MMc5lMojZYfi0ISfoNliiaaCOulCgC/g07kE3tNekzqrUnNCOWM/Az6Yj2oY+kyJXtWiKAnygaDgbK3Iqsd0npDtsqPKU1al2QKxjdhYbNJjxftuRTueMhSdShrnnTjZzTYirZrHZSjnb3qkNdqViClm7LlcHqGndkCb9BbkHL6ovMflzpW5w2GcQohtJvQCWlGYk6vpMXViM9CKsWc708zy4V0q3E1rWbemK0mbVGSwmy3MC6TG8mk/w248Gyq292lVzB+6Jx4xy8Z1k0+Ou4y08vK4Rg+2m6nwhNBZ58hCfHvLUe6RdMYsU2Or+fbz6CXf3qsGhTj1SVXRiWqVbfmu3w6k4Z51ISfRPh+4oSsS55Qveb5rtBf7gfQiF1sOvhoWBu6YfEwY4ay6EkqeYSwQsuwUV0YHkau5zlswNGrnRjRmhR8HuuyxgniSHEpFxOTMbxEwBuB/HnJwwG3DKKR7txgn3rO6S8HqCkgVoXipoG1Q6ABD46Y4iYmkO17UZc6mbPanGPu+KkrNZhl0exl7tPyRQebafoGoezhCV5RbPgZDi2OFpEoq8vkMtG6KRT66YxbFIVJX5BxEj4PZBclfLkZamW5s+1rJVmnawfxxm5WVcYhTJvk0Q1M6eTKb65QFpXNflo7fu1Zl9aFA0DalfUjUNrnjZNU3TTNs0sEAA=";
 			this.displayName = "a murky forest dappled with leafy shadows and populated with wild, untamed creatures";
-			this.monsterArray =["Axedude","Scamp","Were Wolf","Skele Archer","Snek"];
+			this.monsterArray =["Axedude","Scamp","Were Wolf","Skele Archer","Skele Monk","Snek"];
 			break;
 		case "Graveyard":
 			this.spriteCompressed = "IwNgDAHgLGA+wMU5LVjKzn3HXrCGBxJuRp2GeOB5F9ZDKV+1Ny7TFdXZbO+Zp2I9+fYb1zjWYsSVFtpkjtIGzF86lObblSGQfUy0/HoQnKWppaYkG9XQatVWt+tWYcj2RrbZdevMK+hqEWgd4citb+4Qxu8bYhSQmWTvQxKX7WEXJRSYzuyXmBGvku6eZZHhGESkUeqfnZ0Z6W9YitZUJdbm1BjbKahbTOub3impUmOV6Z3SZRtK5xTPNNQktYg6He6yuC0Z0+flVhVss2sQmzTjnZAd3Fjzd1x+lE5PuDDTsHK503mc6J93r1zi9wT9lv06t9/pCWkjYXwRBVrtV/hiUdwEZi/tj/HN8fDCSlAT0LJ8oVjSaSgb80MDyfDERC7Colqzuc9Mjp9Jt5pMWedDOi3tTQdp2QVkRMRQIJXClc4yXjeUNKhcqBKNTS2X8pFrUTrpcVdrK5YdWCMGgzGPrLaKATtbUaNszrY69X0Pe6bUUDervRoFoCjoG1UHo4rdBTTu5/VaYxrpfyE8ck1a1bF3YUWCoI4Lac7zTqaKDgv644mCeiy8ZOLGBUX7QSc+sHSD7Vma03JSHkWbbWo9KPwz6LeYRwW0iPPWKWV3l1LtrOuavF07XCvTc3KNN8yNk/th+WHbUCwPDafqUa8ziMheg4qvc/12s/dPXyETdaV6ijiHrWV6/uWhwAT2tQwkO4EVpBNbQdsiL5gGqwDI+OidhWaGYRk6EHsYJpYXhSGXI2AYtqRZGUH+gE0biQF0cBDGLJ+gGmqxXE1PeXHcdq1HtNwiR0XxUHYAMYlSVs0myXJ/JrPJjhBEpqlqepGmaVp2k6bpen6QZgRAA===";
@@ -496,6 +496,7 @@ Character.prototype.wear = function(item){
 	  this.stats[key] += item.stats[key];
 	}
 	this.calcResists();
+	this.updateStatus();
 };
 
 Character.prototype.remove = function(item){
@@ -511,6 +512,7 @@ Character.prototype.remove = function(item){
 	  this.stats[key] -= item.stats[key];
 	}
 	this.calcResists();
+	this.updateStatus();
 };
 
 Character.prototype.calcResists = function(){
@@ -578,6 +580,15 @@ Character.prototype.smite = function(num){
 	this.updateStatus();
 };
 
+Character.prototype.explode = function(num,type){
+	var resist = (typeof(this.resists[type]) !== 'undefined')? this.resists[type] : 1;
+	var def = this.defense();
+	var afterDef = (num - def) < 0 ? 0 : (num - def);
+	this.stats.HP -= Math.ceil(afterDef*resist);;
+	this.lastHitBy = new Buff('Explode',this).attackObj();
+	this.updateStatus();
+};
+
 Character.prototype.calcDodge = function(fleeing){
 	if ((this.offHand !== "")&&(typeof(this.offHand) !== "undefined")){
 		return false;
@@ -619,12 +630,18 @@ Character.prototype.hit = function(atkObj){
 			break;
 	}
  	this.stats[atkObj.targetStat] -= appliedDmg;
-	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
-	this.wiggle('hit', 250);
+ 	atkObj.itemType = (atkObj.unique) ? 'Unique' : atkObj.itemType;
+ 	if (atkObj.itemType !== 'Unique'){
+ 		this.effectController.displayDamage(atkObj.sprite, atkObj.color);
+		this.wiggle('hit', 250);
+ 	}
 	var verb = randomEntry(atkObj.verbs);
 	var message = "";
 	this.lastHitBy = atkObj;
 	switch (atkObj.itemType){
+		case 'Unique':
+			message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' ' + atkObj.uniqueStr + '.';
+			break;
 		case 'Consumable':
 		case 'Buff':
 			if(atkObj.calculated < 0){ appliedDmg = Math.abs(appliedDmg);}
@@ -1245,6 +1262,9 @@ function Ball (type) {
 			this.shortName = "Fireball";
 			this.color = "#f83800";
 			this.item1 = (new Hose('Fire'));
+			this.trinket = new Ring('Fire');
+			this.aiType = 'random';
+			this.uncommon = ['Bomb Fire'];
 			this.rare = ['Sword Fire','Ring Fire'];
 			break;
 	}
@@ -1339,7 +1359,7 @@ function Skele (type) {
 			this.shortName = "Flaming Skelebones";
 			this.trinket = new Ring('Flame');
 			this.color = "#ff5000";
-			this.rare = ['Sword Flame','Ring Flame'];
+			this.rare = ['Sword Flame','Bomb Fire'];
 			break;
 		case "Bones":
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOFxPc7D7pGnGqEJFqGlzlINUrHXPZV30nsb5Mc8fRsKE8RuSVOkzZc+Qt5YBFeirxl13fitrVdqwWrESySwVu7mWJw9Ym2jVIA";
@@ -1424,7 +1444,7 @@ function Jelly (type) {
 	this.shortName = "Box Jelly";
 	this.color = 'rgba(88,216,84,0.5)';
 	this.purseStr = '3d20';
-	this.common = ['Potion Health','Potion Regen','Ring Brass'];
+	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire"];
 	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
 	this.rare = ['Sword Fire','Bow Poison'];
 }
@@ -1505,7 +1525,7 @@ function Mage (type) {
 	this.switchTrigger = 5;
 	this.purseStr = '2d20';
 	this.common = ['Ring Wood','Potion Regen','Staff Wood'];
-	this.uncommon = ['Potion Health'];
+	this.uncommon = ['Potion Health',"Bomb Fire"];
 	this.rare = ['Sword Fire'];
 }
 Mage.prototype = new Monster();
@@ -1563,6 +1583,11 @@ Item.prototype.attackObj = function(){
 	attck.type = this.attackType;
 	attck.sprite = this.sprite;
 	attck.color = this.color;
+	attck.unique = false;
+	if (this.unique === true){
+		attck.unique = true;
+		attck.uniqueStr = this.uniqueStr;
+	}
 	if ((this.constructor.name === 'Punch')&&(this.owner.constructor.name !== "Hero")){
 		attck.color = this.owner.color;
 	}
@@ -1587,11 +1612,13 @@ Item.prototype.invDialog = function(){
 		return;
 	} 
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br>';
-	message += ('<br>' + this.infoStr());
+	if(this.unique !== true){
+		message += ('<br>' + this.infoStr()+'<br>');
+	}
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand = (this.owner.hand1 === this)?'right':'left';
 		var activateNum = (this.owner.hand1 === this)?'activate1':'activate2';
-		var newLine = '<br><br> It is at the ready in your '+hand+' hand.';
+		var newLine = '<br> It is at the ready in your '+hand+' hand.<br>';
 		message += newLine;
 		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+activateNum,"suggest");
 		currentGame.dialog.addButton('Un-equip this item','router unEquip'+hand,'caution');
@@ -1623,7 +1650,7 @@ Item.prototype.invDialog = function(){
 			break;
 		}
 	}
-	message += '<br><br>Uses left: '+this.uses;
+	message += '<br>Uses left: '+this.uses;
 	this.owner.offHand = this;
 	var invIndex = this.owner.inventory.indexOf(this);
 	currentGame.dialog.setText(message);
@@ -1646,6 +1673,9 @@ function Buff(type,owner){
 	switch (type){
 		case 'Smite':
 			this.killStr = "by the hand of the divine";
+			break;
+		case 'Explode':
+			this.killStr = "in an explosion";
 			break;
 		case 'Aflame':
 			this.killStr = "in a conflagration";
@@ -1721,6 +1751,9 @@ Weapon.prototype = new Item();
 Weapon.prototype.constructor = Weapon;
 
 Weapon.prototype.infoStr = function(){
+	if (this.unique === true){
+		return "";
+	}
 	var str = "Attacks enemy's " +this.targetStat;
 	str += " with "+this.attackType+" damage, using ";
 	var traits = "your "+ this.userTraits.join(' and ')+".";
@@ -2030,6 +2063,9 @@ Consumable.prototype = new Item();
 Consumable.prototype.constructor = Consumable;
 
 Consumable.prototype.infoStr = function(){
+	if (this.unique === true){
+		return "";
+	}
 	var verb = (this.hurts)? 'Damages' : 'Heals';
 	var str = verb + " you for "+this.amountDmg+ ' ' +this.targetStat.toUpperCase()+'.';
 	if (this.buffArr.length > 1){
@@ -2038,6 +2074,54 @@ Consumable.prototype.infoStr = function(){
 	}
 	return str;
 };
+
+function Bomb (type) {
+	this.unique = true;
+	this.sprite = 'cloud';
+	this.verbs = ['detonate','toss','light'];
+	this.smallSprite = "";
+	this.breakVerb = "is empty";
+	switch (type){
+		case "Smoke":
+			this.uses = 5;
+			this.displayName = "small explosives that do no damage but create a distracting cloud of smoke";
+			this.shortName = "Sack of Smoke Bombs";
+			this.uniqueStr = "a smoke bomb";
+			this.color = '';
+			this.attackVal = function(){
+
+			};
+			break;
+		case 'Flame':
+		case "Fire":
+		default:
+			this.smallSprite = "IwNgHqA+AMt/DFwExKcVxhvl5zsd4Ci4tTYNCc9q0MSiHH7am2aP26m4g===";
+			this.uses = 5;
+			this.displayName = "crude, unpredictable incendiary devices made from rubbish";
+			this.shortName = "Sack of Fire Bombs";
+			this.uniqueStr = "a fire bomb";
+			this.attackType = "fire";
+			this.targetStat = "HP";
+			this.color = '#006800';
+			this.attackVal = function(){
+				this.owner.getEnemy().addBuff('Aflame');
+				this.owner.getEnemy().explode(roll('2d5'),'fire');
+				this.owner.getEnemy().effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
+				this.owner.getEnemy().wiggle('hit', 250);
+				var oops = (roll('1d4') === 4)? true : false;
+				if (oops){
+					this.owner.addBuff('Aflame');
+					this.owner.explode(roll('2d5'),'fire');
+					this.owner.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
+					this.owner.wiggle('hit', 250);
+				}
+				return 0;
+			};
+			break;
+	}
+}
+Bomb.prototype = new Consumable();
+Bomb.prototype.constructor = Bomb;
 
 function Potion(type){
 	this.uses = 1;
