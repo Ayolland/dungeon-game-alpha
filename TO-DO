@@ -1,7 +1,7 @@
 TO-DO List:
 
 Features:
-- Add items with unique use actions;
+X Add items with unique use actions;
 - Non-damaging buffs
 - Make equipped items affect appearance;
 - Give choice of classes at game start;
@@ -19,6 +19,7 @@ Features:
 Bugs:
 - Possible to do negative physical damage (seen in the wild while fighting Skele Monk)
 - Multiple game-state changing dialog boxes at end of turn conflict
+- SetTimeout related bug? (Occaissionally certain items seem to cause turn order to slip. Smoke Bombs, Acid Bladder)
 - Overhaul game engine to remove setTimeouts
 
 Content Ideas:

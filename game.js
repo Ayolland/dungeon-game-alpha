@@ -590,19 +590,16 @@ Character.prototype.explode = function(num,type){
 };
 
 Character.prototype.calcDodge = function(fleeing){
-	if ((this.offHand !== "")&&(typeof(this.offHand) !== "undefined")){
-		return false;
-	}
-	var possibilities = [];
-	for (var j = this.getEnemy().stats.agi - 1; j >= 0; j--) {
-		possibilities.push(false);
-	}
-	var softener = (this.hand1.ranged||this.hand2.ranged)? 2 : 3;
-	softener -= (fleeing === true)? 0.5 : 0;
-	for (var k = (this.stats.agi/softener) - 1; k >= 0; k--) {
-		possibilities.push(true);
-	}
-	return randomEntry(possibilities);
+	var enemyRoll = roll('1d'+this.getEnemy().stats.agi);
+	var bonus = 0;
+	bonus += (this.hand1.ranged)? 1 : 0;
+	bonus += (this.hand2.ranged)? 1 : 0;
+	bonus += (this.buffs.includes('Smokey'))? 5 : 0;
+	bonus += (fleeing === true)? 2 : 0;
+	bonus -= ((this.offHand !== "")&&(typeof(this.offHand) !== "undefined"))? 2:0;
+	var dodgeRoll = roll('1d'+Math.ceil(this.stats.agi/3)) + bonus;
+	var result = (dodgeRoll >= enemyRoll)? true : false;
+	return result;
 };
 
 Character.prototype.hit = function(atkObj){
@@ -627,6 +624,7 @@ Character.prototype.hit = function(atkObj){
 			appliedDmg = defendedAtk;
 		case 'Buff':
 			appliedDmg = (atkObj.calculated < 0) ? undefendedAtk : defendedAtk ;
+			appliedDmg = (atkObj.noDamage === true) ? 0 : appliedDmg;
 			break;
 	}
  	this.stats[atkObj.targetStat] -= appliedDmg;
@@ -646,6 +644,7 @@ Character.prototype.hit = function(atkObj){
 		case 'Buff':
 			if(atkObj.calculated < 0){ appliedDmg = Math.abs(appliedDmg);}
 			message = firstCap(this.selfStr()) + ' ' + this.conjugate(verb) + ' for ' + appliedDmg + atkObj.targetStat.toUpperCase() + '.';
+			message = (atkObj.noDamage === true)? firstCap(this.selfStr()) + ' ' + this.conjugate(verb) +' '+ atkObj.uniqueStr+'.' : message;
 			break;
 		case 'Weapon':
 			message = firstCap(this.getEnemy().selfStr())+' '+ this.getEnemy().conjugate(verb) +' '+ this.selfStr().toLowerCase() + ' for ' + appliedDmg + atkObj.targetStat.toUpperCase() + '.';
@@ -774,6 +773,7 @@ Character.prototype.checkEquip = function(turnChoice){
 };
 
 Character.prototype.runAway = function(){
+	this.offHand = "";
 	var success = this.calcDodge(true);
 	var conjugated = "", message = "";
 	if (success){
@@ -1444,9 +1444,9 @@ function Jelly (type) {
 	this.shortName = "Box Jelly";
 	this.color = 'rgba(88,216,84,0.5)';
 	this.purseStr = '3d20';
-	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire"];
+	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire","Bomb Smoke"];
 	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
-	this.rare = ['Sword Fire','Bow Poison'];
+	this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 }
 Jelly.prototype = new Monster();
 Jelly.prototype.constructor = Jelly;
@@ -1497,7 +1497,7 @@ function Were (type) {
 			this.displayName = "loathsome, hellish beast";
 			this.shortName = "Hellbeast";
 			this.color = "#7c7c7c";
-			this.rare = ['Sword Fire'];
+			this.rare = ['Sword Fire','Bomb Fire'];
 			break;
 	}
 }
@@ -1524,7 +1524,7 @@ function Mage (type) {
 	this.aiType = 'switch';
 	this.switchTrigger = 5;
 	this.purseStr = '2d20';
-	this.common = ['Ring Wood','Potion Regen','Staff Wood'];
+	this.common = ['Ring Wood','Potion Regen','Staff Wood','Bomb Smoke'];
 	this.uncommon = ['Potion Health',"Bomb Fire"];
 	this.rare = ['Sword Fire'];
 }
@@ -1535,6 +1535,8 @@ Mage.prototype.constructor = Mage;
 
 function Item(){
 	this.owner = "";
+	this.noDamage = false;
+	this.unique = false;
 }
 Item.prototype = new Displayable();
 Item.prototype.constructor = Item;
@@ -1583,11 +1585,9 @@ Item.prototype.attackObj = function(){
 	attck.type = this.attackType;
 	attck.sprite = this.sprite;
 	attck.color = this.color;
-	attck.unique = false;
-	if (this.unique === true){
-		attck.unique = true;
-		attck.uniqueStr = this.uniqueStr;
-	}
+	attck.noDamage = this.noDamage;
+	attck.uniqueStr = this.uniqueStr;
+	attck.unique = this.unique;
 	if ((this.constructor.name === 'Punch')&&(this.owner.constructor.name !== "Hero")){
 		attck.color = this.owner.color;
 	}
@@ -1729,6 +1729,14 @@ function Buff(type,owner){
  			this.sprite = 'bubble';
  			this.color = '#00e8d8';
  			this.verbs = ['doze off','zonk out'];
+ 			break;
+ 		case 'Smokey':
+ 			this.noDamage = true;
+ 			this.cureChance = 9;
+ 			this.sprite = 'cloud';
+ 			this.color = 'rgba(152,120,248,0.8';
+ 			this.verbs = ['are'];
+ 			this.uniqueStr = 'enshrouded in smoke';
  			break;
 	}
 }
@@ -2079,7 +2087,8 @@ function Bomb (type) {
 	this.unique = true;
 	this.sprite = 'cloud';
 	this.verbs = ['detonate','toss','light'];
-	this.smallSprite = "";
+	var bomb = "IwNgHqA+AMt/DFNgJmfFmnB8abtdcCEiy9TzdKrq5aj5gVaWmWq32OdMLvMgrpSE500RrCA=";
+	this.smallSprite = bomb;
 	this.breakVerb = "is empty";
 	switch (type){
 		case "Smoke":
@@ -2087,9 +2096,12 @@ function Bomb (type) {
 			this.displayName = "small explosives that do no damage but create a distracting cloud of smoke";
 			this.shortName = "Sack of Smoke Bombs";
 			this.uniqueStr = "a smoke bomb";
-			this.color = '';
+			this.color = '#6844fc';
+			this.buffArr = ["Smokey",1];
 			this.attackVal = function(){
-
+				this.owner.effectController.displayDamage('cloud', 'rgba(152,120,248,0.8');
+				this.owner.wiggle('hit', 250);
+				return 0;
 			};
 			break;
 		case 'Flame':
