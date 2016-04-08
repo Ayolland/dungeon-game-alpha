@@ -41,6 +41,9 @@ function thirdPerson(verb){
 		case "splash":
 			verb += 'es';
 			break;
+		case 'do':
+			verb += 'es';
+			break;
 		case "are":
 			verb = "is";
 			break;
@@ -233,6 +236,9 @@ function Game (){
 		}
 		var newMonster = new window[monsterClass](monsterVariant);
 		newMonster.div.className = "";
+		if ((newMonster.aiType === 'inanimate')||(newMonster.aiType === 'mimic')){
+			newMonster.div.classList.add('inanimate');
+		}
 		newMonster.appear();
 		currentGame.currentMonster = newMonster;
 	};
@@ -386,27 +392,27 @@ function Location(type){
 		case "Dungeon":
 			this.spriteCompressed = "BwBgHgLCA+CM8MU5LVvRzCQi3/qORxJ2JuuBV1Z5xNDjTzLjOsFlhKnXrzFDojod2ddvwFCu40fXKSpg+LPFEhittLIqkvBX00FBM9WpESdGo8hO195+rvXabw13Idq5K0hsNGdtJi3q6UYs7WbtoBUU7y4WbhUW5BngmO6aKR0ZGmBo6JITm5aYXmWRJpNmUWfnEu7rGaQXwy6UkVHrkeGRWFJT3Knh11Xe09ur4hmaQKMZPDffPWhm3dgRtT0zPL2QvRteVjEXbN/K3Hqgl5pWFXJ5y3h/fl7u9xW4rV9iM+c8UDqlep0vLsvM9gUtvJ1Kn4fjVVjCTA4dtgvpIjqjGjxuMNEfjcW0ClVkoSWiCSflQU8gQSGgD2stlKdzgIUfYkilbJZJsZ5Gwut9ZPzkZlWG8dgogA==";
 			this.displayName = "a musty, dark and ancient dungeon, full of cobwebs and lurking monsters";
-			this.monsterArray = ["Axedude", "Ball Goo", "Skele Bones", "Skele Footman", "Mage","Jelly"];
+			this.monsterArray = ["Chest","Axedude", "Ball Goo", "Skele Bones", "Skele Footman", "Mage","Jelly"];
 			break;
 		case "Volcano":
 			this.spriteCompressed = "BwBgHgLCA+CM8MUpJWpWz6308/sWBxJuRiIhWO6ZupF5peGTC1eLhD+Ht7fSgLZV6VfjlE9kg2XK5Txk7rSHTW8zW1XVGQ/uuFatRpQtOGZus8bJrlBvWssantxwedXHLuhs1iAhTM5r5eRnKBQezM0b7cBCYJesHEXuHx3pG8lM4ZUX6ZidmJij4FcUX+1qWeaWn5mSXeKLHFjS5MHQrlMSGhhgM5fCQdbiIMyqM9vcnSM+qzbhj1nRljlrPdYflLi43bO6NFU627J8fxuZfhGyGXm3uKMU8POYP2kzIVg22TdV8+j8eKdvl9JHcIalNkDhg9VPNxND5ulpuU8qD2n5XnZeKtPOlMVkOPtdgdscM9kQSf1Kb0JHMIh5BDYMSy7CMwT9jJyeXztMjWazqcyAvyWKiObj5P8ablOMSaRyFsKBhMmrJVWzleqqnT3Di9SdsJq7kbzfR5aggA==";
 			this.displayName = "a fiery volcano flowing with glowing magma, and wandered by hellish sprites";
-			this.monsterArray = ["Axedude","Ball Fire","Skele Bruiser","Skele Flaming","Were Hellbeast"];
+			this.monsterArray = ["Chest","Axedude","Ball Fire","Skele Bruiser","Skele Flaming","Were Hellbeast"];
 			break;
 		case "Forest":
 			this.spriteCompressed = "IwNgDAHgLGA+ZmE5TEOOhiUrVj+ORWJhq2OpFlBtZxBm9R5V6y7lpLrjtPeJpx6M2IjlRH5p1GiVHjWYxcpZC8U3vPFtuapc1yCNArYa67huA+bq3rgvjstXiqrgpUY+9m5Of+DKKyDMK+we7WEa6oBl5hMUYuptEhsZFy2okSyQF6oYH6etl++QIZSdpqxkwqLmkUMiUV5BH8UvX6Zmnejfbq7D053FUcEp6hceVt3nnyo7GtC4sDPauKw01W1NjLs7tlRjMbYoc7SkGW5TUlmwNyFiEHNdfRG29ns8MdLXaH11tXLJ/nd+jchpV1jRIUVdK97nV5iCdntwYkZMETiNkTCCr9MMc5lMojZYfi0ISfoNliiaaCOulCgC/g07kE3tNekzqrUnNCOWM/Az6Yj2oY+kyJXtWiKAnygaDgbK3Iqsd0npDtsqPKU1al2QKxjdhYbNJjxftuRTueMhSdShrnnTjZzTYirZrHZSjnb3qkNdqViClm7LlcHqGndkCb9BbkHL6ovMflzpW5w2GcQohtJvQCWlGYk6vpMXViM9CKsWc708zy4V0q3E1rWbemK0mbVGSwmy3MC6TG8mk/w248Gyq292lVzB+6Jx4xy8Z1k0+Ou4y08vK4Rg+2m6nwhNBZ58hCfHvLUe6RdMYsU2Or+fbz6CXf3qsGhTj1SVXRiWqVbfmu3w6k4Z51ISfRPh+4oSsS55Qveb5rtBf7gfQiF1sOvhoWBu6YfEwY4ay6EkqeYSwQsuwUV0YHkau5zlswNGrnRjRmhR8HuuyxgniSHEpFxOTMbxEwBuB/HnJwwG3DKKR7txgn3rO6S8HqCkgVoXipoG1Q6ABD46Y4iYmkO17UZc6mbPanGPu+KkrNZhl0exl7tPyRQebafoGoezhCV5RbPgZDi2OFpEoq8vkMtG6KRT66YxbFIVJX5BxEj4PZBclfLkZamW5s+1rJVmnawfxxm5WVcYhTJvk0Q1M6eTKb65QFpXNflo7fu1Zl9aFA0DalfUjUNrnjZNU3TTNs0sEAA=";
 			this.displayName = "a murky forest dappled with leafy shadows and populated with wild, untamed creatures";
-			this.monsterArray =["Axedude","Scamp","Were Wolf","Skele Archer","Skele Monk","Snek"];
+			this.monsterArray =["Chest","Axedude","Scamp","Were Wolf","Skele Archer","Skele Monk","Snek"];
 			break;
 		case "Graveyard":
 			this.spriteCompressed = "IwNgDAHgLGA+wMU5LVjKzn3HXrCGBxJuRp2GeOB5F9ZDKV+1Ny7TFdXZbO+Zp2I9+fYb1zjWYsSVFtpkjtIGzF86lObblSGQfUy0/HoQnKWppaYkG9XQatVWt+tWYcj2RrbZdevMK+hqEWgd4citb+4Qxu8bYhSQmWTvQxKX7WEXJRSYzuyXmBGvku6eZZHhGESkUeqfnZ0Z6W9YitZUJdbm1BjbKahbTOub3impUmOV6Z3SZRtK5xTPNNQktYg6He6yuC0Z0+flVhVss2sQmzTjnZAd3Fjzd1x+lE5PuDDTsHK503mc6J93r1zi9wT9lv06t9/pCWkjYXwRBVrtV/hiUdwEZi/tj/HN8fDCSlAT0LJ8oVjSaSgb80MDyfDERC7Colqzuc9Mjp9Jt5pMWedDOi3tTQdp2QVkRMRQIJXClc4yXjeUNKhcqBKNTS2X8pFrUTrpcVdrK5YdWCMGgzGPrLaKATtbUaNszrY69X0Pe6bUUDervRoFoCjoG1UHo4rdBTTu5/VaYxrpfyE8ck1a1bF3YUWCoI4Lac7zTqaKDgv644mCeiy8ZOLGBUX7QSc+sHSD7Vma03JSHkWbbWo9KPwz6LeYRwW0iPPWKWV3l1LtrOuavF07XCvTc3KNN8yNk/th+WHbUCwPDafqUa8ziMheg4qvc/12s/dPXyETdaV6ijiHrWV6/uWhwAT2tQwkO4EVpBNbQdsiL5gGqwDI+OidhWaGYRk6EHsYJpYXhSGXI2AYtqRZGUH+gE0biQF0cBDGLJ+gGmqxXE1PeXHcdq1HtNwiR0XxUHYAMYlSVs0myXJ/JrPJjhBEpqlqepGmaVp2k6bpen6QZgRAA===";
 			this.displayName = "a lonesome, rainswept graveyard, lit only by lightning and haunted by wicked undead spirits";
-			this.monsterArray = ["Were","Skele"];
+			this.monsterArray = ["Chest","Were","Skele"];
 			break;
 		case "Mine":
 			this.spriteCompressed = "IwNgDAHgLGA+wMU5LVvRzXs93/BhRxJpZ5FlV1Ntd9DjTzLrb7HnX3PvfwYJIITCyo0QP4lx7MIPlUFc2YgljJ9GSgWUdyLXT3k1Q46bTLVeCZdQ2zF3RhOlLc2wJf4P74R4eOrl5CwdbKvr6q/rjuURHy0YSJ+qFJsYbx6YqZycZZtDkp3rY5kbqlJbkWaoVBKbFlGmmeES1ZVdrirZmexF3hjSKpdiED7X0JFW7DnUNTCX1xY/ZJSw3pM9U9kw1EO+FtrXtz+yWLhz0ix/PxezeRm9prl49PJ7VNYRcVn9bfpb0CP0AVdVu9LqC/v9Cq9TPc3EDRiDfjgajtARQHuszt4lm18eV8f5Yb98vlzkd3lZcVS1pDpD5iXkQjRBoMUc56jZycyok59PShmlgSc+c1RQSWuLzCYSccGXE5mK7oqpULpFJqDVBXKBTK9ZrDUbjSbTWbzRbLVbrTbbXb7Q7HU7nS7XW73R7PV7vT7fX7/QggA=";
 			this.displayName = 'an abandoned mineshaft leading deep into the earth, now the lair of many sinister beasts';
-			this.monsterArray = ["Skele Footman","Were Goat","Jelly","Snek"];
+			this.monsterArray = ["Chest","Skele Footman","Were Goat","Jelly","Snek"];
 			break;
 	}
 }
@@ -590,7 +596,7 @@ Character.prototype.explode = function(num,type){
 };
 
 Character.prototype.calcDodge = function(fleeing){
-	if ((this.buffs.includes('Sedated'))||(this.buffs.includes('Paralyzed'))){
+	if ((this.buffs.includes('Sedated'))||(this.buffs.includes('Paralyzed'))||(this.aiType == 'inanimate')){
 		return false;
 	}
 	var enemyRoll = roll('1d'+this.getEnemy().stats.agi);
@@ -858,6 +864,12 @@ Character.prototype.freeze = function(){
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
 }
 
+Character.prototype.wait = function(){
+	this.offHand = "";
+	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('do')+' nothing.' );
+	setTimeout(function(){intervalRelay = "Check equip";},1000);
+}
+
 Character.prototype.activate1 = function(){
 	this.offHand = "";
 	if (typeof(this.hand1) === 'undefined' ){
@@ -946,7 +958,10 @@ Character.prototype.die = function(){
 			if(this.constructor.name === 'Hero'){
 				message = 'You were slain by the ' + this.getEnemy().shortName + '.';
 			} else {
-				message = 'You slayed the ' + this.shortName + '.';
+				var verb = 'slayed';
+				verb = (this.aiType === 'inanimate')? 'destroyed' : verb;
+				verb = (this.constructor.name === 'Chest')? 'opened' : verb;
+				message = 'You '+verb+' the ' + this.shortName + '.';
 			}
 			break;
 	}
@@ -1129,6 +1144,10 @@ Monster.prototype.ai = function(){
 		this.aiType = 'simple';
 	}
 	switch(this.aiType){
+		case 'mimic':
+			return 'mimic';
+		case 'inanimate':
+			return 'wait';
 		case "simple":
 			return 'activate1';
 		case "random":
@@ -1206,6 +1225,17 @@ Monster.prototype.dodge = function(){
 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
 	intervalRelay = "End turn";
 };
+
+Monster.prototype.mimic = function(){
+	this.offHand = "";
+	this.div.classList.remove('inanimate');
+	currentGame.log.add(firstCap(this.selfStr()) +' comes to life!' );
+	this.shortName = this.revealedName;
+	this.displayElement.name.innerHTML = this.shortName;
+	this.aiType = 'simple';
+	this.updateStatus();
+	setTimeout(function(){intervalRelay = "Check equip";},1000);
+}
 
 Monster.prototype.loot = function(){
 	var gotItem = (currentGame.playerHero.unlucky >= 4) ? true : (roll('1d20')<=this.lootChance);
@@ -1299,6 +1329,81 @@ function Ball (type) {
 }
 Ball.prototype = new Monster();
 Ball.prototype.constructor = Ball;
+
+function Chest (type) {
+	this.stats = {
+		str: 0,
+		agi: 0,
+		int: 0,
+		cha: 0,
+		phys: 0,
+		magi: 0,
+		maxHP: 10
+	};
+	this.aiType ='inanimate';
+	this.naturalResists = { physical: 10 };
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNez3f8FoBMwRZ5pyJ5N1S1tZliwrb7r9pT3ditrWvUZD+Iml3HNCM2XPkLFSvKOKCG5KmxLdBW9julwdh7Vp6C9LDuukabwYRV5HxEsW6KS3GGsyA==";
+	this.purseStr = '5d20';
+	this.lootChance = 20;
+	if ( type === ""){
+		type = randomEntry(["Wood","WoodMimic"]);
+	}
+	switch (type){
+		case 'WoodMimic':
+			this.color = '#503000';
+			this.displayName = "wooden chest";
+			this.shortName = "Wood Chest";
+			this.revealedName = 'Mimic';
+			this.aiType = 'mimic';
+			this.stats.phys = 2;
+			this.stats.magi = 1;
+			this.stats.str = 8;
+			this.stats.agi = 8;
+			this.naturalResists = {};
+			this.item1 = (new Claws('Bone'));
+			this.common = ['Potion Health','Potion Regen','Plate Brass',"Bomb Fire","Bomb Smoke"];
+			this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
+			this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
+			break;
+		case 'Wood':
+		default:
+			this.displayName = "wooden chest";
+			this.shortName = "Wood Chest";
+			this.color = '#503000';
+			this.common = ['Food','Potion'];
+			this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring'];
+			this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
+			break;
+	}
+}
+Chest.prototype = new Monster();
+Chest.prototype.constructor = Chest;
+
+function Jelly (type) {
+	this.stats = {
+		str: 1,
+		agi: 10,
+		int: 0,
+		cha: 0,
+		phys: 4,
+		magi: 0,
+		maxHP: 20
+	};
+	this.naturalResists = { fire: 1.25 };
+	this.item1 = (new Hose('Acid'));
+	this.aiType ='random';
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
+	this.displayName = "quivering, gelatinous cube";
+	this.shortName = "Box Jelly";
+	this.color = 'rgba(88,216,84,0.5)';
+	this.purseStr = '3d20';
+	this.lootChance = 19;
+	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire","Bomb Smoke"];
+	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
+	this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
+}
+Jelly.prototype = new Monster();
+Jelly.prototype.constructor = Jelly;
 
 function Scamp (type) {
 	this.stats = {
@@ -1456,33 +1561,6 @@ function Snek (type) {
 }
 Snek.prototype = new Monster();
 Snek.prototype.constructor = Snek;
-
-function Jelly (type) {
-	this.stats = {
-		str: 1,
-		agi: 10,
-		int: 0,
-		cha: 0,
-		phys: 4,
-		magi: 0,
-		maxHP: 20
-	};
-	this.naturalResists = { fire: 1.25 };
-	this.item1 = (new Hose('Acid'));
-	this.aiType ='random';
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNwEy7/5bYYk07JI0q8xfPYOhS6spqk5mnd6tn17vw58hXZqL7jegnpRpEp03A365a5OgSzaduvfoOGjFTXkJCGFC1xyaGWxSuGPi4jRY4v2yj66+tOa39ObmCmBVUxDVMaIA===";
-	this.displayName = "quivering, gelatinous cube";
-	this.shortName = "Box Jelly";
-	this.color = 'rgba(88,216,84,0.5)';
-	this.purseStr = '3d20';
-	this.lootChance = 19;
-	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire","Bomb Smoke"];
-	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
-	this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
-}
-Jelly.prototype = new Monster();
-Jelly.prototype.constructor = Jelly;
-
 
 function Were (type) {
 	this.stats = {

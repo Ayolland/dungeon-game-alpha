@@ -159,6 +159,8 @@ section#interface {
   overflow: hidden;
   width: 30%;
   height: 72%; }
+  #hero.inanimate > .main-sprite, #monster.inanimate > .main-sprite {
+    animation: none; }
   #hero > .main-sprite, #monster > .main-sprite {
     position: relative;
     width: 100%;
@@ -316,19 +318,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #7e0802; }
+    background-color: #9b1a01; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #931501; }
+    background-color: #ba2e00; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #7c0702; }
+    background-color: #b12900; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #a21f01; }
+    background-color: #b52b00; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -389,18 +391,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #cca332; }
+    background-color: #eac762; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #b78911; }
+    background-color: #d0a738; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #bd901a; }
+    background-color: #b98c14; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #c79c2a; }
+    background-color: #f7d777; }
   100% {
     background-color: #ac7c00; } }
