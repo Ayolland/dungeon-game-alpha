@@ -590,6 +590,9 @@ Character.prototype.explode = function(num,type){
 };
 
 Character.prototype.calcDodge = function(fleeing){
+	if ((this.buffs.includes('Sedated'))||(this.buffs.includes('Paralyzed'))){
+		return false;
+	}
 	var enemyRoll = roll('1d'+this.getEnemy().stats.agi);
 	var bonus = 0;
 	bonus += (this.hand1.ranged)? 1 : 0;
@@ -690,6 +693,22 @@ Character.prototype.addBuff = function(buff){
 	}
 };
 
+Character.prototype.addBuff = function(buff){
+	if (!this.buffs.includes(buff)){
+		this.buffs.push(buff);
+	}
+};
+
+Character.prototype.removeBuff = function(buff){
+	if (!(this.buffs.includes(buff))){
+		return;
+	}
+	var curedIndex = this.buffs.indexOf(buff);
+	if(curedIndex !== -1) {
+		this.buffs.splice(curedIndex, 1);
+	}
+};
+
 Character.prototype.runBuffs = function(){
 	var nextStep = "Use equip";
 	if (this.buffs.length < 1){
@@ -706,12 +725,9 @@ Character.prototype.runBuffs = function(){
 		if ((!curedIt)&&(goAhead)){
 			buffAtkObj = new Buff(buffsArr[counter],thisCharacter).attackObj();
 			thisCharacter.hit(buffAtkObj);
-			var cured = (roll('1d'+buffAtkObj.cureChance)===buffAtkObj.cureChance);
+			var cured = (roll('1d20') <= buffAtkObj.cureChance);
 			if (cured){
-				var curedIndex = thisCharacter.buffs.indexOf(buffsArr[counter]);
-				if(curedIndex !== -1) {
-					thisCharacter.buffs.splice(curedIndex, 1);
-				}
+				thisCharacter.removeBuff(buffsArr[counter]);
 				curedIt = true;
 				setTimeout(function(){goAhead = true;},1000);
 			} else {
@@ -836,6 +852,12 @@ Character.prototype.removeOffhand = function(){
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
 };
 
+Character.prototype.freeze = function(){
+	this.offHand = "";
+	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('are')+' paralyzed and unable to move.' );
+	setTimeout(function(){intervalRelay = "Check equip";},1000);
+}
+
 Character.prototype.activate1 = function(){
 	this.offHand = "";
 	if (typeof(this.hand1) === 'undefined' ){
@@ -875,7 +897,11 @@ Character.prototype.runTurn = function(turnChoice){
 			thisCharacter.runBuffs();
 		} else if (intervalRelay === "Use equip"){
 			intervalRelay = "wait";
-			thisCharacter[turnChoice]();
+			if ((thisCharacter.buffs.includes('Sedated'))||(thisCharacter.buffs.includes('Paralyzed'))){
+				thisCharacter.freeze();
+			} else {
+				thisCharacter[turnChoice]();
+			}
 		}else if (intervalRelay === "Check equip"){
 			intervalRelay = "wait";
 			thisCharacter.checkEquip(turnChoice);
@@ -1160,6 +1186,13 @@ Monster.prototype.appear = function(){
 	} else {
 		this.wear(new Nothing());
 	}
+	this.addToInv(currentGame.itemFromString(randomEntry(this.common)));
+	if ( roll('1d2') === 2) {
+		this.addToInv(currentGame.itemFromString(randomEntry(this.uncommon)));
+	}
+	if ( roll('1d3') === 3) {
+		this.addToInv(currentGame.itemFromString(randomEntry(this.rare)));
+	}
 	this.effectController = new Effect();
 	this.effectController.link(this);
 	this.draw(this.canvas,this.spriteCompressed);
@@ -1175,14 +1208,7 @@ Monster.prototype.dodge = function(){
 };
 
 Monster.prototype.loot = function(){
-	this.addToInv(currentGame.itemFromString(randomEntry(this.common)));
-	if ( roll('1d2') === 2) {
-		this.addToInv(currentGame.itemFromString(randomEntry(this.uncommon)));
-	}
-	if ( roll('1d3') === 3) {
-		this.addToInv(currentGame.itemFromString(randomEntry(this.rare)));
-	}
-	var gotItem = (currentGame.playerHero.unlucky >= 4) ? true : (rollHits('1d2',2)>0);
+	var gotItem = (currentGame.playerHero.unlucky >= 4) ? true : (roll('1d20')<=this.lootChance);
 	gotItem = (currentGame.currentLocation.switchTrigger <= 0) ? false : gotItem;
 	var message = "You found ";
 	var lootedItem = (this.inventory.length > 0) ? randomEntry(this.inventory) : false;
@@ -1222,6 +1248,7 @@ function Axedude (type) {
 	this.trinket = new Ring('Brass');
 	this.aiType = 'buffer';
 	this.purseStr = '2d20';
+	this.lootChance = 10;
 	this.common = ['Food','Axe Brass','Ring Brass'];
 	this.uncommon = ['Vial Steroids','Plate Brass'];
 	this.rare = ['Vial Opiates','Food Spinach'];
@@ -1245,6 +1272,7 @@ function Ball (type) {
 	var dripSprite = "IwNgHgLAHAPgDAxTktW9HNe54fd6HBpGkpEBMwVhyhVDtipFrZCl1XTc+ejfJMVK1izDuzF1ewrGKnoFuHCtVr1GzVvU8SIvSKUzD+IZyJn63HiJoWJxsguGHeQifaNvByt7+zAQA===";
 	var burnSprite = "IwNgHgLAHAPgDAxTktWxx0YZrTi7qYHFrElyH7kmnW22Ua0BMwbBTOJbvj3PFhwrN2Y4clZiR9BlVkyynPCtVr1GzVu06t8rLn3ZKR/CbooaF6uYry5jQg8eiec1+IYLhyj+8nOSl4GvkA==";
 	this.purseStr = '1d10';
+	this.lootChance = 12;
 	this.common = ['Axe Brass','Sword Iron'];
 	this.uncommon = ['Vial Opiates','Ring Brass'];
 	switch (type){
@@ -1288,6 +1316,7 @@ function Scamp (type) {
 	this.item1 = (new Potion('Regen'));
 	this.aiType = 'random';
 	this.purseStr = '3d10';
+	this.lootChance = 12;
 	this.common = ['Food','Potion Regen','Ring Wood'];
 	this.uncommon = ['Potion Health','Cloth Shirt','Staff Wood'];
 	this.rare = ['Vial Steroids','Food Spinach'];
@@ -1311,6 +1340,7 @@ function Skele (type) {
 	this.color = '#f0d0b0';
 	this.naturalResists = { fire: 1.25 };
 	this.purseStr = '1d10';
+	this.lootChance = 5;
 	this.common = ['Food Rotten','Ring Wood'];
 	this.uncommon = ['Sword Iron','Potion Health'];
 	this.rare = ['Plate Brass'];
@@ -1385,6 +1415,7 @@ function Snek (type) {
 	};
 	this.color = '#58d854';
 	this.purseStr = '1d10';
+	this.lootChance = 15;
 	this.common = ['Food','Food Rotten'];
 	this.uncommon = ['Potion Health','Potion Regen'];
 	if ( type === ""){
@@ -1444,6 +1475,7 @@ function Jelly (type) {
 	this.shortName = "Box Jelly";
 	this.color = 'rgba(88,216,84,0.5)';
 	this.purseStr = '3d20';
+	this.lootChance = 19;
 	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire","Bomb Smoke"];
 	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
 	this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
@@ -1463,6 +1495,7 @@ function Were (type) {
 		maxHP: 20
 	};
 	this.purseStr = '1d20';
+	this.lootChance = 19;
 	this.common = ['Food','Food Rotten','Sword Wood'];
 	this.uncommon = ['Potion Health','Cloth Rags','Ring Wood'];
 	this.rare = ['Vial Steroids','Food Spinach'];
@@ -1524,6 +1557,7 @@ function Mage (type) {
 	this.aiType = 'switch';
 	this.switchTrigger = 5;
 	this.purseStr = '2d20';
+	this.lootChance = 15;
 	this.common = ['Ring Wood','Potion Regen','Staff Wood','Bomb Smoke'];
 	this.uncommon = ['Potion Health',"Bomb Fire"];
 	this.rare = ['Sword Fire'];
@@ -1679,7 +1713,7 @@ function Buff(type,owner){
 			break;
 		case 'Aflame':
 			this.killStr = "in a conflagration";
-			this.cureChance = 3;
+			this.cureChance = 7;
  			this.attackVal = function(){
  				return roll('1d3')+Math.ceil(roll('1d5')*this.owner.stats.maxHP/100);
  			};
@@ -1690,7 +1724,7 @@ function Buff(type,owner){
 			break;
 		case 'Poisoned':
 			this.killStr = "of internal injuries";
-			this.cureChance = 4;
+			this.cureChance = 5;
 			this.attackVal = function(){ return roll('1d3'); };
  			this.attackType = 'poison';
  			this.sprite = 'bubble';
@@ -1698,7 +1732,7 @@ function Buff(type,owner){
  			this.verbs = ['waste','wither'];
  			break;
  		case 'Regenerating':
- 			this. cureChance = 5;
+ 			this. cureChance = 4;
  			this.attackVal = function(){
  				var n = Math.ceil(this.owner.stats.maxHP/12);
  				return roll( n+'d3' ) * -1;
@@ -1709,7 +1743,7 @@ function Buff(type,owner){
  			this.verbs = ['heal','regenerate'];
  			break;
  		case 'Juiced':
- 			this.cureChance = 2;
+ 			this.cureChance = 13;
  			this.attackVal = function(){
  				return -1;
  			};
@@ -1720,9 +1754,9 @@ function Buff(type,owner){
  			this.verbs = ['gain','rage'];
  			break;
  		case 'Sedated':
- 			this.cureChance = 2;
+ 			this.cureChance = 8;
  			this.attackVal = function(){
- 				return 1;
+ 				return roll('1d2') - 1;
  			};
  			this.attackType = 'poison';
  			this.targetStat = 'agi';
@@ -1730,9 +1764,17 @@ function Buff(type,owner){
  			this.color = '#00e8d8';
  			this.verbs = ['doze off','zonk out'];
  			break;
+ 			case 'Paralyzed':
+ 			this.noDamage = true;
+ 			this.cureChance = 15;
+ 			this.sprite = 'chaos';
+ 			this.color = '#ffff00';
+ 			this.verbs = ['freeze up','are immobilized'];
+ 			this.uniqueStr = "momentarily";
+ 			break;
  		case 'Smokey':
  			this.noDamage = true;
- 			this.cureChance = 9;
+ 			this.cureChance = 4;
  			this.sprite = 'cloud';
  			this.color = 'rgba(152,120,248,0.8';
  			this.verbs = ['are'];
@@ -1990,7 +2032,7 @@ function Claws (type) {
 			this.color = "#00e8d8";
 			this.userTraits = ['CHA','AGI'];
 			this.attackType = "poison";
-			this.buffArr = ["Sedated",4];
+			this.buffArr = ["Paralyzed",4];
 			this.attackVal = function(){
 				var cha = this.owner.stats.cha;
 				var agi = this.owner.stats.agi;
@@ -2449,7 +2491,7 @@ function Effect(){
 		shield: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpZ8AjBWlbXbaneQlTROx59ShRK87H48+9Kn0YiBg7sNFiZSXkPLLFI0eNkKyqxErmbk+qbpbr6htaeLXB5upb2SBtuxu1PXBV/ocezXvhevkoYgUH+VqFhkTaxTo6M8YTh0thCQA=",
 		cloud: "GwFgHgTCA+AM8MU5LVvRzXs93hAjAfpkSUkcbJVedWfQ+TVU8zfGxVxRB6T0QE+lAfyQQRLdC1qJJsuZ2KKI3KTTVCVsrYWGrtBliP3HNTShqKnl5q5ZuLRja9NfOGDz/M9s37vAB4rDBLtRhwoSReva60X6xfo7JZn5pPvQKTprK2XFaNlLWhcLFJnYaktWl9jWSlZr1jVbNeVXVtEVNCvr5Zb3tPXxmNYGunSGt/XLT1twDgSYzC5Phy/Or2cgbghO2RkUHyA0YRdinMmV0Z0o3+vc74Y+Md/d7N0xAA==",
 		star: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpREZlWFaNVpAjKk/ZS4u62Q+58nV2w9hmFgNTi2I0XzQ9Ww2SnlYVVRUsQ1NKSUV47+g9LMPHVzc4T0IbV4hSA===",
-		chaos: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxqAjOeSVeuRHXZdU/KQxaxKWe85hx/X7IBDXjU5t+nJP1rS0FEqykNVXFqs3rhg4sokH92/YfkytRIxKvHrd7YhuW7p5QhNSH7i4Q+C13gaGZLp6hnJujpKiCoxhQT5R9GZiKLIUMcI8qTQinF45ltlAA==",
+		chaos: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxqAjOeSVepYrdQ7KfBK6/MyhfY2pxEgFNknBKN5dYQii2F0W7OWR4Fm0sbNH8E6yR2Jq56gVqn6z4jWaX5DhkxY0O7kgQ8Ivrn4bvdJtNniGStqm1l5kVkTBMo7yUoqW/iqqsoi68VESemyJyrHZfJYphR7c8EA",
 		cresent: "GwFgHgTCA+AM8MU5LVvRzXs93/BhRxJpZ5FmAjDVehJQbc3cg43s4jcqxzjzZJ2/bLVR9Yk0RkEoRUkgqbTEC1fmWcNKOYR0DDxA2JPcdW+CL37LuvVTtXx5R6ZoMgA="
 	};
 	this.color = "yellow";

@@ -1,14 +1,17 @@
 TO-DO List:
 
 Features:
-X Add items with unique use actions;
-- Non-damaging buffs
-- Make equipped items affect appearance;
-- Give choice of classes at game start;
-- Add 'Peace and Quiet' Monster;
-- Add 'Talk' choice;
-- More Items;
-- Add merchants;
+X Add items with unique use actions
+X Non-damaging buffs
+- Monsters have drop likelihoods
+- Add 'Chest' Monster
+- Immunities
+- Blocking
+- Make equipped items affect appearance
+- Give choice of classes at game start
+- Add 'Talk' choice
+- More Items
+- Add merchants
 - Better death animations, other wiggles?
 - More Levels, More Monsters
 - Add Bosses
