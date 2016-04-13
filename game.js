@@ -425,7 +425,9 @@ Location.prototype.constructor = Location;
 function Character (){
 	this.buffs = [];
 	this.resists = {};
+	this.immunities = [];
 	this.naturalResists = {};
+	this.naturalImmunities = [];
 	this.inventory = [];
 }
 
@@ -498,6 +500,13 @@ Character.prototype.wear = function(item){
 			this.addBuff(item.buffs[o]);
 		}
 	}
+	if (item.immunities !== []){
+		for (var p = item.immunities.length - 1; p >= 0; p--) {
+			if (!(this.immunities.includes(item.immunities[p]))){
+				this.immunities.push(item.immunities[p]);
+			}
+		}
+	}
 	for (var key in item.stats) {
 	  this.stats[key] += item.stats[key];
 	}
@@ -516,6 +525,14 @@ Character.prototype.remove = function(item){
 	}
 	for (var key in item.stats) {
 	  this.stats[key] -= item.stats[key];
+	}
+	if (item.immunities !== []){
+		for (var p = item.immunities.length - 1; p >= 0; p--) {
+			if (!(this.naturalImmunities.includes(item.immunities[p]))){
+				var index = this.immunities.indexOf(item.immunities[p]);
+				this.immunities.splice(index,1);
+			}
+		}
 	}
 	this.calcResists();
 	this.updateStatus();
@@ -670,10 +687,7 @@ Character.prototype.hit = function(atkObj){
 		var chance = atkObj.buffArr[1];
 		var gotBuffed = (rollHits('1d'+chance,chance) >= 1);
 		if ((gotBuffed)&&(!this.buffs.includes(currentBuff)&&(this.stats.HP > 0))) {
-			verb = 'are';
-			message = firstCap(this.selfStr())+' '+ this.conjugate(verb)+ ' ' + currentBuff + ".";
 			this.addBuff(currentBuff);
-			setTimeout(function(){currentGame.log.add(message);},1000);
 			waitBeforeEnding ++;
 		}
 	}
@@ -694,13 +708,9 @@ Character.prototype.conjugate = function(verb){
 };
 
 Character.prototype.addBuff = function(buff){
-	if (!this.buffs.includes(buff)){
-		this.buffs.push(buff);
-	}
-};
-
-Character.prototype.addBuff = function(buff){
-	if (!this.buffs.includes(buff)){
+	if ((!this.buffs.includes(buff))&&(!(this.immunities.includes(buff)))){
+		var message = firstCap(this.selfStr())+' '+ this.conjugate('are')+ ' ' + buff + ".";
+		setTimeout(function(){currentGame.log.add(message);},1000);
 		this.buffs.push(buff);
 	}
 };
@@ -1182,6 +1192,7 @@ Monster.prototype.announce = function(){
 Monster.prototype.appear = function(){
 	this.announce();
 	this.buffs = [];
+	this.immunities = this.naturalImmunities.slice(0);
 	this.inventory = [];
 	if( typeof(this.item1) !== "undefined"){
 		this.addToInv(this.item1);
@@ -1371,7 +1382,7 @@ function Chest (type) {
 			this.shortName = "Wood Chest";
 			this.color = '#503000';
 			this.common = ['Food','Potion'];
-			this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring'];
+			this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring','Plate'];
 			this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 			break;
 	}
@@ -1399,7 +1410,7 @@ function Jelly (type) {
 	this.purseStr = '3d20';
 	this.lootChance = 19;
 	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire","Bomb Smoke"];
-	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
+	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire','Plate Silver'];
 	this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 }
 Jelly.prototype = new Monster();
@@ -1423,7 +1434,7 @@ function Scamp (type) {
 	this.purseStr = '3d10';
 	this.lootChance = 12;
 	this.common = ['Food','Potion Regen','Ring Wood'];
-	this.uncommon = ['Potion Health','Cloth Shirt','Staff Wood'];
+	this.uncommon = ['Potion Health','Cloth Shirt','Staff Wood', 'Ring Alert'];
 	this.rare = ['Vial Steroids','Food Spinach'];
 }
 Scamp.prototype = new Monster();
@@ -1538,7 +1549,7 @@ function Snek (type) {
 			this.shortName = "Sleeper Snek";
 			this.stats.agi = 11;
 			this.stats.maxHP = 14;
-			this.rare = ['Vial Opiates','Food Spinach'];
+			this.rare = ['Vial Opiates','Food Spinach','Ring Alert'];
 			break;
 		case 'Big':
 			this.spriteCompressed = bigSprite;
@@ -1548,7 +1559,7 @@ function Snek (type) {
 			this.stats.agi = 12;
 			this.stats.cha = 11;
 			this.stats.maxHP = 18;
-			this.rare = ['Vial Steroids','Food Spinach'];
+			this.rare = ['Vial Opiates','Food Spinach','Ring Alert'];
 			break;
 		case 'Small':
 		default:
@@ -1638,7 +1649,7 @@ function Mage (type) {
 	this.lootChance = 15;
 	this.common = ['Ring Wood','Potion Regen','Staff Wood','Bomb Smoke'];
 	this.uncommon = ['Potion Health',"Bomb Fire"];
-	this.rare = ['Sword Fire'];
+	this.rare = ['Sword Fire','Plate Silver'];
 }
 Mage.prototype = new Monster();
 Mage.prototype.constructor = Mage;
@@ -1725,7 +1736,7 @@ Item.prototype.invDialog = function(){
 	} 
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br>';
 	if(this.unique !== true){
-		message += ('<br>' + this.infoStr()+'<br>');
+		message += ('<br>' + this.infoStr());
 	}
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand = (this.owner.hand1 === this)?'right':'left';
@@ -1890,6 +1901,7 @@ Weapon.prototype.infoStr = function(){
 		var odds = (this.buffArr[1] > 1)? " 1 in "+this.buffArr[1]+" chance to cause" : " Causes";
 		str += odds + " enemy to be "+this.buffArr[0].toLowerCase()+".";
 	}
+	str += '<br>';
 	return str;
 };
 
@@ -2200,6 +2212,7 @@ Consumable.prototype.infoStr = function(){
 		var odds = (this.buffArr[1] > 1)? " 1 in "+this.buffArr[1]+" chance to cause" : " Causes";
 		str += odds + " you to be "+this.buffArr[0].toLowerCase()+".";
 	}
+	str += '<br>';
 	return str;
 };
 
@@ -2398,6 +2411,7 @@ function Wearable(){
 	this.stats = {};
 	this.resists = {};
 	this.buffs = [];
+	this.immunities = [];
 }
 Wearable.prototype = new Item();
 Wearable.prototype.constructor = Wearable;
@@ -2411,7 +2425,7 @@ Wearable.prototype.infoStr = function(){
 		str += key.toUpperCase() +": "+signfier+this.stats[key]+joiner;
 		counter++;
 	}
-	if ((Object.keys(this.resists).length > 0)&&(Object.keys(this.stats).length > 0)){
+	if (Object.keys(this.stats).length > 0){
 		str += "<br>";
 	}
 	counter = 1;
@@ -2420,6 +2434,25 @@ Wearable.prototype.infoStr = function(){
 		joiner = (counter >= Object.keys(this.resists).length)? "" : ", ";
 		str += key.toUpperCase() +": "+signfier+(this.resists[key]*100)+'%'+joiner;
 		counter++;
+	}
+	if (Object.keys(this.resists).length > 0){
+		str += "<br>";
+	}
+	if (this.immunities.length > 0){
+		str += "<br>Adds Immunity to: ";
+		for (var i = this.immunities.length - 1; i >= 0; i--) {
+			joiner = (i !== 1)? "" : ", ";
+		 	str += this.immunities[i] + joiner;
+		}
+		str +='<br>'
+	}
+	if (this.buffs.length > 0){
+		str += "<br>Adds Buff of: ";
+		for (var i = this.buffs.length - 1; i >= 0; i--) {
+			joiner = (i !== 1)? "" : ", ";
+		 	str += this.buffs[i] + joiner;
+		}
+		str +='<br>'
 	}
 	return str;
 };
@@ -2472,6 +2505,7 @@ function Cloth(type){
 			this.displayName = "a few scraps of burlap and linen";
 			this.shortName = "Sackcloth Tunic";
 			this.resists = { fire: 1.25 };
+			this.immunities = ['Regenerating'];
 			break;
 	}
 }
@@ -2484,6 +2518,15 @@ function Plate(type){
 	this.stats = { phys: 2 };
 	this.smallSprite = hornedSprite;
 	switch (type){
+		case 'Silver':
+			this.color = "#d8d8d8";
+			this.stats = { phys: 1 };
+			this.uses = 25;
+			this.immunities = ['Aflame'];
+			this.resists = { fire: 0.75, lightning: 0.75 };
+			this.displayName = "thin, reflective armor polished with flame-resistant oils";
+			this.shortName = "Silver Armor";
+			break;
 		default:
 		case 'Brass':
 			this.color = "#f8d878";
@@ -2519,6 +2562,16 @@ function Ring(type){
 	var ring1 = "IwNgHqA+AMt/DFOS1x2uugTLjT9ZthlCiSF0K5jEdrpbLimtSWqH56rNfYgA";
 	this.smallSprite = ring1;
 	switch (type){
+		case 'Alert':
+		case 'Emerald':
+			this.stats = { agi: 1 };
+			this.immunities = ['Paralyzed','Sedated'];
+			this.color = "#00b800";
+			this.uses = 20;
+			this.breakVerb = "melts into thin air";
+			this.displayName = "a brilliant green ring that tingles on your finger";
+			this.shortName = "Ring of Alertness";
+			break;
 		case 'Flame':
 		case 'Fire':
 			this.resists = { fire: 0.80 };

@@ -5,9 +5,10 @@ X Add items with unique use actions
 X Non-damaging buffs
 X Monsters have drop likelihoods
 X Add 'Chest' Monster
-- Immunities
+X Immunities
 - Blocking
 - Make equipped items affect appearance
+- Intro Screen
 - Give choice of classes at game start
 - Add 'Talk' choice
 - More Items
@@ -15,7 +16,6 @@ X Add 'Chest' Monster
 - Better death animations, other wiggles?
 - More Levels, More Monsters
 - Add Bosses
-- Intro Screen
 - Save Function
 - Cumulative Stats
 
