@@ -25,6 +25,8 @@ Bugs:
 - Possible to do negative physical damage (seen in the wild while fighting Skele Monk)
 - Multiple game-state changing dialog boxes at end of turn conflict
 - SetTimeout related bug? (Occaissionally certain items seem to cause turn order to slip. Smoke Bombs, Acid Bladder)
+- Infinite Regen?
+- SetTimeout related bug? ( Wait comes of directly after your turn. Regenerating, fight AxeDude at Volcano)
 - Overhaul game engine to remove setTimeouts
 
 Content Ideas:

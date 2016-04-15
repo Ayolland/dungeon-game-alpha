@@ -1481,14 +1481,14 @@ function Skele (type) {
 			this.stats.str = 8;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
-			this.item1 = (new Sword());
+			this.item1 = (new Sword('Wood'));
 			this.garment = new Cloth('Rags');
 			break;
 		case "Archer":
 			this.stats.agi = 10;
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW4aUY5xP/pLaFFzA57lXVWl5kIWPLVZ2YFlOn62oWdcgksw7t+4tpNwzZc+QsVKps4qtHd69TaO3caB8uLX6WfYzM5GJvayuETdInVqcq3knEA";
 			this.displayName = "Skelebones Archer";
-			this.item1 = (new Bow());
+			this.item1 = (new Bow('Wood'));
 			this.rare = ['Bow Poison'];
 			break;
 		case "Monk":
@@ -1498,7 +1498,7 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B74JFnGLE55ErVzkN1PMkNWuMuGkb3e4O6ChVa9hbLFOkzZc+QsUTUogUlHVV3crTb9d6po1X9J49pU5lzhmn11bDNsWrOO1wIA=";
 			this.displayName = "Wise, Old Skelebones";
 			this.shortName = "Skelebones Monk";
-			this.item1 = (new Staff());
+			this.item1 = (new Staff('Wood'));
 			this.garment = new Cloth('Rags');
 			this.rare = ['Vial Steroids'];
 			break;
