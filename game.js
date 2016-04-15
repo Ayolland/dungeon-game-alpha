@@ -7,6 +7,15 @@ function randomEntry(array){
 	return array[Math.floor(Math.random()*array.length)];
 }
 
+// Allows Monsters/Items to be created randomly by randomly assigning a valid type
+function plinko(type,validTypes){
+	if ((typeof(type) !== "undefined")&&(type !== "")){
+		return type;
+	}
+	var newType = (validTypes !== [])? randomEntry(validTypes) : "";
+	return newType;
+}
+
 // Rolls a number of dice using DnD shorthand (ie: 2d20) and returns the total;
 function roll(diceStr){
 	var diceNum = diceStr.slice(0,diceStr.indexOf("d"));
@@ -360,6 +369,7 @@ function Game (){
 
 // A Displayable is an object with an associated canvas for drawing sprites
 function Displayable (){
+	this.validTypes = [];
 }
 
 Displayable.prototype.constructor = Displayable;
@@ -429,6 +439,11 @@ function Character (){
 	this.naturalResists = {};
 	this.naturalImmunities = [];
 	this.inventory = [];
+	this.armor = new Nude();
+	this.accessory = new Nothing();
+	this.hand1 = new Punch();
+	this.hand2 = new Punch();
+
 }
 
 Character.prototype = new Displayable ();
@@ -462,30 +477,32 @@ Character.prototype.wiggle = function(tempClass, time){
 	setTimeout(function(){thisCharacter.div.classList.remove(tempClass);}, time);
 };
 
-Character.prototype.equip1 = function(item){
+Character.prototype.switchWeapon = function(item,hand){
 	if ((item.itemType !== "Weapon")&&(item.itemType !== "Consumable")){
 		return;
 	}
-	item.owner = this;
-	this.hand1 = item;
-	if (this.constructor.name === "Hero"){
-		document.getElementById('equip1').innerHTML = shorten(item.shortName,17);
+	if (typeof(item) === "undefined"){
+		item = new Punch();
 	}
+	this.remove(this['hand'+hand]);
+	this.wear(item);
+	this['hand'+hand] = item;
+	if (this.constructor.name === "Hero"){
+		document.getElementById('equip'+hand).innerHTML = shorten(item.shortName,17);
+	}
+};
+
+Character.prototype.equip1 = function(item){
+	this.switchWeapon(item,1);
 };
 
 Character.prototype.equip2 = function(item){
-	if ((item.itemType !== "Weapon")&&(item.itemType !== "Consumable")){
-		return;
-	}
-	item.owner = this;
-	this.hand2 = item;
-	if (this.constructor.name === "Hero"){
-		document.getElementById('equip2').innerHTML = shorten(item.shortName,17);
-	}
+	this.switchWeapon(item,2);
 };
 
 Character.prototype.wear = function(item){
-	if (((item.itemType !== "Armor")&&(item.itemType !== "Accessory"))||((this.armor === item)||(this.accessory === item))){
+	var equippedArr = [this.armor,this.accessory,this.hand1,this.hand2];
+	if ((equippedArr.includes(item))||(typeof(item.itemType) === 'undefined')){
 		return;
 	}
 	item.owner = this;
@@ -515,7 +532,8 @@ Character.prototype.wear = function(item){
 };
 
 Character.prototype.remove = function(item){
-	if (((item.itemType !== "Armor")&&(item.itemType !== "Accessory"))||((this.armor !== item)&&(this.accessory !== item))){
+	var equippedArr = [this.armor,this.accessory,this.hand1,this.hand2];
+	if ((equippedArr.includes(item))||(typeof(item.itemType) === 'undefined')){
 		return;
 	}
 	if (this.armor === item){
@@ -1062,7 +1080,7 @@ Hero.prototype.dodge = function(){
 Hero.prototype.initialize = function(){
 	this.effectController = new Effect();
 	this.effectController.link(this);
-	this.addToInv(new Sword());
+	this.addToInv(new Sword('Wood'));
 	this.addToInv(new Potion('Health'));
 	this.addToInv(new Cloth('Shirt'));
 	this.equip1(this.inventory[0]);
@@ -1298,6 +1316,8 @@ Axedude.prototype = new Monster();
 Axedude.prototype.constructor = Axedude;
 
 function Ball (type) {
+	this.validTypes = ['Goo','Fire'];
+	type = plinko(type,this.validTypes);
 	this.stats = {
 		str: 7,
 		agi: 7,
@@ -1307,9 +1327,6 @@ function Ball (type) {
 		magi: 1,
 		maxHP: 15
 	};
-	if ( type === ""){
-		type = randomEntry(["Fire","Goo"]);
-	}
 	var dripSprite = "IwNgHgLAHAPgDAxTktW9HNe54fd6HBpGkpEBMwVhyhVDtipFrZCl1XTc+ejfJMVK1izDuzF1ewrGKnoFuHCtVr1GzVvU8SIvSKUzD+IZyJn63HiJoWJxsguGHeQifaNvByt7+zAQA===";
 	var burnSprite = "IwNgHgLAHAPgDAxTktWxx0YZrTi7qYHFrElyH7kmnW22Ua0BMwbBTOJbvj3PFhwrN2Y4clZiR9BlVkyynPCtVr1GzVu06t8rLn3ZKR/CbooaF6uYry5jQg8eiec1+IYLhyj+8nOSl4GvkA==";
 	this.purseStr = '1d10';
@@ -1342,6 +1359,8 @@ Ball.prototype = new Monster();
 Ball.prototype.constructor = Ball;
 
 function Chest (type) {
+	this.validTypes = ['Wood','WoodMimic'];
+	type = plinko(type,this.validTypes);
 	this.stats = {
 		str: 0,
 		agi: 0,
@@ -1356,9 +1375,6 @@ function Chest (type) {
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNez3f8FoBMwRZ5pyJ5N1S1tZliwrb7r9pT3ditrWvUZD+Iml3HNCM2XPkLFSvKOKCG5KmxLdBW9julwdh7Vp6C9LDuukabwYRV5HxEsW6KS3GGsyA==";
 	this.purseStr = '5d20';
 	this.lootChance = 20;
-	if ( type === ""){
-		type = randomEntry(["Wood","WoodMimic"]);
-	}
 	switch (type){
 		case 'WoodMimic':
 			this.color = '#503000';
@@ -1372,8 +1388,8 @@ function Chest (type) {
 			this.stats.agi = 8;
 			this.naturalResists = {};
 			this.item1 = (new Claws('Bone'));
-			this.common = ['Potion Health','Potion Regen','Plate Brass',"Bomb Fire","Bomb Smoke"];
-			this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire'];
+			this.common = ['Potion','Plate Brass',"Bomb"];
+			this.uncommon = ['Sword','Cloth Robes','Food','Ring'];
 			this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 			break;
 		case 'Wood':
@@ -1382,7 +1398,7 @@ function Chest (type) {
 			this.shortName = "Wood Chest";
 			this.color = '#503000';
 			this.common = ['Food','Potion'];
-			this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring','Plate'];
+			this.uncommon = ['Sword','Cloth Robes','Food','Ring','Plate'];
 			this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 			break;
 	}
@@ -1409,8 +1425,8 @@ function Jelly (type) {
 	this.color = 'rgba(88,216,84,0.5)';
 	this.purseStr = '3d20';
 	this.lootChance = 19;
-	this.common = ['Potion Health','Potion Regen','Ring Brass',"Bomb Fire","Bomb Smoke"];
-	this.uncommon = ['Sword Iron','Cloth Robes','Food Spinach','Ring Fire','Plate Silver'];
+	this.common = ['Potion','Ring Brass',"Bomb"];
+	this.uncommon = ['Sword','Cloth Robes','Food','Ring','Plate'];
 	this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 }
 Jelly.prototype = new Monster();
@@ -1433,14 +1449,16 @@ function Scamp (type) {
 	this.aiType = 'random';
 	this.purseStr = '3d10';
 	this.lootChance = 12;
-	this.common = ['Food','Potion Regen','Ring Wood'];
-	this.uncommon = ['Potion Health','Cloth Shirt','Staff Wood', 'Ring Alert'];
+	this.common = ['Food','Potion','Ring Wood'];
+	this.uncommon = ['Bow','Cloth Shirt','Staff Wood','Ring Alert'];
 	this.rare = ['Vial Steroids','Food Spinach'];
 }
 Scamp.prototype = new Monster();
 Scamp.prototype.constructor = Scamp;
 
 function Skele (type) {
+	this.validTypes = ["Footman","Archer","Monk","Bruiser","Flaming", "Bones"];
+	type = plinko(type,this.validTypes);
 	this.stats = {
 		str: 6,
 		agi: 6,
@@ -1450,9 +1468,6 @@ function Skele (type) {
 		magi: 0,
 		maxHP: 12
 	};
-	if ( type === ""){
-		type = randomEntry(["Footman","Archer","Monk","Bruiser","Flaming", "Bones"]);
-	}
 	this.color = '#f0d0b0';
 	this.naturalResists = { fire: 1.25 };
 	this.purseStr = '1d10';
@@ -1496,7 +1511,7 @@ function Skele (type) {
 			this.shortName = "Skelebones Bruiser";
 			this.item1 = (new Sword('Iron'));
 			this.garment = new Cloth('Rags');
-			this.rare = ['Sword Flame','Ring Brass'];
+			this.rare = ['Sword Flame','Ring'];
 			break;
 		case "Flaming":
 			this.stats.maxHP = 20;
@@ -1517,6 +1532,8 @@ Skele.prototype = new Monster();
 Skele.prototype.constructor = Skele;
 
 function Snek (type) {
+	this.validTypes = ["Big","Small","Sleeper"];
+	type = plinko(type,this.validTypes);
 	var smallSprite = "IwNgHgLAHAPgDAxTktW9HNez3vgHCaGHolFFolbU0HakaWOqWItJvluff14DBQ4SNFjxEhh1bky1HslpNpVfsTWLFGzloUIuslHzVA==";
 	var bigSprite = "IwNgHgLAHAPgDAxTktW9HPOD4HcHrABMpxuqBFeKJZ5RVmdD+hzpNbOaXcFtWj2xIqA/njFMEU6VnkLFS5StVqhw3mKL1xo7X0QtOjdjpPdN5w1qsyNlByKNSXE2Vw8CgA==";
 	var stripeSprite = "IwNgHgLAHAPgDAxTktW9HNez3uBMwhmRpwwahFc51KRO5B+jTGd+xqdCt31pQi3q0hDPBMlTpM2XPkLsYkmLYoqvNcnFYtmTq3Q84nY4mN8RvMcO2jBiIA==";
@@ -1534,9 +1551,6 @@ function Snek (type) {
 	this.lootChance = 15;
 	this.common = ['Food','Food Rotten'];
 	this.uncommon = ['Potion Health','Potion Regen'];
-	if ( type === ""){
-		type = randomEntry(["Big","Small","Sleeper"]);
-	}
 	switch (type){
 		case 'Sleeper':
 			this.item1 = new Claws('Sleeper');
@@ -1574,6 +1588,8 @@ Snek.prototype = new Monster();
 Snek.prototype.constructor = Snek;
 
 function Were (type) {
+	this.validTypes = ["Wolf","Goat","Hellbeast"];
+	type = plinko(type,this.validTypes);
 	this.stats = {
 		str: 12,
 		agi: 7,
@@ -1588,9 +1604,6 @@ function Were (type) {
 	this.common = ['Food','Food Rotten','Sword Wood'];
 	this.uncommon = ['Potion Health','Cloth Rags','Ring Wood'];
 	this.rare = ['Vial Steroids','Food Spinach'];
-	if( type === ''){
-    	type = randomEntry(["Wolf","Goat","Hellbeast"]);
-	}
 	var wolfSprite = "IwNgHgLAHAPgDAxTktW9Lhyxhx8HoHH6YkmrmFlU5JbnZ1N7Xb2LGv11fuecKaWsJyFSmQd0kDhyZh3m5lK1WvUbNmhisaiqNEYaHzaC9ownS+/PD1JWWTLszEHKbnZSmPFd37Z23koIQA==";
 	var goatSprite = "IwNgHgLAHAPgDAxTktWpx0M8TWdaK7F6onkrlVlW422lFzV1F4lOfPHaOves+bHumqj2/Mm0JC0jZnMqFlK1WvUbRM7tvlyK+2pQaThY5Cb04KkwSIVcB1jBJGzzNXnozT8Pxf5KFpohqkA=";
 	switch (type){
@@ -1619,7 +1632,7 @@ function Were (type) {
 			this.displayName = "loathsome, hellish beast";
 			this.shortName = "Hellbeast";
 			this.color = "#7c7c7c";
-			this.rare = ['Sword Fire','Bomb Fire'];
+			this.rare = ['Sword Fire','Bomb Fire','Ring Fire'];
 			break;
 	}
 }
@@ -1647,8 +1660,8 @@ function Mage (type) {
 	this.switchTrigger = 5;
 	this.purseStr = '2d20';
 	this.lootChance = 15;
-	this.common = ['Ring Wood','Potion Regen','Staff Wood','Bomb Smoke'];
-	this.uncommon = ['Potion Health',"Bomb Fire"];
+	this.common = ['Ring','Potion Regen','Bow'];
+	this.uncommon = ['Potion Health',"Bomb"];
 	this.rare = ['Sword Fire','Plate Silver'];
 }
 Mage.prototype = new Monster();
@@ -1660,6 +1673,11 @@ function Item(){
 	this.owner = "";
 	this.noDamage = false;
 	this.unique = false;
+	this.buffs = [];
+	this.immunities = [];
+	this.stats = {};
+	this.resists = {};
+	this.blocking = 0;
 }
 Item.prototype = new Displayable();
 Item.prototype.constructor = Item;
@@ -1729,20 +1747,105 @@ Item.prototype.attackObj = function(){
 	return attck;
 };
 
+Item.prototype.statsStr = function(){
+	if (Object.keys(this.stats).length === 0){
+		return "";
+	}
+	var counter = 1;
+	var str = "";
+	for (var key in this.stats) {
+		var signfier = (this.stats[key] > 0)? "+" : "-";
+		var joiner = (counter >= Object.keys(this.stats).length)? "" : ", ";
+		str += key.toUpperCase() +": "+signfier+this.stats[key]+joiner;
+		counter++;
+	}
+	str +='<br>';
+	return str;
+}
+
+Item.prototype.resistsStr = function(){
+	if (Object.keys(this.resists).length === 0){
+		return "";
+	}
+	var str = "";
+	var counter = 1 ;
+	for (var key in this.resists) {
+		signfier = (this.resists[key] > 0)? "" : "-";
+		joiner = (counter >= Object.keys(this.resists).length)? "" : ", ";
+		str += key.toUpperCase() +": "+signfier+(this.resists[key]*100)+'%'+joiner;
+		counter++;
+	}
+	str +='<br>';
+	return str;
+}
+
+Item.prototype.immunitiesStr = function(){
+	if (this.immunities.length === 0){
+		return "";
+	}
+	var str = "Adds Immunity to: ";
+	for (var i = this.immunities.length - 1; i >= 0; i--) {
+		joiner = (i !== 1)? "" : ", ";
+	 	str += this.immunities[i] + joiner;
+	}
+	str +='<br>';
+	return str;
+}
+
+Item.prototype.buffsStr = function(){
+	if (this.buffs.length === 0){
+		return "";
+	}
+	var str = "Equipping adds: ";
+	for (var i = this.buffs.length - 1; i >= 0; i--) {
+		joiner = (i !== 1)? "" : ", ";
+	 	str += this.buffs[i] + joiner;
+	}
+	str +='<br>';
+	return str;
+}
+
+Item.prototype.equippedStr = function(){
+	var equippedArr = [this.owner.armor,this.owner.accessory,this.owner.hand1,this.owner.hand2];
+	if (!(equippedArr.includes(this))||(typeof(this.itemType) === 'undefined')){
+		return "";
+	}
+	var str = "";
+	switch (this){
+		case this.owner.hand1:
+		case this.owner.hand2:
+			var hand = (this.owner.hand1 === this)?'right':'left';
+			str = 'At the ready in your '+hand+' hand.';
+			break;
+		case this.owner.armor:
+		case this.owner.accessory:
+			str = 'You are wearing this.';
+			break;
+	}
+	str += '<br>';
+	return str;
+}
+
 Item.prototype.invDialog = function(){
 	currentGame.foundItem = "";
 	if (this.owner.constructor.name !== "Hero"){
 		return;
 	} 
-	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br>';
-	if(this.unique !== true){
-		message += ('<br>' + this.infoStr());
-	}
+	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br><br>';
+	var block2 = this.equippedStr()+this.infoStr();
+	if (block2 !== ""){ message += block2 + '<br>'}
+	var block3 = this.statsStr()+this.resistsStr()+this.immunitiesStr()+this.buffsStr();
+	if (block3 !== ""){ message += block3 + '<br>'}
+	message += 'Uses left: '+this.uses;
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
-		var hand = (this.owner.hand1 === this)?'right':'left';
-		var activateNum = (this.owner.hand1 === this)?'activate1':'activate2';
-		var newLine = '<br> It is at the ready in your '+hand+' hand.<br>';
-		message += newLine;
+		var hand,activateNum;
+		if (this.owner.hand1 === this){
+			hand = 'right'
+			activateNum = 1;
+		} else {
+			hand = 'right'
+			activateNum = 2;
+		}
 		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+activateNum,"suggest");
 		currentGame.dialog.addButton('Un-equip this item','router unEquip'+hand,'caution');
 	} else{
@@ -1773,7 +1876,6 @@ Item.prototype.invDialog = function(){
 			break;
 		}
 	}
-	message += '<br>Uses left: '+this.uses;
 	this.owner.offHand = this;
 	var invIndex = this.owner.inventory.indexOf(this);
 	currentGame.dialog.setText(message);
@@ -1924,6 +2026,8 @@ Punch.prototype = new Weapon();
 Punch.prototype.constructor = Punch;
 
 function Sword (type) {
+	this.validTypes = ["Iron","Cursed","Fire","Wood"];
+	type = plinko(type,this.validTypes);
 	this.sprite = "slash1";
 	this.attackType = "physical";
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
@@ -1937,6 +2041,21 @@ function Sword (type) {
 			this.displayName = "a modest but functional iron blade";
 			this.shortName = "Iron Sword";
 			this.color = "#008888";
+			this.attackVal = function(){
+				var diceNum = Math.round((this.owner.stats.str / 4)*1.5);
+				return roll(diceNum+"d3") - 2;	
+			};
+			break;
+		case "Cursed":
+			this.uses = 30;
+			this.breakVerb = "explodes with a loud noise";
+			this.displayName = "a dark, sinister looking weapon";
+			this.shortName = "Cursed Sword";
+			this.color = "#4428bc";
+			this.attackType = "shadow";
+			this.resists = { light: 1.25};
+			this.buffs = ["Paralyzed"];
+			this.immunities = ['Regenerating'];
 			this.attackVal = function(){
 				var diceNum = Math.round((this.owner.stats.str / 4)*1.5);
 				return roll(diceNum+"d3") - 2;	
@@ -2002,6 +2121,8 @@ Axe.prototype = new Weapon();
 Axe.prototype.constructor = Axe;
 
 function Bow (type) {
+	this.validTypes = ["Wood","Poison"];
+	type = plinko(type,this.validTypes);
 	this.sprite = 'star';
 	this.attackType = "physical";
 	this.verbs = ['strike','hit','bullseye','arrow','snipe'];
@@ -2019,6 +2140,7 @@ function Bow (type) {
 			this.shortName = "Poison Bow";
 			this.color = "#005800";
 			this.buffArr = ["Poisoned",3];
+			this.resists = {poison: 0.75};
 			this.userTraits = ['AGI'];
 			this.attackVal = function(){
 				var agi = this.owner.stats.agi;
@@ -2046,6 +2168,8 @@ Bow.prototype = new Weapon();
 Bow.prototype.constructor = Bow;
 
 function Staff (type) {
+	this.validTypes = ["Thunder","Wood"];
+	type = plinko(type,this.validTypes);
 	this.sprite = 'kapow';
 	this.attackType = "physical";
 	this.verbs = ['strike','bludgeon','bash','thwack','smack'];
@@ -2092,6 +2216,8 @@ Staff.prototype = new Weapon();
 Staff.prototype.constructor = Staff;
 
 function Claws (type) {
+	this.validTypes = ["Venom","Sleeper","Bone"];
+	type = plinko(type,this.validTypes);
 	this.sprite = 'claws';
 	this.attackType = "physical";
 	this.targetStat = "HP";
@@ -2149,6 +2275,8 @@ Claws.prototype = new Weapon();
 Claws.prototype.constructor = Claws;
 
 function Hose (type) {
+	this.validTypes = ["Fire","Acid"];
+	type = plinko(type,this.validTypes);
 	this.sprite = 'splat';
 	this.attackType = "physical";
 	this.verbs = ['splash','douse'];
@@ -2217,6 +2345,8 @@ Consumable.prototype.infoStr = function(){
 };
 
 function Bomb (type) {
+	this.validTypes = ["Smoke","Fire"];
+	type = plinko(type,this.validTypes);
 	this.unique = true;
 	this.sprite = 'cloud';
 	this.verbs = ['detonate','toss','light'];
@@ -2269,6 +2399,8 @@ Bomb.prototype = new Consumable();
 Bomb.prototype.constructor = Bomb;
 
 function Potion(type){
+	this.validTypes = ["Health","Regen"];
+	type = plinko(type,this.validTypes);
 	this.uses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is empty";
@@ -2307,6 +2439,8 @@ Potion.prototype = new Consumable();
 Potion.prototype.constructor = Potion;
 
 function Vial(type){
+	this.validTypes = ["Steroids","Opiates"];
+	type = plinko(type,this.validTypes);
 	this.uses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is used-up";
@@ -2349,6 +2483,8 @@ Vial.prototype = new Consumable();
 Vial.prototype.constructor = Vial;
 
 function Food(type){
+	this.validTypes = ["Spinach","Rotten","Meat"];
+	type = plinko(type,this.validTypes);
 	this.uses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is consumed";
@@ -2417,44 +2553,7 @@ Wearable.prototype = new Item();
 Wearable.prototype.constructor = Wearable;
 
 Wearable.prototype.infoStr = function(){
-	var str = "";
-	var counter = 1;
-	for (var key in this.stats) {
-		var signfier = (this.stats[key] > 0)? "+" : "-";
-		var joiner = (counter >= Object.keys(this.stats).length)? "" : ", ";
-		str += key.toUpperCase() +": "+signfier+this.stats[key]+joiner;
-		counter++;
-	}
-	if (Object.keys(this.stats).length > 0){
-		str += "<br>";
-	}
-	counter = 1;
-	for (var key in this.resists) {
-		signfier = (this.resists[key] > 0)? "" : "-";
-		joiner = (counter >= Object.keys(this.resists).length)? "" : ", ";
-		str += key.toUpperCase() +": "+signfier+(this.resists[key]*100)+'%'+joiner;
-		counter++;
-	}
-	if (Object.keys(this.resists).length > 0){
-		str += "<br>";
-	}
-	if (this.immunities.length > 0){
-		str += "<br>Adds Immunity to: ";
-		for (var i = this.immunities.length - 1; i >= 0; i--) {
-			joiner = (i !== 1)? "" : ", ";
-		 	str += this.immunities[i] + joiner;
-		}
-		str +='<br>'
-	}
-	if (this.buffs.length > 0){
-		str += "<br>Adds Buff of: ";
-		for (var i = this.buffs.length - 1; i >= 0; i--) {
-			joiner = (i !== 1)? "" : ", ";
-		 	str += this.buffs[i] + joiner;
-		}
-		str +='<br>'
-	}
-	return str;
+	return "";
 };
 
 // Armor are wearables. They can only be equipped if the Character has no other Armor on.
@@ -2477,6 +2576,8 @@ Nude.prototype = new Armor();
 Nude.prototype.constructor = Nude;
 
 function Cloth(type){
+	this.validTypes = ["Robes","Shirt","Rags"];
+	type = plinko(type,this.validTypes);
 	this.flammable = true;
 	this.breakVerb = "is shredded beyond recognition";
 	var shirtSprite = "IwNgHqA+AMt/DFOSlxbrcATMHek89tcjEiKz4DjToC4bL7MFLXz2O3nULYgA";
@@ -2513,6 +2614,8 @@ Cloth.prototype = new Armor();
 Cloth.prototype.constructor = Cloth;
 
 function Plate(type){
+	this.validTypes = ["Silver","Brass"];
+	type = plinko(type,this.validTypes);
 	var hornedSprite = "IwNgHqA+AMt/DFOSpxro1xxcCZ9dM5Dg8Czd5zKiDz4qL8NjWMKD2cyKVS+yfIP5FYQA";
 	this.breakVerb = "falls dented and broken to the ground";
 	this.stats = { phys: 2 };
@@ -2559,6 +2662,8 @@ Nothing.prototype = new Accessory();
 Nothing.prototype.constructor = Nothing;
 
 function Ring(type){
+	this.validTypes = ["Emerald","Fire","Wood","Brass"];
+	type = plinko(type,this.validTypes);
 	var ring1 = "IwNgHqA+AMt/DFOS1x2uugTLjT9ZthlCiSF0K5jEdrpbLimtSWqH56rNfYgA";
 	this.smallSprite = ring1;
 	switch (type){
