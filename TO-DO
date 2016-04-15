@@ -25,7 +25,7 @@ Bugs:
 X Infinite Regen? (No not naturally)
 - Possible to do negative physical damage (fighting Skele Monk)
 - Multiple game-state changing dialog boxes at end of turn conflict
-- Rings burning causes inventory errors
+X Rings burning causes inventory errors
 - SetTimeout related bug? (Occaissionally certain items seem to cause turn order to slip. Smoke Bombs, Acid Bladder)
 - SetTimeout related bug? ( Wait comes of directly after your turn. Regenerating, fight AxeDude at Volcano)
 - Overhaul game engine to remove setTimeouts

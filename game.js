@@ -634,7 +634,7 @@ Character.prototype.calcDodge = function(fleeing){
 	if ((this.buffs.includes('Sedated'))||(this.buffs.includes('Paralyzed'))||(this.aiType == 'inanimate')){
 		return false;
 	}
-	var enemyRoll = roll('1d'+this.getEnemy().stats.agi);
+	var enemyRoll = roll('1d'+this.getEnemy().stats.agi*1.25);
 	var bonus = 0;
 	bonus += (this.hand1.ranged)? 1 : 0;
 	bonus += (this.hand2.ranged)? 1 : 0;
@@ -644,6 +644,28 @@ Character.prototype.calcDodge = function(fleeing){
 	var dodgeRoll = roll('1d'+Math.ceil(this.stats.agi/3)) + bonus;
 	var result = (dodgeRoll >= enemyRoll)? true : false;
 	return result;
+};
+
+Character.prototype.calcBlock = function(){
+	if ((this.buffs.includes('Sedated'))||(this.buffs.includes('Paralyzed'))||(this.aiType == 'inanimate')){
+		return false;
+	}
+	var enemyRoll = roll('1d30');
+	var result = ( this.stats.block >= enemyRoll)? true : false;
+	return result;
+};
+
+Character.prototype.dodge = function(){
+	this.wiggle('dodge', 500);
+	currentGame.log.add( this.selfStr()+ ' ' + this.conjugate('dodge')+' '+this.getEnemy().possesive()+' attack.');
+	intervalRelay = "End turn";
+};
+
+Character.prototype.block = function(){
+	this.effectController.displayDamage('shield', '#7c7c7c');
+	this.wiggle('hit', 250);
+	currentGame.log.add( this.selfStr()+ ' ' + this.conjugate('block')+' '+this.getEnemy().possesive()+' attack.');
+	intervalRelay = "End turn";
 };
 
 Character.prototype.hit = function(atkObj){
@@ -918,6 +940,8 @@ Character.prototype.useItem = function(item){
 	var obj = item.attackObj();
 	if ((obj.targetCharacter !== this)&&(obj.targetCharacter.calcDodge())){
 		obj.targetCharacter.dodge();
+	} else if ((obj.targetCharacter !== this)&&(obj.targetCharacter.calcBlock())) {
+		obj.targetCharacter.block();
 	} else {
 		if(item.uses !== true){ item.uses-- ; }
 		obj.targetCharacter.hit(obj);
@@ -1026,6 +1050,7 @@ function Hero(name){
 		cha: 8,
 		phys: 0,
 		magi: 0,
+		block: 0,
 		maxHP: 50
 	};
 	this.stats.HP = this.stats.maxHP;
@@ -1067,11 +1092,11 @@ Hero.prototype.possesive = function(){
 	return "your";
 };
 
-Hero.prototype.dodge = function(){
-	this.wiggle('dodge', 500);
-	currentGame.log.add("You dodge the "+ currentGame.currentMonster.shortName +"'s attack.");
-	intervalRelay = "End turn";
-};
+// Hero.prototype.dodge = function(){
+// 	this.wiggle('dodge', 500);
+// 	currentGame.log.add("You dodge the "+ currentGame.currentMonster.shortName +"'s attack.");
+// 	intervalRelay = "End turn";
+// };
 
 Hero.prototype.initialize = function(){
 	this.effectController = new Effect();
@@ -1129,7 +1154,8 @@ Hero.prototype.infoDialog = function(){
 	var message = this.name + '<br>' + 'HP: '+this.stats.HP+'/'+this.stats.maxHP+'<br><br>';
 	message += 'STR: '+this.stats.str+' | '+'AGI :'+this.stats.agi+'<br>';
 	message += 'INT: '+this.stats.int+' | '+'CHA :'+this.stats.cha+'<br><br>';
-	message += 'Physical Defense: '+this.stats.phys+'<br>'+'Magical Defense: '+this.stats.magi+'<br><br>';
+	message += 'Physical Defense: '+this.stats.phys+'<br>'+'Magical Defense: '+this.stats.magi+'<br>';
+	message += 'Blocking: '+Math.round(this.stats.block * 3)+'% chance<br><br>';
 	if (this.buffs.length > 0){
 		message += 'Currently: '+ this.buffs.join(', ')+'<br><br>';
 	}
@@ -1206,6 +1232,7 @@ Monster.prototype.announce = function(){
 Monster.prototype.appear = function(){
 	this.announce();
 	this.buffs = [];
+	this.stats.block = 0;
 	this.immunities = this.naturalImmunities.slice(0);
 	this.inventory = [];
 	if( typeof(this.item1) !== "undefined"){
@@ -1245,11 +1272,18 @@ Monster.prototype.appear = function(){
 	this.updateStatus();
 };
 
-Monster.prototype.dodge = function(){
-	this.wiggle('dodge', 500);
-	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
-	intervalRelay = "End turn";
-};
+// Monster.prototype.dodge = function(){
+// 	this.wiggle('dodge', 500);
+// 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
+// 	intervalRelay = "End turn";
+// };
+
+// Monster.prototype.block = function(){
+// 	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
+// 	this.wiggle('hit', 250);
+// 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
+// 	intervalRelay = "End turn";
+// };
 
 Monster.prototype.mimic = function(){
 	this.offHand = "";
@@ -1421,7 +1455,7 @@ function Jelly (type) {
 	this.color = 'rgba(88,216,84,0.5)';
 	this.purseStr = '3d20';
 	this.lootChance = 19;
-	this.common = ['Potion','Ring Brass',"Bomb"];
+	this.common = ['Potion','Ring Brass',"Bomb","Buckler"];
 	this.uncommon = ['Sword','Cloth Robes','Food','Ring','Plate'];
 	this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 }
@@ -1478,7 +1512,9 @@ function Skele (type) {
 			this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HPOGn3f7B5JGJHnFlV6mFwX2PWrklnGtX2ef5P99KLNukpC+CcSK5ZZc+QsVLlKjFIGSCbWiQ4VxHJjuYMcYjZON7257rV4jDKJ6JnC3ziZ5JA==";
 			this.displayName = "Skelebones Footman";
 			this.item1 = (new Sword('Wood'));
+			this.item2 = (new Buckler('Wood'));
 			this.garment = new Cloth('Rags');
+			this.aiType = 'random';
 			break;
 		case "Archer":
 			this.stats.agi = 10;
@@ -1506,7 +1542,9 @@ function Skele (type) {
 			this.displayName = "Skelebones who thinks he's a badass";
 			this.shortName = "Skelebones Bruiser";
 			this.item1 = (new Sword('Iron'));
+			this.item2 = (new Buckler('Iron'));
 			this.garment = new Cloth('Rags');
+			this.aiType = 'random';
 			this.rare = ['Sword Flame','Ring'];
 			break;
 		case "Flaming":
@@ -1597,7 +1635,7 @@ function Were (type) {
 	};
 	this.purseStr = '1d20';
 	this.lootChance = 19;
-	this.common = ['Food','Food Rotten','Sword Wood'];
+	this.common = ['Food','Food Rotten','Buckler'];
 	this.uncommon = ['Potion Health','Cloth Rags','Ring Wood'];
 	this.rare = ['Vial Steroids','Food Spinach'];
 	var wolfSprite = "IwNgHgLAHAPgDAxTktW9Lhyxhx8HoHH6YkmrmFlU5JbnZ1N7Xb2LGv11fuecKaWsJyFSmQd0kDhyZh3m5lK1WvUbNmhisaiqNEYaHzaC9ownS+/PD1JWWTLszEHKbnZSmPFd37Z23koIQA==";
@@ -1628,7 +1666,7 @@ function Were (type) {
 			this.displayName = "loathsome, hellish beast";
 			this.shortName = "Hellbeast";
 			this.color = "#7c7c7c";
-			this.rare = ['Sword Fire','Bomb Fire','Ring Fire'];
+			this.rare = ['Sword Fire','Bomb Fire','Ring Fire',"Buckler Ruby"];
 			break;
 	}
 }
@@ -1658,7 +1696,7 @@ function Mage (type) {
 	this.lootChance = 15;
 	this.common = ['Ring','Potion Regen','Bow'];
 	this.uncommon = ['Potion Health',"Bomb"];
-	this.rare = ['Sword Fire','Plate Silver'];
+	this.rare = ['Sword Fire','Plate Silver',"Buckler Ruby"];
 }
 Mage.prototype = new Monster();
 Mage.prototype.constructor = Mage;
@@ -1673,8 +1711,8 @@ function Item(){
 	this.immunities = [];
 	this.stats = {};
 	this.resists = {};
-	this.blocking = 0;
 }
+
 Item.prototype = new Displayable();
 Item.prototype.constructor = Item;
 
@@ -1831,10 +1869,10 @@ Item.prototype.invDialog = function(){
 		return;
 	} 
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br><br>';
-	var block2 = this.equippedStr()+this.infoStr();
-	if (block2 !== ""){ message += block2 + '<br>'}
-	var block3 = this.statsStr()+this.resistsStr()+this.immunitiesStr()+this.buffsStr();
-	if (block3 !== ""){ message += block3 + '<br>'}
+	var textBlock2 = this.equippedStr()+this.infoStr();
+	if (textBlock2 !== ""){ message += textBlock2 + '<br>'}
+	var textBlock3 = this.statsStr()+this.resistsStr()+this.immunitiesStr()+this.buffsStr();
+	if (textBlock3 !== ""){ message += textBlock3 + '<br>'}
 	message += 'Uses left: '+this.uses;
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand,activateNum;
@@ -2092,6 +2130,71 @@ function Sword (type) {
 Sword.prototype = new Weapon();
 Sword.prototype.constructor = Sword;
 
+function Buckler (type) {
+	this.validTypes = ["Iron","Mirror",'Ruby',"Wood"];
+	type = plinko(type,this.validTypes);
+	this.sprite = "kapow";
+	this.attackType = "physical";
+	this.verbs = ['bash','strike','slam','bludgeon','ram'];
+	var buckler1 = "IwNgHqA+AMt/DFObYaWuAJh+p2s0Dh9CjsSELy1CqzqL6bbL5HXSHdlbc3eeaEA=";
+	this.smallSprite = buckler1;
+	this.userTraits = ['STR'];
+	this.stats = {block: 1};
+	switch (type){
+		case "Iron":
+			this.uses = 30;
+			this.breakVerb = "cracks into two";
+			this.displayName = "a small, battered metal shield";
+			this.shortName = "Iron Buckler";
+			this.color = "#008888";
+			this.attackVal = function(){
+				return rollHits(this.owner.stats.str+'d5',5);	
+			};
+			break;
+		case "Mirror":
+			this.uses = 30;
+			this.breakVerb = "splits with a thunderous crack";
+			this.displayName = "a small, polished, and gleaming shield";
+			this.shortName = "Mirrored Buckler";
+			this.color = "#a4e4fc";
+			this.attackType = "light";
+			this.resists = { shadow: 0.8 };
+			this.immunities = ['Paralyzed'];
+			this.attackVal = function(){
+				return rollHits(this.owner.stats.str+'d6',6);	
+			};
+			break;
+		case 'Ruby':
+		case 'Fire':
+		case "Flame":
+			this.uses = 25;
+			this.breakVerb = "glows red-hot, shatters,";
+			this.displayName = "a small shield made of a deep crimson crystal";
+			this.shortName = "Ruby Buckler";
+			this.color = "#881400";
+			this.attackType = "fire";
+			this.resists = { fire: 0.75 };
+			this.attackVal = function(){
+				return rollHits(this.owner.stats.str+'d5',5);
+			};
+			break;
+		case "Wood":
+		default:
+			this.flammable = true;
+			this.breakVerb = "splinters into bits";
+			this.uses = 20;
+			this.displayName = "a small, disposable wooden shield";
+			this.shortName = "Wooden Buckler";
+			this.color = "#f8b800";
+			this.attackVal = function(){
+				return rollHits(this.owner.stats.str+'d8',8);	
+			};
+			break;
+	}
+}
+Buckler.prototype = new Weapon();
+Buckler.prototype.constructor = Buckler;
+
 function Axe (type) {
 	this.sprite = 'slash1';
 	this.attackType = "physical";
@@ -2203,6 +2306,7 @@ function Staff (type) {
 			this.shortName = "Wooden Staff";
 			this.color = "#f8b800";
 			this.userTraits = ['STR','AGI'];
+			this.stats = {block: 1};
 			this.attackVal = function(){
 				var str = this.owner.stats.str;
 				var agi = this.owner.stats.agi;
@@ -2622,7 +2726,7 @@ function Plate(type){
 	switch (type){
 		case 'Silver':
 			this.color = "#d8d8d8";
-			this.stats = { phys: 1 };
+			this.stats = { phys: 1, block: 2 };
 			this.uses = 25;
 			this.immunities = ['Aflame'];
 			this.resists = { fire: 0.75, lightning: 0.75 };
@@ -2633,6 +2737,7 @@ function Plate(type){
 		case 'Brass':
 			this.color = "#f8d878";
 			this.uses = 15;
+			this.stats = { block: 2 };
 			this.displayName = "shiny, brass plates formed into a decorative, muscular, but somewhat flimsy chestplate";
 			this.shortName = "Brass Platemail";
 			break;
