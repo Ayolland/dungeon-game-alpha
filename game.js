@@ -538,7 +538,7 @@ Character.prototype.remove = function(item){
 	}
 	if (this.armor === item){
 		this.armor = {};
-	} else if (item.itemType === "Accessory"){
+	} else if (this.accessory === item){
 		this.accessory = {};
 	}
 	for (var key in item.stats) {
@@ -1052,17 +1052,13 @@ Hero.prototype.drawInventory = function(){
 
 Hero.prototype.debug = function(){
 	// put some stuff you need to test here;
-	currentGame.log.add('Fire rains from the heavens, lighting everything ablaze!');
-	this.addToInv(new Sword('Flame'));
-	this.addBuff('Aflame');
-	this.getEnemy().addBuff('Aflame');
-	this.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
-	currentGame.currentMonster.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
+	for (var i = this.inventory.length - 1; i >= 0; i--) {
+		this.inventory[i].uses = 0;
+	}
+	currentGame.log.add('Your items crumble before your eyes!');
+	this.effectController.displayDamage('cloud', '#dddddd');
 	this.wiggle('hit', 250);
-	var heroDamage = (this.stats.HP < 10 )? 10 : this.stats.HP - 10;
 	setTimeout(function(){
-		currentGame.playerHero.smite(heroDamage);
-		currentGame.currentMonster.smite(12);
 		intervalRelay = "End turn";
 	},1000);
 };
@@ -1701,6 +1697,7 @@ Item.prototype.destroy = function(){
 			this.owner.switchArmor();
 			break;
 		case this.owner.accessory:
+			this.owner.switchAccessory();
 			break;
 		case this.owner.hand1:
 			this.owner.equip1( new Punch() );
@@ -1710,7 +1707,9 @@ Item.prototype.destroy = function(){
 			break;
 	}
 	var invIndex = this.owner.inventory.indexOf(this);
-	this.owner.inventory.splice(invIndex,1);
+	if (invIndex >= 0){
+		this.owner.inventory.splice(invIndex,1);
+	}
 	this.owner.updateStatus();
 };
 
@@ -1846,7 +1845,7 @@ Item.prototype.invDialog = function(){
 			hand = 'right'
 			activateNum = 2;
 		}
-		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound '+activateNum,"suggest");
+		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound activate'+activateNum,"suggest");
 		currentGame.dialog.addButton('Un-equip this item','router unEquip'+hand,'caution');
 	} else{
 		switch (this.itemType){
