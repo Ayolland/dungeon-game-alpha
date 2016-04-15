@@ -1195,7 +1195,9 @@ Monster.prototype.ai = function(){
 	}
 	switch(this.aiType){
 		case 'mimic':
-			return 'mimic';
+			if (this.stats.HP < this.stats.maxHP){
+				return 'mimic';
+			}
 		case 'inanimate':
 			return 'wait';
 		case "simple":
