@@ -2066,7 +2066,7 @@ function Buff(type,owner){
  			this.noDamage = true;
  			this.cureChance = 4;
  			this.sprite = 'cloud';
- 			this.color = 'rgba(152,120,248,0.8';
+ 			this.color = 'rgba(152,120,248,0.8)';
  			this.verbs = ['are'];
  			this.uniqueStr = 'enshrouded in smoke';
  			break;
