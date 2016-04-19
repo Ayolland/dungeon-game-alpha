@@ -38,7 +38,14 @@ input {
   border: 1px solid white;
   box-shadow: none;
   font-size: 1.5em;
-  margin: 0.5em auto; }
+  margin: 0.5em auto;
+  border-radius: 0;
+  -webkit-touch-callout: initial;
+  -webkit-user-select: initial;
+  -khtml-user-select: initial;
+  -moz-user-select: initial;
+  -ms-user-select: initial;
+  user-select: initial; }
 
 .button {
   display: inline-block;
@@ -330,19 +337,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #a92301; }
+    background-color: #860d02; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #ac2500; }
+    background-color: #7a0502; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #9b1a01; }
+    background-color: #981801; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #8b1001; }
+    background-color: #951601; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -403,18 +410,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #dcb64c; }
+    background-color: #f0ce6b; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #bb8e18; }
+    background-color: #b78911; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #b4850c; }
+    background-color: #f5d473; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #e1bc54; }
+    background-color: #c69b29; }
   100% {
     background-color: #ac7c00; } }

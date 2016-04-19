@@ -43,6 +43,14 @@ input{
   box-shadow: none;
   font-size: 1.5em;
   margin: 0.5em auto;
+  border-radius: 0;
+
+  -webkit-touch-callout: initial;
+  -webkit-user-select: initial;
+  -khtml-user-select: initial;
+  -moz-user-select: initial;
+  -ms-user-select: initial;
+  user-select: initial;
 }
 
 .button{
