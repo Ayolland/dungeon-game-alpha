@@ -23,6 +23,7 @@ X Blocking
 
 Bugs:
 X Infinite Regen? (No not naturally)
+- Inventory goes through multiple uneccessary re-draws?
 - Possible to do negative physical damage (fighting Skele Monk)
 - Multiple game-state changing dialog boxes at end of turn conflict
 X Rings burning causes inventory errors

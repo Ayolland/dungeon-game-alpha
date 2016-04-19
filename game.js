@@ -379,7 +379,9 @@ Displayable.prototype.draw = function(canvas,sprite){
     var trinary = (rawStr.slice( rawStr.indexOf('|') + 1));
     var spriteWidth = rawStr.slice( 0, rawStr.indexOf('x'));
     var spriteHeight = rawStr.slice( rawStr.indexOf('x') + 1 , rawStr.indexOf('|') );
-    canvas.clearRect(0,0,spriteWidth,spriteHeight);
+    if (canvas.canvas.id !== 'hero-sprite'){
+    	canvas.clearRect(0,0,spriteWidth,spriteHeight);
+    }
     canvas.fillStyle = this.color;
     for (var i=0; i < trinary.length; i+=1){
     	var row = Math.floor(i / spriteWidth );
@@ -488,6 +490,7 @@ Character.prototype.switchWeapon = function(item,hand){
 	this.wear(item);
 	this['hand'+hand] = item;
 	if (this.constructor.name === "Hero"){
+		currentGame.playerHero.paint();
 		document.getElementById('equip'+hand).innerHTML = shorten(item.shortName,17);
 	}
 };
@@ -638,7 +641,7 @@ Character.prototype.calcDodge = function(fleeing){
 	var bonus = 0;
 	bonus += (this.hand1.ranged)? 1 : 0;
 	bonus += (this.hand2.ranged)? 1 : 0;
-	bonus += (this.buffs.includes('Smokey'))? 5 : 0;
+	bonus += (this.buffs.includes('Obscured'))? 5 : 0;
 	bonus += (fleeing === true)? 2 : 0;
 	bonus -= ((this.offHand !== "")&&(typeof(this.offHand) !== "undefined"))? 2:0;
 	var dodgeRoll = roll('1d'+Math.ceil(this.stats.agi/3)) + bonus;
@@ -1055,7 +1058,7 @@ function Hero(name){
 	};
 	this.stats.HP = this.stats.maxHP;
 	this.kills = 0;
-	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNfcY267a6EbHGlkkp6VVJ4EnmIOOs5maVc3vWt1kVQfSFpBI/FOkzZc+QsUJJqFUOYdOmrdTY7RbZXQbcKG8bwos+9ATZZjVfKkA===";
+	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNdcY267a6EbHGlkkp6VVJ4EnmIOOvqWacWM8J3IqA+oLQDh+SVOkzZc+Qv7s+XZh25jaYtmRxKGagvon1dPE0pbLTVjqJzLCQA=";
 	this.color = "white";
 	this.buffs = [];
 }
@@ -1092,12 +1095,6 @@ Hero.prototype.possesive = function(){
 	return "your";
 };
 
-// Hero.prototype.dodge = function(){
-// 	this.wiggle('dodge', 500);
-// 	currentGame.log.add("You dodge the "+ currentGame.currentMonster.shortName +"'s attack.");
-// 	intervalRelay = "End turn";
-// };
-
 Hero.prototype.initialize = function(){
 	this.effectController = new Effect();
 	this.effectController.link(this);
@@ -1106,12 +1103,26 @@ Hero.prototype.initialize = function(){
 	this.addToInv(new Cloth('Shirt'));
 	this.equip1(this.inventory[0]);
 	this.equip2(this.inventory[1]);
-	this.wear(this.inventory[2]);
-	this.wear(new Nothing());
+	this.switchArmor(this.inventory[2]);
+	this.switchAccessory();
 	this.gold = 0;
-	this.draw(this.canvas,this.spriteCompressed);
+	this.paint();
 	this.updateStatus();
 };
+
+Hero.prototype.paint = function(){
+	this.canvas.clearRect(0,0,16,48);
+	if ((typeof(this.hand1.avatarSprite)!== "undefined")&&(this.hand1.avatarSprite!== "")){
+		this.hand1.draw(this.canvas,this.hand1.avatarSprite);
+	}
+	this.draw(this.canvas,this.spriteCompressed);
+	if ((typeof(this.armor.avatarSprite)!== "undefined")&&(this.armor.avatarSprite!== "")){
+		this.armor.draw(this.canvas,this.armor.avatarSprite);
+	}
+	if ((typeof(this.accessory.avatarSprite)!== "undefined")&&(this.accessory.avatarSprite!== "")){
+		this.accessory.draw(this.canvas,this.accessory.avatarSprite);
+	}
+}
 
 Hero.prototype.switchArmor = function(item){
 	if (typeof(item) === "undefined"){
@@ -1119,6 +1130,9 @@ Hero.prototype.switchArmor = function(item){
 	}
 	this.remove(this.armor);
 	this.wear(item);
+	if (this.constructor.name === "Hero"){
+		currentGame.playerHero.paint();
+	}
 };
 
 Hero.prototype.switchAccessory = function(item){
@@ -1127,6 +1141,9 @@ Hero.prototype.switchAccessory = function(item){
 	}
 	this.remove(this.accessory);
 	this.wear(item);
+	if (this.constructor.name === "Hero"){
+		currentGame.playerHero.paint();
+	}
 };
 
 Hero.prototype.receive = function(item,looted){
@@ -1273,19 +1290,6 @@ Monster.prototype.appear = function(){
 	this.gold = roll(this.purseStr);
 	this.updateStatus();
 };
-
-// Monster.prototype.dodge = function(){
-// 	this.wiggle('dodge', 500);
-// 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
-// 	intervalRelay = "End turn";
-// };
-
-// Monster.prototype.block = function(){
-// 	this.effectController.displayDamage(atkObj.sprite, atkObj.color);
-// 	this.wiggle('hit', 250);
-// 	currentGame.log.add('The ' + this.shortName + ' dodges your attack.');
-// 	intervalRelay = "End turn";
-// };
 
 Monster.prototype.mimic = function(){
 	this.offHand = "";
@@ -1713,6 +1717,7 @@ function Item(){
 	this.immunities = [];
 	this.stats = {};
 	this.resists = {};
+	this.avatarSprite = 'IwD2B8AYg===';
 }
 
 Item.prototype = new Displayable();
@@ -2002,7 +2007,7 @@ function Buff(type,owner){
  			this.verbs = ['freeze up','are immobilized'];
  			this.uniqueStr = "momentarily";
  			break;
- 		case 'Smokey':
+ 		case 'Obscured':
  			this.noDamage = true;
  			this.cureChance = 4;
  			this.sprite = 'cloud';
@@ -2071,7 +2076,9 @@ function Sword (type) {
 	this.attackType = "physical";
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
 	var simpleSword = "IwNgHqA+AMt/DFOS18BMw20+7v9g9liDUijtpLsss17pjlgg";
+	var avatarSword1 = "IwNgHgLAHAPgDAxTktWtx0s1pPcL4FG4lZnoWrA0EIBMdDTLrb7HnX3PvfyVai0HZhYpiIETadRkzlwgA==="
 	this.smallSprite = simpleSword;
+	this.avatarSprite = avatarSword1;
 	this.userTraits = ['STR'];
 	switch (type){
 		case "Iron":
@@ -2203,11 +2210,13 @@ function Axe (type) {
 	this.verbs = ['strike','hit','chop','hack','cleave'];
 	this.ranged = true;
 	var simpleAxe = "IwNgHqA+AMt/DFOS1xWOOjsvbQEx4ErAnRmnnTWa1U4UFA==";
+	var avatarSimple= "IwNgHgLAHAPgDAxTktW9HOeFux+5467EmF7kBMVN5d9DjTzLrb7H7pG+3Pf6AYPJC01QuNySgA==";
 	var axe2 = "";
+	this.smallSprite = simpleAxe;
+	this.avatarSprite = avatarSimple;
 	switch (type){
 		case "Brass":
 		default:
-			this.smallSprite = simpleAxe;
 			this.uses = 10;
 			this.breakVerb = "is bent beyond recognition";
 			this.displayName = "an axe made of polished brass, prettier than it is functional";
@@ -2232,10 +2241,12 @@ function Bow (type) {
 	this.verbs = ['strike','hit','bullseye','arrow','snipe'];
 	this.ranged = true;
 	var simpleBow = "IwNgHqA+AMt/DFOS11gYyrsBM359lhDUS8y4iDpqC7sHsg==";
+	var avatarSimple = "IwNgHgLAHAPgDAxTktW9HNc8bCBMu2+cRmJZGJpW1ladtC9qj5NTLrXqPe/AwUOEjRY8Xj4pCeCsQ7sF6NlWZMlDNeymI5tHYiJA";
 	var bow2 = "";
+	this.smallSprite = simpleBow;
+	this.avatarSprite = avatarSimple;
 	switch (type){
 		case "Poison":
-			this.smallSprite = simpleBow;
 			this.flammable = true;
 			this.uses = 20;
 			this.attackType = 'poison';
@@ -2253,7 +2264,6 @@ function Bow (type) {
 			break;
 		case "Wood":
 		default:
-			this.smallSprite = simpleBow;
 			this.flammable = true;
 			this.uses = 20;
 			this.breakVerb = "breaks with a 'sproing'";
@@ -2278,12 +2288,17 @@ function Staff (type) {
 	this.attackType = "physical";
 	this.verbs = ['strike','bludgeon','bash','thwack','smack'];
 	var plainStick = "IwNgHqA+AMt/DFOgJmYlx309uu9UtCC9Ttz1LlqlaNiysg==";
+	var avatarPlain = "IwNgHgLAHAPgDAxTktWtx0s1pPcL4FG4lZnoUYGJWp3Y2FNwPJt4se0u9/8DBjJt2YiuE8VJqjWkmfOKLSy8oiA=";
 	var decoStick = "IwNgHqA+AMt/DFOcgTMF9itZ26M91cjs9YzzCryLbpq9HNmVCg==";
+	var avatarDeco = "IwNgHgLAHAPgDAxTktWtx3OAJk1xHApI4hfMi4qgmrUsh4p2s8tuO9LjDn1fhyHCRo4YKS4JhDiyzTEC9myWdZ6tnO58dK3ZURA=";
+	this.smallSprite = plainStick;
+	this.avatarSprite = avatarPlain;
 	switch (type){
 		case 'Lightning':
 		case "Thunder":
 			this.ranged = true;
 			this.smallSprite = decoStick;
+			this.avatarSprite = avatarDeco;
 			this.uses = 25;
 			this.breakVerb = "splits down the middle";
 			this.displayName = "a staff enchanted with electricity";
@@ -2300,7 +2315,6 @@ function Staff (type) {
 			break;
 		case "Wood":
 		default:
-			this.smallSprite = plainStick;
 			this.flammable = true;
 			this.uses = 20;
 			this.breakVerb = "snaps like a twig";
@@ -2328,6 +2342,7 @@ function Claws (type) {
 	this.targetStat = "HP";
 	this.verbs = ['maul','savage','lacerate','wound','lunge at'];
 	this.smallSprite = "IwNgHqA+AMt/DFKcATMxaMK/XPgd0VC59tphSLYqb66bGniX7L0g";
+	this.avatarSprite = "IwNgHgLAHAPgDAxTktW9HNez3f8FzC7DGHkWVXU2130ONPPVnakJA===";
 	switch (type){
 		case 'Poison':
 		case "Venom":
@@ -2386,6 +2401,7 @@ function Hose (type) {
 	this.attackType = "physical";
 	this.verbs = ['splash','douse'];
 	this.smallSprite = "IwNgHqA+AMt/DFOQ4wBMLZp8ZvM1F1c9oj5STZrKSMLp7sH7H1Ny0PTECCk/boP6d8HDnCA=";
+	this.avatarSprite = "IwNgHgLAHAPgDAxTktW9HNez3f9LA7ABMxuR2wlW1NGJpOZBrb7HnX3Pvf/yehiZUKFIWjrZGLLLKA==";
 	switch (type){
 		case 'Flame':
 		case "Fire":
@@ -2455,19 +2471,21 @@ function Bomb (type) {
 	this.unique = true;
 	this.sprite = 'cloud';
 	this.verbs = ['detonate','toss','light'];
-	var bomb = "IwNgHqA+AMt/DFNgJmfFmnB8abtdcCEiy9TzdKrq5aj5gVaWmWq32OdMLvMgrpSE500RrCA=";
-	this.smallSprite = bomb;
+	var bomb1 = "IwNgHqA+AMt/DFNgJmfFmnB8abtdcCEiy9TzdKrq5aj5gVaWmWq32OdMLvMgrpSE500RrCA=";
+	var avatar1 = "IwNgHgLAHAPgDAxTktW9HNez3f/IBM2wwOpBlV1Ntd9DjTzLr9xWFJZcQA==";
+	this.smallSprite = bomb1;
+	this.avatarSprite = avatar1;
 	this.breakVerb = "is empty";
 	switch (type){
 		case "Smoke":
-			this.uses = 5;
+			this.uses = 1;
 			this.displayName = "small explosives that do no damage but create a distracting cloud of smoke";
-			this.shortName = "Sack of Smoke Bombs";
+			this.shortName = "Smoke Bomb";
 			this.uniqueStr = "a smoke bomb";
 			this.color = '#6844fc';
-			this.buffArr = ["Smokey",1];
+			this.buffArr = ["Obscured",1];
 			this.attackVal = function(){
-				this.owner.effectController.displayDamage('cloud', 'rgba(152,120,248,0.8');
+				this.owner.effectController.displayDamage('cloud', 'rgba(152,120,248,0.8)');
 				this.owner.wiggle('hit', 250);
 				return 0;
 			};
@@ -2476,6 +2494,7 @@ function Bomb (type) {
 		case "Fire":
 		default:
 			this.smallSprite = "IwNgHqA+AMt/DFwExKcVxhvl5zsd4Ci4tTYNCc9q0MSiHH7am2aP26m4g===";
+			this.avatarSprite = "IwNgHgLAHAPgDAxTktW9HNez3f8FwBMuwpZ2wFhNtd9DjTzLrb79JO1WV3FQA===";
 			this.uses = 5;
 			this.displayName = "crude, unpredictable incendiary devices made from rubbish";
 			this.shortName = "Sack of Fire Bombs";
@@ -2511,7 +2530,9 @@ function Potion(type){
 	this.breakVerb = "is empty";
 	this.shortName = "Potion of ";
 	var roundBottleSprite = "IwNgHqA+AMt/DFOS5x0ddYAmbXs9gDd9VTZi094qFcdGmc65cMMXF2P2kHmrer2hA===";
+	var avatarBottle = "IwNgHgLAHAPgDAxTktW9HNez3f8FwBMuwpZ2wFhNtd9DjTzLrb79JO1WV3FQA===";
 	this.smallSprite = roundBottleSprite;
+	this.avatarSprite = avatarBottle;
 	switch (type){
 		case "Regen":
 			this.attackType = 'physical';
@@ -2686,12 +2707,16 @@ function Cloth(type){
 	this.flammable = true;
 	this.breakVerb = "is shredded beyond recognition";
 	var shirtSprite = "IwNgHqA+AMt/DFOSlxbrcATMHek89tcjEiKz4DjToC4bL7MFLXz2O3nULYgA";
+	var avatarShirt = "IwNgHgLAHAPgDAxTktW9HNezzAmBAjYYPPE9Eqq464TGrRhi3N9jzr7n3v/gYIFEilUuXpo6zVNJaT52KkA="
 	var robe1Sprite = "IwNgHqA+AMt/DG2MJjgCYOrcrWddNtdoVtMUkVyKqEbGaHUnXCz3HPqmi2O8AYOTCRnNqW7QgA==";
+	var avatarRobe1 = "IwNgHgLAHAPgDAxTktW9HNezzwBM+weBRx6wlZ5Kld9qlcdCTy5h+iN3zDG9Ho35pBbYYNxTpM2XPkLFS5TlJDaa9Uioj2Y8duKdW64pOa0+LAbo3mJ/IA==";
 	this.stats = { phys: 1 };
 	this.smallSprite = shirtSprite;
+	this.avatarSprite = avatarShirt;
 	switch (type){
 		case 'Robes':
 			this.smallSprite = robe1Sprite;
+			this.avatarSprite = avatarRobe1;
 			this.stats.magi = 1;
 			this.color = '#0000bc';
 			this.uses = 30;
@@ -2722,9 +2747,11 @@ function Plate(type){
 	this.validTypes = ["Silver","Brass"];
 	type = plinko(type,this.validTypes);
 	var hornedSprite = "IwNgHqA+AMt/DFOSpxro1xxcCZ9dM5Dg8Czd5zKiDz4qL8NjWMKD2cyKVS+yfIP5FYQA";
+	var hornedAvatar = "IwNgHgLAHAPgDAxTktW9HNezjwBMC+w6+xwFZ6BlF1B5JedWZhmtT1hxe7cvVAWSDcY8RMlTpM2XPkLhArijIVK/FDW301LUlQ46+yk0RVIliXkA";
 	this.breakVerb = "falls dented and broken to the ground";
 	this.stats = { phys: 2 };
 	this.smallSprite = hornedSprite;
+	this.avatarSprite = hornedAvatar;
 	switch (type){
 		case 'Silver':
 			this.color = "#d8d8d8";
