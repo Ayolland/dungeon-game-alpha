@@ -32,6 +32,14 @@ body {
   position: relative;
   overflow: hidden; }
 
+input {
+  background: black;
+  color: white;
+  border: 1px solid white;
+  box-shadow: none;
+  font-size: 1.5em;
+  margin: 0.5em auto; }
+
 .button {
   display: inline-block;
   position: relative;
@@ -142,6 +150,10 @@ section#interface {
   #dialog.active {
     top: 0;
     z-index: 10; }
+  #dialog input {
+    width: 100%;
+    text-align: center;
+    display: block; }
 
 #dialog-text {
   margin: 0; }
@@ -318,19 +330,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #9b1a01; }
+    background-color: #a92301; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #b42a00; }
+    background-color: #ac2500; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #af2700; }
+    background-color: #9b1a01; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #7c0702; }
+    background-color: #8b1001; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -391,18 +403,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #c0941f; }
+    background-color: #dcb64c; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #d1a93b; }
+    background-color: #bb8e18; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #caa02f; }
+    background-color: #b4850c; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #e7c35c; }
+    background-color: #e1bc54; }
   100% {
     background-color: #ac7c00; } }

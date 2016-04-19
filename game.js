@@ -171,10 +171,15 @@ function Game (){
 		element: document.getElementById('dialog'),
 		message: document.getElementById('dialog-text'),
 		buttons: document.getElementById('dialog-buttons'),
+		inputDiv: document.getElementById('dialog-inputDiv'),
 		open: function(){
 			currentGame.interface.pause();
 			loadButtons(this.element);
 			this.element.classList.add('active');
+		},
+		addInput: function(value){
+			var inputStr = '<input id="dialog-input" type="text" value="' + value + '">';
+			this.inputDiv.innerHTML = inputStr;
 		},
 		setText: function(message){
 			this.message.innerHTML = message;
@@ -189,14 +194,25 @@ function Game (){
 			var thisDialog = this;
 			thisDialog.message.innerHTML = "";
 			thisDialog.buttons.innerHTML = "";
+			thisDialog.inputDiv.innerHTML = "";
 			setTimeout(function(){
 				currentGame.interface.unpause();
 				},500);
 		}
 	};
 	this.router = function(command){
+		var inputElement = document.querySelector('#dialog-input');
+		if (inputElement !== null){
+			var playerInput = inputElement.value;
+		}
 		this.dialog.close();
 		switch (command){
+			case 'chooseWarrior':
+			case 'chooseRogue':
+			case 'chooseSorcerer':
+				var chosenClass = command.replace('choose','');
+				currentGame.initialize(playerInput,chosenClass);
+				break;
 			case 'unEquipleft':
 				this.playerHero.equip2( new Punch() );
 				break;
@@ -222,12 +238,22 @@ function Game (){
 	this.currentMonster = new Monster();
 	this.previousMonsterName = "";
 
-	this.initialize = function(){
-		currentGame.playerHero = new Hero('Sandra');
+	this.chooseClass = function(){
+		var message = "Welcome to Crystals of Zoxx. <br> Enter your name and choose a class below. <br><br> Adventurer name:"
+		currentGame.dialog.setText(message);
+		currentGame.dialog.addButton('Warrior','router chooseWarrior');
+		currentGame.dialog.addButton('Rogue','router chooseRogue');
+		currentGame.dialog.addButton('Sorcerer','router chooseSorcerer');
+		currentGame.dialog.addInput('Sandra');
+		currentGame.dialog.open();
+	}
+
+	this.initialize = function(playerName,playerClass){
+		currentGame.playerHero = new Hero(playerName,playerClass);
 		currentGame.currentMonster = new Monster();
 		currentGame.previousMonsterName = "";
 		this.switchLocation();
-		this.playerHero.initialize();
+		this.playerHero.initialize(playerClass);
 		document.getElementById('headsdown').addEventListener('click',(function(hero){
 			return function(){
 				hero.infoDialog();
@@ -1035,16 +1061,17 @@ Character.prototype.die = function(){
 
 // A hero is the PlayerCharacter Object
 
-function Hero(name){
+function Hero(name,playerClass){
 	this.div = document.getElementById('hero');
 	this.canvas = document.getElementById('hero-sprite').getContext('2d');
 	this.name = name;
+	this.playerClass = playerClass;
 	this.displayElement = {
 		hpText: document.getElementById('hero-hp-text'),
 		hpBar: document.getElementById('hero-hp-bar'),
 		name: document.getElementById('hero-name')
 	};
-	this.displayElement.name.innerHTML = name;
+	this.displayElement.name.innerHTML = name + ' the ' + playerClass;
 	this.unlucky = 0;
 	this.stats = {
 		str: 8,
@@ -1095,16 +1122,41 @@ Hero.prototype.possesive = function(){
 	return "your";
 };
 
-Hero.prototype.initialize = function(){
+Hero.prototype.initialize = function(playerClass){
+	switch (playerClass){
+		case 'Rogue':
+			this.stats.agi = 9;
+			this.addToInv(new Bow('Wood'));
+			this.addToInv(new Potion('Health'));
+			this.addToInv(new Cloth('Shirt'));
+			this.addToInv(new Bomb('Smoke'));
+			break;
+		case 'Sorcerer':
+			this.stats.int = 9;
+			this.addToInv(new Staff('Thunder'));
+			this.addToInv(new Vial('Opiates'));
+			this.addToInv(new Cloth('Robes'));
+			this.addToInv(new Ring('Wood'));
+			break;
+		case 'Warrior':
+		default:
+			this.stats.str = 9;
+			this.addToInv(new Sword('Wood'));
+			this.addToInv(new Potion('Regen'));
+			this.addToInv(new Plate('Brass'));
+			this.addToInv(new Food('Meat'));
+			break;
+	}
 	this.effectController = new Effect();
 	this.effectController.link(this);
-	this.addToInv(new Sword('Wood'));
-	this.addToInv(new Potion('Health'));
-	this.addToInv(new Cloth('Shirt'));
 	this.equip1(this.inventory[0]);
 	this.equip2(this.inventory[1]);
 	this.switchArmor(this.inventory[2]);
-	this.switchAccessory();
+	if (['Accessory','Armor'].includes(this.inventory[3].itemType)){
+		this.switchAccessory(this.inventory[3]);
+	} else {
+		this.switchAccessory();
+	}
 	this.gold = 0;
 	this.paint();
 	this.updateStatus();
@@ -1112,7 +1164,7 @@ Hero.prototype.initialize = function(){
 
 Hero.prototype.paint = function(){
 	this.canvas.clearRect(0,0,16,48);
-	if ((typeof(this.hand1.avatarSprite)!== "undefined")&&(this.hand1.avatarSprite!== "")){
+	if ((typeof(this.hand1.avatarSprite)!== "undefined")&&(this.hand1.avatarSprite!== "")&&(this.hand1.drawLvl === 'bottom')){
 		this.hand1.draw(this.canvas,this.hand1.avatarSprite);
 	}
 	this.draw(this.canvas,this.spriteCompressed);
@@ -1121,6 +1173,9 @@ Hero.prototype.paint = function(){
 	}
 	if ((typeof(this.accessory.avatarSprite)!== "undefined")&&(this.accessory.avatarSprite!== "")){
 		this.accessory.draw(this.canvas,this.accessory.avatarSprite);
+	}
+	if ((typeof(this.hand1.avatarSprite)!== "undefined")&&(this.hand1.avatarSprite!== "")&&(this.hand1.drawLvl === 'top')){
+		this.hand1.draw(this.canvas,this.hand1.avatarSprite);
 	}
 }
 
@@ -1168,7 +1223,7 @@ Hero.prototype.inventoryFull = function(item){
 };
 
 Hero.prototype.infoDialog = function(){
-	var message = this.name + '<br>' + 'HP: '+this.stats.HP+'/'+this.stats.maxHP+'<br><br>';
+	var message = this.name + ' the '+this.playerClass+ '<br>' + 'HP: '+this.stats.HP+'/'+this.stats.maxHP+'<br><br>';
 	message += 'STR: '+this.stats.str+' | '+'AGI :'+this.stats.agi+'<br>';
 	message += 'INT: '+this.stats.int+' | '+'CHA :'+this.stats.cha+'<br><br>';
 	message += 'Physical Defense: '+this.stats.phys+'<br>'+'Magical Defense: '+this.stats.magi+'<br>';
@@ -2021,6 +2076,7 @@ Buff.prototype = new Item();
 Buff.prototype.constructor = Buff;
 
 function Weapon(){
+	this.drawLvl = 'bottom';
 	this.selfTargeted = false;
 	this.natural = 1;
 	this.buffArr = [];
@@ -2146,7 +2202,10 @@ function Buckler (type) {
 	this.attackType = "physical";
 	this.verbs = ['bash','strike','slam','bludgeon','ram'];
 	var buckler1 = "IwNgHqA+AMt/DFObYaWuAJh+p2s0Dh9CjsSELy1CqzqL6bbL5HXSHdlbc3eeaEA=";
+	var avatar1 = "IwNgHgLAHAPgDAxTktW9HNez3fHA7DHbGFbABM5mZpJp+TzLrb7HnX3PvSNtBoIHoqItHQpDaQA=";
 	this.smallSprite = buckler1;
+	this.avatarSprite = avatar1;
+	this.drawLvl = 'top';
 	this.userTraits = ['STR'];
 	this.stats = {block: 1};
 	switch (type){
@@ -2290,7 +2349,7 @@ function Staff (type) {
 	var plainStick = "IwNgHqA+AMt/DFOgJmYlx309uu9UtCC9Ttz1LlqlaNiysg==";
 	var avatarPlain = "IwNgHgLAHAPgDAxTktWtx0s1pPcL4FG4lZnoUYGJWp3Y2FNwPJt4se0u9/8DBjJt2YiuE8VJqjWkmfOKLSy8oiA=";
 	var decoStick = "IwNgHqA+AMt/DFOcgTMF9itZ26M91cjs9YzzCryLbpq9HNmVCg==";
-	var avatarDeco = "IwNgHgLAHAPgDAxTktWtx3OAJk1xHApI4hfMi4qgmrUsh4p2s8tuO9LjDn1fhyHCRo4YKS4JhDiyzTEC9myWdZ6tnO58dK3ZURA=";
+	var avatarDeco = "IwNgHgLAHAPgDAxTktWtx3OAJk1xfAhI40g8rS9atHYxehuJh1s5uW1blX7ToKHCRosUP6E8zSYU6yS8pc3YFVWdek0ZlDBV11A=";
 	this.smallSprite = plainStick;
 	this.avatarSprite = avatarPlain;
 	switch (type){
@@ -2438,6 +2497,7 @@ Hose.prototype = new Weapon();
 Hose.prototype.constructor = Hose;
 
 function Consumable(){
+	this.drawLvl = 'bottom';
 	this.selfTargeted = true;
 	this.natural = 0;
 	this.buffArr = [];
@@ -2766,7 +2826,7 @@ function Plate(type){
 		case 'Brass':
 			this.color = "#f8d878";
 			this.uses = 15;
-			this.stats = { block: 2 };
+			this.stats = { phys: 2, block: 2 };;
 			this.displayName = "shiny, brass plates formed into a decorative, muscular, but somewhat flimsy chestplate";
 			this.shortName = "Brass Platemail";
 			break;
@@ -2903,4 +2963,4 @@ function loadButtons(targetElement){
 
 loadButtons(document);
 
-currentGame.initialize();
+currentGame.chooseClass();

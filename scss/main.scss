@@ -36,6 +36,15 @@ body{
   overflow: hidden;
 }
 
+input{
+  background: black;
+  color: white;
+  border: 1px solid white;
+  box-shadow: none;
+  font-size: 1.5em;
+  margin: 0.5em auto;
+}
+
 .button{
   display: inline-block;
   position: relative;
@@ -186,6 +195,12 @@ section#interface{
   &.active{
     top: 0;
     z-index: 10;
+  }
+
+  input{
+    width: 100%;
+    text-align: center;
+    display: block;
   }
 }
   #dialog-text{
