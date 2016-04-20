@@ -10,7 +10,8 @@ X Redo wear/equip so that weapons/consumables can add stats/buffs/immunities
 X Items can be randomly generated
 X Blocking
 X Make equipped items affect appearance
-- Give choice of classes at game start
+X Give choice of classes at game start
+- change how buffs work
 - 'Gravestone' death message
 - 'Graveyard' high scores
 - Add 'Talk' choice

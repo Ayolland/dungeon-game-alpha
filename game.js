@@ -810,6 +810,9 @@ Character.prototype.runBuffs = function(){
 		if ((!curedIt)&&(goAhead)){
 			buffAtkObj = new Buff(buffsArr[counter],thisCharacter).attackObj();
 			thisCharacter.hit(buffAtkObj);
+			if (buffsArr[counter] === 'Paralyzed'){
+				thisCharacter.turnChoice = 'freeze';
+			}
 			var cured = (roll('1d20') <= buffAtkObj.cureChance);
 			if (cured){
 				thisCharacter.removeBuff(buffsArr[counter]);
@@ -939,7 +942,7 @@ Character.prototype.removeOffhand = function(){
 
 Character.prototype.freeze = function(){
 	this.offHand = "";
-	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('are')+' paralyzed and unable to move.' );
+	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('are')+' frozen and unable to move.' );
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
 }
 
@@ -978,6 +981,7 @@ Character.prototype.useItem = function(item){
 };
 
 Character.prototype.runTurn = function(turnChoice){
+	this.turnChoice = turnChoice;
 	if(this.accessory.uses !== true){
 		this.accessory.uses--;
 	}
@@ -990,19 +994,17 @@ Character.prototype.runTurn = function(turnChoice){
 			thisCharacter.runBuffs();
 		} else if (intervalRelay === "Use equip"){
 			intervalRelay = "wait";
-			if ((thisCharacter.buffs.includes('Sedated'))||(thisCharacter.buffs.includes('Paralyzed'))){
-				thisCharacter.freeze();
-			} else {
-				thisCharacter[turnChoice]();
-			}
+			thisCharacter[thisCharacter.turnChoice]();
 		}else if (intervalRelay === "Check equip"){
 			intervalRelay = "wait";
-			thisCharacter.checkEquip(turnChoice);
+			thisCharacter.checkEquip(thisCharacter.turnChoice);
 		} else if (intervalRelay === "End turn"){
+			thisCharacter.turnChoice = "";
 			intervalRelay = "wait";
 			clearInterval(turnLoop);
 			intervalRelay = nextTurn;
 		} else if (intervalRelay === 'End round'){
+			thisCharacter.turnChoice = "";
 			clearInterval(turnLoop);
 			return;
 		}
@@ -1707,7 +1709,7 @@ function Were (type) {
 			this.displayName = "Werewolf";
 			this.color = "#ac7c00";
 			this.stats.phys = 0;
-			this.item1 = (new Claws());
+			this.item1 = (new Claws('Bone'));
 			this.garment = new Cloth('Rags');
 			break;
 		case "Goat":
@@ -2044,9 +2046,9 @@ function Buff(type,owner){
  			this.verbs = ['gain','rage'];
  			break;
  		case 'Sedated':
- 			this.cureChance = 8;
+ 			this.cureChance = 12;
  			this.attackVal = function(){
- 				return roll('1d2') - 1;
+ 				return 1;
  			};
  			this.attackType = 'poison';
  			this.targetStat = 'agi';
@@ -2539,6 +2541,7 @@ function Bomb (type) {
 	switch (type){
 		case "Smoke":
 			this.uses = 1;
+			this.breakVerb = "is spent"
 			this.displayName = "small explosives that do no damage but create a distracting cloud of smoke";
 			this.shortName = "Smoke Bomb";
 			this.uniqueStr = "a smoke bomb";
