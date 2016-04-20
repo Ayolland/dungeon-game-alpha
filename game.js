@@ -994,10 +994,14 @@ Character.prototype.runTurn = function(turnChoice){
 			thisCharacter.runBuffs();
 		} else if (intervalRelay === "Use equip"){
 			intervalRelay = "wait";
-			thisCharacter[thisCharacter.turnChoice]();
+			if (thisCharacter.turnChoice === 'freeze'){
+				thisCharacter.freeze();
+			} else {
+				thisCharacter[turnChoice]();
+			}
 		}else if (intervalRelay === "Check equip"){
 			intervalRelay = "wait";
-			thisCharacter.checkEquip(thisCharacter.turnChoice);
+			thisCharacter.checkEquip(turnChoice);
 		} else if (intervalRelay === "End turn"){
 			thisCharacter.turnChoice = "";
 			intervalRelay = "wait";
