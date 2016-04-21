@@ -461,7 +461,7 @@ Location.prototype.constructor = Location;
 // A Character is either a Monster (NPC) or the Hero
 
 function Character (){
-	this.buffs = [];
+	this.buffs = {};
 	this.resists = {};
 	this.immunities = [];
 	this.naturalResists = {};
@@ -660,14 +660,14 @@ Character.prototype.explode = function(num,type){
 };
 
 Character.prototype.calcDodge = function(fleeing){
-	if ((this.buffs.includes('Sedated'))||(this.buffs.includes('Paralyzed'))||(this.aiType == 'inanimate')){
+	if ((Object.keys(this.buffs).includes('Sedated'))||(Object.keys(this.buffs).includes('Paralyzed'))||(this.aiType == 'inanimate')){
 		return false;
 	}
 	var enemyRoll = roll('1d'+this.getEnemy().stats.agi*1.25);
 	var bonus = 0;
 	bonus += (this.hand1.ranged)? 1 : 0;
 	bonus += (this.hand2.ranged)? 1 : 0;
-	bonus += (this.buffs.includes('Obscured'))? 5 : 0;
+	bonus += (Object.keys(this.buffs).includes('Obscured'))? 5 : 0;
 	bonus += (fleeing === true)? 2 : 0;
 	bonus -= ((this.offHand !== "")&&(typeof(this.offHand) !== "undefined"))? 2:0;
 	var dodgeRoll = roll('1d'+Math.ceil(this.stats.agi/3)) + bonus;
@@ -676,7 +676,7 @@ Character.prototype.calcDodge = function(fleeing){
 };
 
 Character.prototype.calcBlock = function(){
-	if ((this.buffs.includes('Sedated'))||(this.buffs.includes('Paralyzed'))||(this.aiType == 'inanimate')){
+	if ((Object.keys(this.buffs).includes('Sedated'))||(Object.keys(this.buffs).includes('Paralyzed'))||(this.aiType == 'inanimate')){
 		return false;
 	}
 	var enemyRoll = roll('1d30');
@@ -755,7 +755,7 @@ Character.prototype.hit = function(atkObj){
 		var currentBuff = atkObj.buffArr[0];
 		var chance = atkObj.buffArr[1];
 		var gotBuffed = (rollHits('1d'+chance,chance) >= 1);
-		if ((gotBuffed)&&(!this.buffs.includes(currentBuff)&&(this.stats.HP > 0))) {
+		if ((gotBuffed)&&(!Object.keys(this.buffs).includes(currentBuff)&&(this.stats.HP > 0))) {
 			this.addBuff(currentBuff);
 			waitBeforeEnding ++;
 		}
@@ -777,30 +777,27 @@ Character.prototype.conjugate = function(verb){
 };
 
 Character.prototype.addBuff = function(buff){
-	if ((!this.buffs.includes(buff))&&(!(this.immunities.includes(buff)))){
+	if ((!Object.keys(this.buffs).includes(buff))&&(!(this.immunities.includes(buff)))){
 		var message = firstCap(this.selfStr())+' '+ this.conjugate('are')+ ' ' + buff + ".";
 		setTimeout(function(){currentGame.log.add(message);},1000);
-		this.buffs.push(buff);
+		this.buffs[buff] = new Buff(buff,this).timer;
 	}
 };
 
 Character.prototype.removeBuff = function(buff){
-	if (!(this.buffs.includes(buff))){
+	if (!(Object.keys(this.buffs).includes(buff))){
 		return;
 	}
-	var curedIndex = this.buffs.indexOf(buff);
-	if(curedIndex !== -1) {
-		this.buffs.splice(curedIndex, 1);
-	}
+	delete this.buffs[buff];
 };
 
 Character.prototype.runBuffs = function(){
 	var nextStep = "Use equip";
-	if (this.buffs.length < 1){
+	if (Object.keys(this.buffs).length < 1){
 		intervalRelay = nextStep;
 		return;
 	}
-	var buffsArr = this.buffs.slice();
+	var buffsArr = Object.keys(this.buffs).slice(0);
 	var thisCharacter = this;
 	var counter = 0;
 	var curedIt = false;
@@ -810,10 +807,8 @@ Character.prototype.runBuffs = function(){
 		if ((!curedIt)&&(goAhead)){
 			buffAtkObj = new Buff(buffsArr[counter],thisCharacter).attackObj();
 			thisCharacter.hit(buffAtkObj);
-			if (buffsArr[counter] === 'Paralyzed'){
-				thisCharacter.turnChoice = 'freeze';
-			}
-			var cured = (roll('1d20') <= buffAtkObj.cureChance);
+			thisCharacter.buffs[buffsArr[counter]]--;
+			var cured = (thisCharacter.buffs[buffsArr[counter]] <= 0);
 			if (cured){
 				thisCharacter.removeBuff(buffsArr[counter]);
 				curedIt = true;
@@ -1093,7 +1088,7 @@ function Hero(name,playerClass){
 	this.kills = 0;
 	this.spriteCompressed = "IwNgHgLAHAPgDAxTktW9HNdcY267a6EbHGlkkp6VVJ4EnmIOOvqWacWM8J3IqA+oLQDh+SVOkzZc+Qv7s+XZh25jaYtmRxKGagvon1dPE0pbLTVjqJzLCQA=";
 	this.color = "white";
-	this.buffs = [];
+	this.buffs = {};
 }
 
 Hero.prototype = new Character ();
@@ -1234,8 +1229,8 @@ Hero.prototype.infoDialog = function(){
 	message += 'INT: '+this.stats.int+' | '+'CHA :'+this.stats.cha+'<br><br>';
 	message += 'Physical Defense: '+this.stats.phys+'<br>'+'Magical Defense: '+this.stats.magi+'<br>';
 	message += 'Blocking: '+Math.round(this.stats.block * 3)+'% chance<br><br>';
-	if (this.buffs.length > 0){
-		message += 'Currently: '+ this.buffs.join(', ')+'<br><br>';
+	if (Object.keys(this.buffs).length > 0){
+		message += 'Currently: '+ Object.keys(this.buffs).join(', ')+'<br><br>';
 	}
 	message += 'Right hand: '+this.hand1.shortName+'<br>Left hand: '+this.hand2.shortName+'<br>';
 	message += 'Armor: '+this.armor.shortName+'<br>';
@@ -1257,7 +1252,6 @@ function Monster(){
 		hpBar: document.getElementById('monster-hp-bar'),
 		name: document.getElementById('monster-name')
 	};
-	this.buffs = [];
 	this.inventory = [];
 }
 Monster.prototype = new Character ();
@@ -1310,8 +1304,8 @@ Monster.prototype.announce = function(){
 };
 
 Monster.prototype.appear = function(){
+	this.buffs = {};
 	this.announce();
-	this.buffs = [];
 	this.stats.block = 0;
 	this.immunities = this.naturalImmunities.slice(0);
 	this.inventory = [];
@@ -1843,9 +1837,9 @@ Item.prototype.attackObj = function(){
 	attck.buffArr = this.buffArr;
 	attck.killStr = this.killStr;
 	if (this.itemType === "Buff"){
-		attck.cureChance = this.cureChance;
+
 	}
-	if ((this.owner.buffs.includes('Aflame'))&&(this.itemType === 'Weapon')){
+	if ((Object.keys(this.owner.buffs).includes('Aflame'))&&(this.itemType === 'Weapon')){
 		attck.buffArr = ['Aflame',3];
 	}
 	attck.targetStat = this.targetStat;
@@ -1992,7 +1986,7 @@ Item.prototype.invDialog = function(){
 function Buff(type,owner){
 	this.selfTargeted = true;
 	this.itemType = 'Buff';
-	this.cureChance = 3;
+	this.timer = 3;
 	this.natural = 0;
 	this.type = 'physical';
  	this.targetStat = 'HP';
@@ -2009,7 +2003,7 @@ function Buff(type,owner){
 			break;
 		case 'Aflame':
 			this.killStr = "in a conflagration";
-			this.cureChance = 7;
+			this.timer = roll('3d3');
  			this.attackVal = function(){
  				return roll('1d3')+Math.ceil(roll('1d5')*this.owner.stats.maxHP/100);
  			};
@@ -2020,7 +2014,7 @@ function Buff(type,owner){
 			break;
 		case 'Poisoned':
 			this.killStr = "of internal injuries";
-			this.cureChance = 5;
+			this.timer = roll('2d5');
 			this.attackVal = function(){ return roll('1d3'); };
  			this.attackType = 'poison';
  			this.sprite = 'bubble';
@@ -2028,7 +2022,7 @@ function Buff(type,owner){
  			this.verbs = ['waste','wither'];
  			break;
  		case 'Regenerating':
- 			this. cureChance = 4;
+ 			this.timer = roll('2d4');
  			this.attackVal = function(){
  				var n = Math.ceil(this.owner.stats.maxHP/12);
  				return roll( n+'d3' ) * -1;
@@ -2039,7 +2033,7 @@ function Buff(type,owner){
  			this.verbs = ['heal','regenerate'];
  			break;
  		case 'Juiced':
- 			this.cureChance = 13;
+ 			this.timer = roll('1d3');
  			this.attackVal = function(){
  				return -1;
  			};
@@ -2050,7 +2044,7 @@ function Buff(type,owner){
  			this.verbs = ['gain','rage'];
  			break;
  		case 'Sedated':
- 			this.cureChance = 12;
+ 			this.timer = roll('1d2');
  			this.attackVal = function(){
  				return 1;
  			};
@@ -2062,7 +2056,7 @@ function Buff(type,owner){
  			break;
  			case 'Paralyzed':
  			this.noDamage = true;
- 			this.cureChance = 15;
+ 			this.timer = roll('1d4');
  			this.sprite = 'chaos';
  			this.color = '#ffff00';
  			this.verbs = ['freeze up','are immobilized'];
@@ -2070,7 +2064,7 @@ function Buff(type,owner){
  			break;
  		case 'Obscured':
  			this.noDamage = true;
- 			this.cureChance = 4;
+ 			this.timer = roll('3d4');
  			this.sprite = 'cloud';
  			this.color = 'rgba(152,120,248,0.8)';
  			this.verbs = ['are'];
