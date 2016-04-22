@@ -672,7 +672,7 @@ Character.prototype.burnItems = function(){
 	for (var i = items.length - 1; i >= 0; i--) {
 		if (typeof( items[i] ) !== "undefined" ){
 			if (items[i].flammable === true){
-				items[i].uses -= roll('2d3');
+				items[i].modifyUses( roll('2d3')*-1 );
 				items[i].uses = (items[i].uses > 0) ? items[i].uses : 1;
 				items[i].breakVerb = 'is charred to a crisp';
 			}
@@ -725,7 +725,7 @@ Character.prototype.calcBlock = function(){
 				blockingArr.push(equipArr[i]);
 			}
 		}
-		randomEntry(blockingArr).uses -= roll('1d3');
+		randomEntry(blockingArr).modifyUses( roll('1d3')* -1 );
 	}
 	return result;
 };
@@ -796,7 +796,7 @@ Character.prototype.hit = function(atkObj){
 			break;
 	}
 	if (this.armor.uses !== true){
-		this.armor.uses--;
+		this.armor.modifyUses(-1);
 	}
 	currentGame.log.add(message);
 	this.updateStatus();
@@ -1020,7 +1020,7 @@ Character.prototype.useItem = function(item){
 	} else if ((obj.targetCharacter !== this)&&(obj.targetCharacter.calcBlock())) {
 		obj.targetCharacter.block();
 	} else {
-		if(item.uses !== true){ item.uses-- ; }
+		if(item.uses !== true){ item.modifyUses(-1) ; }
 		obj.targetCharacter.hit(obj);
 	}
 };
@@ -1028,7 +1028,7 @@ Character.prototype.useItem = function(item){
 Character.prototype.runTurn = function(turnChoice){
 	this.turnChoice = turnChoice;
 	if(this.accessory.uses !== true){
-		this.accessory.uses--;
+		this.accessory.modifyUses(-1);
 	}
 	var nextTurn = (this.constructor.name === 'Hero') ? 'Monster turn' : 'End round';
 	intervalRelay = "Check buffs";
@@ -1120,7 +1120,7 @@ Character.prototype.die = function(){
 			currentGame.currentMonster.addClass('dead');
 		},2000);
 	} else if (currentGame.playerHero.stats.HP > 0) {
-		currentGame.playerHero.kills ++;
+		currentGame.playerHero.kills += (this.aiType === 'inanimate')? 0 : 1;
 		currentGame.currentLocation.switchTrigger --;
 		this.loot();
 	}
@@ -1165,16 +1165,7 @@ Hero.prototype.drawInventory = function(){
 		document.querySelector('#invButton'+(v+1)).classList.remove('full');
 	}
 	for (var x = this.inventory.length - 1; x >= 0; x--) {
-		var canvas = inventoryCanvases[x];
-		var sprite = this.inventory[x].smallSprite;
-		this.inventory[x].draw(canvas,sprite);
-		var thisButton = document.querySelector('#invButton'+(x+1));
-		thisButton.classList.add('full');
-		var percentage = Math.floor((this.inventory[x].uses / this.inventory[x].maxUses)*100);
-		var useBar = thisButton.querySelector('.use-bar');
-		useBar.className = "use-bar hp-bar hp-" + (Math.round(percentage / 10)*10);
-		useBar.style.width = 'calc('+percentage+'% - 2px)';
-
+		this.inventory[x].updateInvStatus(x);
 	}
 };
 
@@ -2054,6 +2045,33 @@ Item.prototype.invDialog = function(){
 	currentGame.dialog.addButton('Drop the '+this.shortName,'dropItem '+invIndex,"warning");
 	currentGame.dialog.addButton('Cancel','router closeDialog');
 	currentGame.dialog.open();
+};
+
+Item.prototype.updateInvStatus = function(num){
+	if (!(currentGame.playerHero.inventory.includes(this))){
+		return;
+	}
+	if (typeof(num) === 'undefined'){
+		num = currentGame.playerHero.inventory.indexOf(this);
+	}
+	inventoryCanvases[num].clearRect(0,0,16,16);
+	var canvas = inventoryCanvases[num];
+	var sprite = this.smallSprite;
+	this.draw(canvas,sprite);
+	var thisButton = document.querySelector('#invButton'+(num+1));
+	thisButton.classList.add('full');
+ 	var percentage = Math.floor((this.uses / this.maxUses)*100);
+ 	var useBar = thisButton.querySelector('.use-bar');
+ 	useBar.className = "use-bar hp-bar hp-" + (Math.round(percentage / 10)*10);
+ 	useBar.style.width = 'calc('+percentage+'% - 2px)';
+};
+
+Item.prototype.modifyUses = function(num){
+	this.uses += num;
+	if (this.uses >= this.maxUses){
+		this.maxUses = this.uses;
+	}
+	this.updateInvStatus();
 };
 
 function Buff(type,owner){

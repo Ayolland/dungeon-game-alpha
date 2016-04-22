@@ -28,7 +28,7 @@ X Add use bars to inventory
 Bugs:
 X Infinite Regen? (No not naturally)
 - Why does it draw you five times?
-- Wood ring gives infinite maxHP
+X Wood ring gives infinite maxHP
 - somehow gaining cha
 - Inventory goes through multiple uneccessary re-draws?
 - Possible to do negative physical damage (fighting Skele Monk)
