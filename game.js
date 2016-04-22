@@ -598,7 +598,7 @@ Character.prototype.wear = function(item){
 
 Character.prototype.remove = function(item){
 	var equippedArr = [this.armor,this.accessory,this.hand1,this.hand2];
-	if ((equippedArr.includes(item))||(typeof(item.itemType) === 'undefined')){
+	if (!(equippedArr.includes(item))||(typeof(item.itemType) === 'undefined')){
 		return;
 	}
 	if (this.armor === item){
@@ -668,7 +668,7 @@ Character.prototype.defense = function(attackType){
 };
 
 Character.prototype.burnItems = function(){
-	var items = [this.hand1,this.hand2,this.armor,this.accessory];
+	var items = this.allEquipment();
 	for (var i = items.length - 1; i >= 0; i--) {
 		if (typeof( items[i] ) !== "undefined" ){
 			if (items[i].flammable === true){
@@ -696,7 +696,7 @@ Character.prototype.explode = function(num,type){
 };
 
 Character.prototype.calcDodge = function(fleeing){
-	if ((Object.keys(this.buffs).includes('Sedated'))||(Object.keys(this.buffs).includes('Paralyzed'))||(this.aiType == 'inanimate')){
+	if ((Object.keys(this.buffs).includes('Sedated'))||(Object.keys(this.buffs).includes('Paralyzed'))||(['inanimate','mimic'].includes(this.aiType))){
 		return false;
 	}
 	var enemyRoll = roll('1d'+this.getEnemy().stats.agi*1.25);
@@ -717,8 +717,22 @@ Character.prototype.calcBlock = function(){
 	}
 	var enemyRoll = roll('1d30');
 	var result = ( this.stats.block >= enemyRoll)? true : false;
+	if (result){
+		var equipArr = this.allEquipment();
+		var blockingArr = []
+		for (var i = equipArr.length - 1; i >= 0; i--) {
+			if(equipArr[i].stats.block > 0){
+				blockingArr.push(equipArr[i]);
+			}
+		}
+		randomEntry(blockingArr).uses -= roll('1d3');
+	}
 	return result;
 };
+
+Character.prototype.allEquipment = function(){
+	return [this.hand1,this.hand2,this.armor,this.accessory];
+}
 
 Character.prototype.dodge = function(){
 	this.wiggle('dodge', 500);

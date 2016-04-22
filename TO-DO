@@ -13,7 +13,7 @@ X Make equipped items affect appearance
 X Give choice of classes at game start
 X change how buffs work
 X 'Gravestone' death message
-- Add use bars to inventory
+X Add use bars to inventory
 - Add 'Talk' choice
 - Add merchants
 - Better death animations, other wiggles?
@@ -28,6 +28,8 @@ X 'Gravestone' death message
 Bugs:
 X Infinite Regen? (No not naturally)
 - Why does it draw you five times?
+- Wood ring gives infinite maxHP
+- somehow gaining cha
 - Inventory goes through multiple uneccessary re-draws?
 - Possible to do negative physical damage (fighting Skele Monk)
 - Multiple game-state changing dialog boxes at end of turn conflict
