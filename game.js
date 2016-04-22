@@ -264,7 +264,7 @@ function Game (){
 		currentGame.dialog.addButton('Sorcerer','router chooseSorcerer','suggest');
 		currentGame.dialog.addInput('Sandra');
 		var logo = new Illustration('#d800cc',"GwVgHiDsA+AM8MQgjM2r5rerH2cT0MyKTPPwK32wJsoeOopbNutV22/pNqpz9WFdv3Z1OjKR2GyS9PER5cc5HnI2at2nVoBMBwwkNHdZ1iYPHL522st7MDuy6c30zsw+/vYz1P7IPqZ+vtbB3uFGAe5BhnEmUVZICRHx8D44gcHYDkKCnIWpBrmRMYkeesVVGZb5RUV5aBFZNuUmGE1sDZxdLe3JA1XNdSI9fWmtidWddfkWc6H91bUdIx36i03ZadUl8ywTazsRezWaR/G9bWclPqSyl/tDU95nBxRPwyQndfcf5C+ihWQzub02ayWV0IIJmQwewiBYlhTRmEOhUJKbE8mUyF0WlQqiDyqxseLkXTcRKSNXuLQpBNeyVJ+0x8XpiMZTMcNNBVTSPIWkJhOK2bwFnOFIvc23FAsFgK5KFu0NRsupSEp3QF8N1L0VUu1OXWVzRhJCxKVKRVurZcW5ZC1Y3+dpNYKpFtdsj5try0xWvIByqRdoqAa9cl1QN+ySdwh6bu+ftizjj8fGYrWPQKknlefzfzKDQLJbzKpzKtLVfLCdrdfrCdRtbUDdbjTmcLrLbbbbVHa73R7rb7WYHrkOmYx468k6x05nkLT840CYrQeXLGza43ui3DR3u6KCCAA=");
-		currentGame.dialog.addImage(logo,65,57,3);
+		currentGame.dialog.addImage(logo,65,57,2);
 		currentGame.dialog.open();
 	}
 
@@ -519,6 +519,11 @@ Character.prototype.updateStatus = function(){
 	}
 	this.displayElement.name.innerHTML = this.shortName;
 	this.displayElement.hpText.innerHTML = this.stats.HP + "/" + this.stats.maxHP;
+	if (this.constructor !== 'Hero'){
+		var displayHostility = (this.hostility === true )? 0 : Math.round((100 - this.hostility)/10)*10
+		var orb = document.getElementById('monster-hostility-orb');
+		orb.className = 'hp-bar hp-'+displayHostility;
+	}
 	var percentage = Math.floor((this.stats.HP / this.stats.maxHP)*100);
 	this.displayElement.hpBar.style.width = percentage + "%";
 	this.displayElement.hpBar.className = "hp-bar hp-" + (Math.round(percentage / 10)*10);
@@ -1370,6 +1375,7 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.buffs = {};
+	this.hostility = 100;
 	this.announce();
 	this.stats.block = 0;
 	this.immunities = this.naturalImmunities.slice(0);
