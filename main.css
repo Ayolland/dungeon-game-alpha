@@ -162,6 +162,9 @@ section#interface {
     text-align: center;
     display: block; }
 
+#dialog-spriteCanvas {
+  display: block; }
+
 #dialog-text {
   margin: 0; }
 
@@ -337,19 +340,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #860d02; }
+    background-color: #810a02; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #7a0502; }
+    background-color: #901301; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #981801; }
+    background-color: #8f1301; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #951601; }
+    background-color: #ae2600; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -410,18 +413,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #f0ce6b; }
+    background-color: #e4c059; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #b78911; }
+    background-color: #ba8d17; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #f5d473; }
+    background-color: #c99f2e; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #c69b29; }
+    background-color: #d8b146; }
   100% {
     background-color: #ac7c00; } }

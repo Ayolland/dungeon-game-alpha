@@ -172,10 +172,20 @@ function Game (){
 		message: document.getElementById('dialog-text'),
 		buttons: document.getElementById('dialog-buttons'),
 		inputDiv: document.getElementById('dialog-inputDiv'),
+		canvas: document.getElementById('dialog-spriteCanvas'),
 		open: function(){
 			currentGame.interface.pause();
 			loadButtons(this.element);
 			this.element.classList.add('active');
+		},
+		addImage: function(displayable,width,height,scale){
+			var canvasContext = this.canvas.getContext('2d');
+			this.canvas.setAttribute('width',width);
+			this.canvas.setAttribute('height',height);
+			this.canvas.style.width = (width * scale)+'px';
+			this.canvas.style.height = (height * scale)+'px';
+			this.canvas.style.margin = '1em auto';
+			displayable.draw(canvasContext,displayable.spriteCompressed);
 		},
 		addInput: function(value){
 			var inputStr = '<input id="dialog-input" type="text" value="' + value + '">';
@@ -195,6 +205,11 @@ function Game (){
 			thisDialog.message.innerHTML = "";
 			thisDialog.buttons.innerHTML = "";
 			thisDialog.inputDiv.innerHTML = "";
+			this.canvas.setAttribute('width',0);
+			this.canvas.setAttribute('height',0);
+			this.canvas.style.width = 0+'px';
+			this.canvas.style.height = 0+'px';
+			this.canvas.style.margin = 0;
 			setTimeout(function(){
 				currentGame.interface.unpause();
 				},500);
@@ -207,6 +222,9 @@ function Game (){
 		}
 		this.dialog.close();
 		switch (command){
+			case 'startOver':
+				currentGame.chooseClass();
+				break;
 			case 'chooseWarrior':
 			case 'chooseRogue':
 			case 'chooseSorcerer':
@@ -238,7 +256,7 @@ function Game (){
 	this.currentMonster = new Monster();
 	this.previousMonsterName = "";
 
-	this.chooseClass = function(){
+	this.chooseClass = function(zilch){
 		var message = "Welcome to Crystals of Zoxx. <br> Enter your name and choose a class below. <br><br> Adventurer name:"
 		currentGame.dialog.setText(message);
 		currentGame.dialog.addButton('Warrior','router chooseWarrior');
@@ -421,6 +439,16 @@ Displayable.prototype.draw = function(canvas,sprite){
     }
 };
 
+// An Illustration is a free-floating Displayable with no game logic attached
+
+function Illustration (color,sprite){
+	this.color = color;
+	this.spriteCompressed = sprite;
+}
+
+Illustration.prototype = new Displayable ();
+Illustration.prototype.constructor = Illustration;
+
 // A Location is an object that stores the background image and the possible monsters
 
 function Location(type){
@@ -483,13 +511,15 @@ Character.prototype.updateStatus = function(){
 	} else if (this.stats.HP > this.stats.maxHP){
 		this.stats.HP = this.stats.maxHP;
 	}
+	if (this.constructor.name === "Hero"){
+		this.drawInventory();
+		this.shortName = this.name + ' the ' + this.playerClass;
+	}
+	this.displayElement.name.innerHTML = this.shortName;
 	this.displayElement.hpText.innerHTML = this.stats.HP + "/" + this.stats.maxHP;
 	var percentage = Math.floor((this.stats.HP / this.stats.maxHP)*100);
 	this.displayElement.hpBar.style.width = percentage + "%";
 	this.displayElement.hpBar.className = "hp-bar hp-" + (Math.round(percentage / 10)*10);
-	if (this.constructor.name === "Hero"){
-		this.drawInventory();
-	}
 	if (this.stats.HP === 0){
 		this.die();
 	}
@@ -497,6 +527,10 @@ Character.prototype.updateStatus = function(){
 
 Character.prototype.addClass = function(classStr){
 	this.div.classList.add(classStr);
+};
+
+Character.prototype.removeClass = function(classStr){
+	this.div.classList.remove(classStr);
 };
 
 Character.prototype.wiggle = function(tempClass, time){
@@ -1029,16 +1063,20 @@ Character.prototype.die = function(){
 	intervalRelay = "End round";
 	this.addClass('dead');
 	var message = "";
+	var diedByStr = "";
 	switch (this.lastHitBy.itemType){
 		case 'Consumable':
-			message = this.selfStr() + " died of self-inflicted wounds.";
+			diedByStr = "died of self-inflicted wounds";
+			message = this.selfStr() +' '+ diedByStr + '.';
 			break;
 		case 'Buff':
-			message = this.selfStr() + " died " + this.lastHitBy.killStr + '.';
+			diedByStr = "died " + this.lastHitBy.killStr ;
+			message = this.selfStr() +' '+ diedByStr + '.';
 			break;
 		case 'Weapon':
 			if(this.constructor.name === 'Hero'){
-				message = 'You were slain by the ' + this.getEnemy().shortName + '.';
+				diedByStr = 'slain by a ' + this.getEnemy().shortName;
+				message = 'You are slain by the ' + this.getEnemy().shortName; + '.';
 			} else {
 				var verb = 'slayed';
 				verb = (this.aiType === 'inanimate')? 'destroyed' : verb;
@@ -1050,8 +1088,19 @@ Character.prototype.die = function(){
 	currentGame.log.add(message);
 	if(this.constructor.name === 'Hero'){
 		currentGame.interface.pause();
+		var thisCharacter = this;
 		setTimeout(function(){
-			currentGame.log.add('You slayed ' + currentGame.playerHero.kills + ' monsters and found '+currentGame.playerHero.gold+' gold before perishing.');
+			var graveSprite = "IwNgHqA+AMuwTIpcXSe5KnB7zb5ci94FjzhToSdDFdY9Lm6dHbCXPh2W+HqFcryECa9em0GixHOqykyiImdCA===";
+			var gravestone = new Illustration('#7c7c7c',graveSprite);
+			currentGame.dialog.addImage(gravestone,16,16,6);
+			var message2 = "Eventually your body is found and given an adventurer's grave:<br><br>"
+			message2 += "Here lies " + thisCharacter.shortName + ":<br>";
+			message2 += firstCap(diedByStr)+' in the '+currentGame.currentLocation.shortName.toLowerCase()+' after slaying '+ currentGame.playerHero.kills + ' monsters and finding '+currentGame.playerHero.gold+' gold.<br><br>';
+			message2 += 'May they find more peace in their next life than they did in this one.'
+			currentGame.dialog.setText(message2);
+			currentGame.dialog.addButton('Try Again','router startOver');
+			currentGame.dialog.open();
+			currentGame.currentMonster.addClass('dead');
 		},2000);
 	} else if (currentGame.playerHero.stats.HP > 0) {
 		currentGame.playerHero.kills ++;
@@ -1072,7 +1121,6 @@ function Hero(name,playerClass){
 		hpBar: document.getElementById('hero-hp-bar'),
 		name: document.getElementById('hero-name')
 	};
-	this.displayElement.name.innerHTML = name + ' the ' + playerClass;
 	this.unlucky = 0;
 	this.stats = {
 		str: 8,
@@ -1124,6 +1172,8 @@ Hero.prototype.possesive = function(){
 };
 
 Hero.prototype.initialize = function(playerClass){
+	this.removeClass('dead');
+	this.inventory = [];
 	switch (playerClass){
 		case 'Rogue':
 			this.stats.agi = 9;
@@ -1351,7 +1401,6 @@ Monster.prototype.mimic = function(){
 	this.div.classList.remove('inanimate');
 	currentGame.log.add(firstCap(this.selfStr()) +' comes to life!' );
 	this.shortName = this.revealedName;
-	this.displayElement.name.innerHTML = this.shortName;
 	this.aiType = 'simple';
 	this.updateStatus();
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
@@ -2033,7 +2082,7 @@ function Buff(type,owner){
  			this.verbs = ['heal','regenerate'];
  			break;
  		case 'Juiced':
- 			this.timer = roll('1d3');
+ 			this.timer = 1 + roll('1d3');
  			this.attackVal = function(){
  				return -1;
  			};
@@ -2044,7 +2093,7 @@ function Buff(type,owner){
  			this.verbs = ['gain','rage'];
  			break;
  		case 'Sedated':
- 			this.timer = roll('1d2');
+ 			this.timer = 1 + roll('1d2');
  			this.attackVal = function(){
  				return 1;
  			};
@@ -2056,7 +2105,7 @@ function Buff(type,owner){
  			break;
  			case 'Paralyzed':
  			this.noDamage = true;
- 			this.timer = roll('1d4');
+ 			this.timer = 1 + roll('1d4');
  			this.sprite = 'chaos';
  			this.color = '#ffff00';
  			this.verbs = ['freeze up','are immobilized'];
