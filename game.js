@@ -259,10 +259,12 @@ function Game (){
 	this.chooseClass = function(zilch){
 		var message = "Welcome to Crystals of Zoxx. <br> Enter your name and choose a class below. <br><br> Adventurer name:"
 		currentGame.dialog.setText(message);
-		currentGame.dialog.addButton('Warrior','router chooseWarrior');
-		currentGame.dialog.addButton('Rogue','router chooseRogue');
-		currentGame.dialog.addButton('Sorcerer','router chooseSorcerer');
+		currentGame.dialog.addButton('Warrior','router chooseWarrior','suggest');
+		currentGame.dialog.addButton('Rogue','router chooseRogue','suggest');
+		currentGame.dialog.addButton('Sorcerer','router chooseSorcerer','suggest');
 		currentGame.dialog.addInput('Sandra');
+		var logo = new Illustration('#d800cc',"GwVgHiDsA+AM8MQgjM2r5rerH2cT0MyKTPPwK32wJsoeOopbNutV22/pNqpz9WFdv3Z1OjKR2GyS9PER5cc5HnI2at2nVoBMBwwkNHdZ1iYPHL522st7MDuy6c30zsw+/vYz1P7IPqZ+vtbB3uFGAe5BhnEmUVZICRHx8D44gcHYDkKCnIWpBrmRMYkeesVVGZb5RUV5aBFZNuUmGE1sDZxdLe3JA1XNdSI9fWmtidWddfkWc6H91bUdIx36i03ZadUl8ywTazsRezWaR/G9bWclPqSyl/tDU95nBxRPwyQndfcf5C+ihWQzub02ayWV0IIJmQwewiBYlhTRmEOhUJKbE8mUyF0WlQqiDyqxseLkXTcRKSNXuLQpBNeyVJ+0x8XpiMZTMcNNBVTSPIWkJhOK2bwFnOFIvc23FAsFgK5KFu0NRsupSEp3QF8N1L0VUu1OXWVzRhJCxKVKRVurZcW5ZC1Y3+dpNYKpFtdsj5try0xWvIByqRdoqAa9cl1QN+ySdwh6bu+ftizjj8fGYrWPQKknlefzfzKDQLJbzKpzKtLVfLCdrdfrCdRtbUDdbjTmcLrLbbbbVHa73R7rb7WYHrkOmYx468k6x05nkLT840CYrQeXLGza43ui3DR3u6KCCAA=");
+		currentGame.dialog.addImage(logo,65,57,3);
 		currentGame.dialog.open();
 	}
 
