@@ -12,22 +12,22 @@ X Blocking
 X Make equipped items affect appearance
 X Give choice of classes at game start
 X change how buffs work
-- 'Gravestone' death message
-- 'Graveyard' high scores
+X 'Gravestone' death message
 - Add use bars to inventory
 - Add 'Talk' choice
-- More Items
 - Add merchants
 - Better death animations, other wiggles?
-- More Levels, More Monsters
+- More Levels, More Monsters, More Items
 - Locations have levels that determine Monsters
 - Add Bosses
 - Intro Screen
 - Save Function
+- 'Graveyard' high scores
 - Cumulative Stats
 
 Bugs:
 X Infinite Regen? (No not naturally)
+- Why does it draw you five times?
 - Inventory goes through multiple uneccessary re-draws?
 - Possible to do negative physical damage (fighting Skele Monk)
 - Multiple game-state changing dialog boxes at end of turn conflict

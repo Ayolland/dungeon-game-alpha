@@ -67,11 +67,22 @@ input{
 
   &.inventory{
     width: 32px;
-    height: 32px;
+    height: 37px;
     border-color: gray;
     canvas{
       width: 100%;
-      height: 100%;
+      height: calc(100% - 5px);
+    }
+
+    .use-bar{
+      opacity: 0;
+      width: calc(100% - 2px);
+      height: 1px;
+      margin: 2px 1px;
+    }
+
+    &.full .use-bar{
+      opacity: 1;
     }
   }
 

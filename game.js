@@ -1046,6 +1046,7 @@ Character.prototype.runTurn = function(turnChoice){
 
 Character.prototype.addToInv = function(item){
 	if (this.inventory.length < 8){
+		item.uses = item.maxUses;
 		item.owner = this;
 		this.inventory.push(item);
 		if (this.constructor.name === "Hero"){
@@ -1145,11 +1146,18 @@ Hero.prototype.constructor = Hero;
 Hero.prototype.drawInventory = function(){
 	for (var v = 7; v >= 0; v--) {
 		inventoryCanvases[v].clearRect(0,0,16,16);
+		document.querySelector('#invButton'+(v+1)).classList.remove('full');
 	}
 	for (var x = this.inventory.length - 1; x >= 0; x--) {
 		var canvas = inventoryCanvases[x];
 		var sprite = this.inventory[x].smallSprite;
 		this.inventory[x].draw(canvas,sprite);
+		var thisButton = document.querySelector('#invButton'+(x+1));
+		thisButton.classList.add('full');
+		var percentage = Math.floor((this.inventory[x].uses / this.inventory[x].maxUses)*100);
+		var useBar = thisButton.querySelector('.use-bar');
+		useBar.className = "use-bar hp-bar hp-" + (Math.round(percentage / 10)*10);
+		useBar.style.width = 'calc('+percentage+'% - 2px)';
 
 	}
 };
@@ -2130,7 +2138,7 @@ function Weapon(){
 	this.natural = 1;
 	this.buffArr = [];
 	this.userTraits = [];
-	this.uses = true;
+	this.maxUses = true;
 	this.flammable = false;
 	this.ranged = false;
 	this.targetStat = "HP";
@@ -2157,7 +2165,7 @@ Weapon.prototype.infoStr = function(){
 };
 
 function Punch(){
-	this.uses = true;
+	this.maxUses = true;
 	this.sprite = "poof";
 	this.attackType = "physical";
 	this.color = 'white';
@@ -2187,7 +2195,7 @@ function Sword (type) {
 	this.userTraits = ['STR'];
 	switch (type){
 		case "Iron":
-			this.uses = 30;
+			this.maxUses = 30;
 			this.breakVerb = "breaks on impact";
 			this.displayName = "a modest but functional iron blade";
 			this.shortName = "Iron Sword";
@@ -2198,7 +2206,7 @@ function Sword (type) {
 			};
 			break;
 		case "Cursed":
-			this.uses = 30;
+			this.maxUses = 30;
 			this.breakVerb = "explodes with a loud noise";
 			this.displayName = "a dark, sinister looking weapon";
 			this.shortName = "Cursed Sword";
@@ -2214,7 +2222,7 @@ function Sword (type) {
 			break;
 		case 'Fire':
 		case "Flame":
-			this.uses = 25;
+			this.maxUses = 25;
 			this.breakVerb = "glows red-hot, shatters,";
 			this.displayName = "a shining red sword that smells of sulfur";
 			this.shortName = "Flame Sword";
@@ -2230,7 +2238,7 @@ function Sword (type) {
 		default:
 			this.flammable = true;
 			this.breakVerb = "splinters into bits";
-			this.uses = 20;
+			this.maxUses = 20;
 			this.displayName = "a wooden sword meant for practice";
 			this.shortName = "Wooden Sword";
 			this.color = "#f8b800";
@@ -2259,7 +2267,7 @@ function Buckler (type) {
 	this.stats = {block: 1};
 	switch (type){
 		case "Iron":
-			this.uses = 30;
+			this.maxUses = 30;
 			this.breakVerb = "cracks into two";
 			this.displayName = "a small, battered metal shield";
 			this.shortName = "Iron Buckler";
@@ -2269,7 +2277,7 @@ function Buckler (type) {
 			};
 			break;
 		case "Mirror":
-			this.uses = 30;
+			this.maxUses = 30;
 			this.breakVerb = "splits with a thunderous crack";
 			this.displayName = "a small, polished, and gleaming shield";
 			this.shortName = "Mirrored Buckler";
@@ -2284,7 +2292,7 @@ function Buckler (type) {
 		case 'Ruby':
 		case 'Fire':
 		case "Flame":
-			this.uses = 25;
+			this.maxUses = 25;
 			this.breakVerb = "glows red-hot, shatters,";
 			this.displayName = "a small shield made of a deep crimson crystal";
 			this.shortName = "Ruby Buckler";
@@ -2299,7 +2307,7 @@ function Buckler (type) {
 		default:
 			this.flammable = true;
 			this.breakVerb = "splinters into bits";
-			this.uses = 20;
+			this.maxUses = 20;
 			this.displayName = "a small, disposable wooden shield";
 			this.shortName = "Wooden Buckler";
 			this.color = "#f8b800";
@@ -2325,7 +2333,7 @@ function Axe (type) {
 	switch (type){
 		case "Brass":
 		default:
-			this.uses = 10;
+			this.maxUses = 10;
 			this.breakVerb = "is bent beyond recognition";
 			this.displayName = "an axe made of polished brass, prettier than it is functional";
 			this.shortName = "Brass Axe";
@@ -2356,7 +2364,7 @@ function Bow (type) {
 	switch (type){
 		case "Poison":
 			this.flammable = true;
-			this.uses = 20;
+			this.maxUses = 20;
 			this.attackType = 'poison';
 			this.breakVerb = "is bent, arrowless";
 			this.displayName = "a oily green bow whose arrows are laced with a toxic venom";
@@ -2373,7 +2381,7 @@ function Bow (type) {
 		case "Wood":
 		default:
 			this.flammable = true;
-			this.uses = 20;
+			this.maxUses = 20;
 			this.breakVerb = "breaks with a 'sproing'";
 			this.displayName = "a simple wooden bow, used by hunters";
 			this.shortName = "Wooden Bow";
@@ -2407,7 +2415,7 @@ function Staff (type) {
 			this.ranged = true;
 			this.smallSprite = decoStick;
 			this.avatarSprite = avatarDeco;
-			this.uses = 25;
+			this.maxUses = 25;
 			this.breakVerb = "splits down the middle";
 			this.displayName = "a staff enchanted with electricity";
 			this.shortName = "Thunder Staff";
@@ -2424,7 +2432,7 @@ function Staff (type) {
 		case "Wood":
 		default:
 			this.flammable = true;
-			this.uses = 20;
+			this.maxUses = 20;
 			this.breakVerb = "snaps like a twig";
 			this.displayName = "a solid, wooden staff";
 			this.shortName = "Wooden Staff";
@@ -2454,7 +2462,7 @@ function Claws (type) {
 	switch (type){
 		case 'Poison':
 		case "Venom":
-			this.uses = 10;
+			this.maxUses = 10;
 			this.breakVerb = "snaps with a sickening crunch";
 			this.displayName = "a pair of fangs with the venom sac still attached";
 			this.shortName = "Venom Fang";
@@ -2469,7 +2477,7 @@ function Claws (type) {
 			};
 			break;
 		case "Sleeper":
-			this.uses = 10;
+			this.maxUses = 10;
 			this.breakVerb = "is hollowed out, broken";
 			this.displayName = "a pair of needle-like fangs dripping with noxious poison";
 			this.shortName = "Sleeper Fang";
@@ -2485,7 +2493,7 @@ function Claws (type) {
 			break;
 		case "Bone":
 		default:
-			this.uses = 10;
+			this.maxUses = 10;
 			this.breakVerb = "is worn to stumps";
 			this.displayName = "a set of sharp bone claws";
 			this.shortName = "Bone Claw";
@@ -2513,7 +2521,7 @@ function Hose (type) {
 	switch (type){
 		case 'Flame':
 		case "Fire":
-			this.uses = 15;
+			this.maxUses = 15;
 			this.breakVerb = "is empty, starting to smell,";
 			this.displayName = "a glowing bladder of sorts, hot to the touch";
 			this.shortName = "Lava Sac";
@@ -2528,7 +2536,7 @@ function Hose (type) {
 			break;
 		case "Acid":
 		default:
-			this.uses = 30;
+			this.maxUses = 30;
 			this.breakVerb = "melts into a puddle of goo";
 			this.displayName = "a Box Jelly's acid generating organ: pretty useless as a weapon";
 			this.shortName = "Acid Bladder";
@@ -2550,7 +2558,7 @@ function Consumable(){
 	this.selfTargeted = true;
 	this.natural = 0;
 	this.buffArr = [];
-	this.uses = 1;
+	this.maxUses = 1;
 	this.hurts = false;
 	this.targetStat = "HP";
 	this.amountDmg = "a random amount of";
@@ -2587,7 +2595,7 @@ function Bomb (type) {
 	this.breakVerb = "is empty";
 	switch (type){
 		case "Smoke":
-			this.uses = 1;
+			this.maxUses = 1;
 			this.breakVerb = "is spent"
 			this.displayName = "small explosives that do no damage but create a distracting cloud of smoke";
 			this.shortName = "Smoke Bomb";
@@ -2605,7 +2613,7 @@ function Bomb (type) {
 		default:
 			this.smallSprite = "IwNgHqA+AMt/DFwExKcVxhvl5zsd4Ci4tTYNCc9q0MSiHH7am2aP26m4g===";
 			this.avatarSprite = "IwNgHgLAHAPgDAxTktW9HNez3f8FwBMuwpZ2wFhNtd9DjTzLrb79JO1WV3FQA===";
-			this.uses = 5;
+			this.maxUses = 5;
 			this.displayName = "crude, unpredictable incendiary devices made from rubbish";
 			this.shortName = "Sack of Fire Bombs";
 			this.uniqueStr = "a fire bomb";
@@ -2635,7 +2643,7 @@ Bomb.prototype.constructor = Bomb;
 function Potion(type){
 	this.validTypes = ["Health","Regen"];
 	type = plinko(type,this.validTypes);
-	this.uses = 1;
+	this.maxUses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is empty";
 	this.shortName = "Potion of ";
@@ -2677,7 +2685,7 @@ Potion.prototype.constructor = Potion;
 function Vial(type){
 	this.validTypes = ["Steroids","Opiates"];
 	type = plinko(type,this.validTypes);
-	this.uses = 1;
+	this.maxUses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is used-up";
 	this.shortName = "Vial of";
@@ -2721,7 +2729,7 @@ Vial.prototype.constructor = Vial;
 function Food(type){
 	this.validTypes = ["Spinach","Rotten","Meat"];
 	type = plinko(type,this.validTypes);
-	this.uses = 1;
+	this.maxUses = 1;
 	this.sprite = "poof";
 	this.breakVerb = "is consumed";
 	this.verbs = ['eat','smash','chow down','consume'];
@@ -2777,7 +2785,7 @@ Food.prototype.constructor = Food;
 
 function Wearable(){
 	this.selfTargeted = false;
-	this.uses = true;
+	this.maxUses = true;
 	this.flammable = false;
 	this.ranged = false;
 	this.stats = {};
@@ -2801,7 +2809,7 @@ Armor.prototype = new Wearable();
 Armor.prototype.constructor = Armor;
 
 function Nude(){
-	this.uses = true;
+	this.maxUses = true;
 	this.smallSprite = "";
 	this.color = 'white';
 	this.displayName = "just as god made ya'";
@@ -2829,20 +2837,20 @@ function Cloth(type){
 			this.avatarSprite = avatarRobe1;
 			this.stats.magi = 1;
 			this.color = '#0000bc';
-			this.uses = 30;
+			this.maxUses = 30;
 			this.displayName = "a garment made for apprentice spellcasters";
 			this.shortName = "Magician's Robe";
 			break;
 		case 'Shirt':
 			this.color = '#a4e4fc';
-			this.uses = 30;
+			this.maxUses = 30;
 			this.displayName = "a decently sewn linen garment";
 			this.shortName = "Linen Tunic";
 			break;
 		default:
 		case 'Rags':
 			this.color = '#503000';
-			this.uses = 20;
+			this.maxUses = 20;
 			this.displayName = "a few scraps of burlap and linen";
 			this.shortName = "Sackcloth Tunic";
 			this.resists = { fire: 1.25 };
@@ -2866,7 +2874,7 @@ function Plate(type){
 		case 'Silver':
 			this.color = "#d8d8d8";
 			this.stats = { phys: 1, block: 2 };
-			this.uses = 25;
+			this.maxUses = 25;
 			this.immunities = ['Aflame'];
 			this.resists = { fire: 0.75, lightning: 0.75 };
 			this.displayName = "thin, reflective armor polished with flame-resistant oils";
@@ -2875,7 +2883,7 @@ function Plate(type){
 		default:
 		case 'Brass':
 			this.color = "#f8d878";
-			this.uses = 15;
+			this.maxUses = 15;
 			this.stats = { phys: 2, block: 2 };;
 			this.displayName = "shiny, brass plates formed into a decorative, muscular, but somewhat flimsy chestplate";
 			this.shortName = "Brass Platemail";
@@ -2894,7 +2902,7 @@ Accessory.prototype = new Wearable();
 Accessory.prototype.constructor = Accessory;
 
 function Nothing(){
-	this.uses = true;
+	this.maxUses = true;
 	this.smallSprite = "";
 	this.color = 'white';
 	this.displayName = "a whole lot of it";
@@ -2915,7 +2923,7 @@ function Ring(type){
 			this.stats = { agi: 1 };
 			this.immunities = ['Paralyzed','Sedated'];
 			this.color = "#00b800";
-			this.uses = 20;
+			this.maxUses = 20;
 			this.breakVerb = "melts into thin air";
 			this.displayName = "a brilliant green ring that tingles on your finger";
 			this.shortName = "Ring of Alertness";
@@ -2925,7 +2933,7 @@ function Ring(type){
 			this.resists = { fire: 0.80 };
 			this.buffs = ['Aflame'];
 			this.color = "#881400";
-			this.uses = 20;
+			this.maxUses = 20;
 			this.breakVerb = "crumbles into soot";
 			this.displayName = "a ring encircled in dim flames, and scorching to the touch";
 			this.shortName = "Flaming Ring";
@@ -2933,7 +2941,7 @@ function Ring(type){
 		case 'Brass':
 			this.stats = { str: 1 };
 			this.color = "#f8d878";
-			this.uses = 20;
+			this.maxUses = 20;
 			this.breakVerb = "is tarnished, worn, and dull";
 			this.displayName = "a shiny, brass ring: not very useful, but wearing it gives you a sense of confidence";
 			this.shortName = "Brass Ring";
@@ -2943,7 +2951,7 @@ function Ring(type){
 			this.flammable = true;
 			this.stats = { maxHP: 5 };
 			this.color = "#f8b800";
-			this.uses = 30;
+			this.maxUses = 30;
 			this.breakVerb = "snaps in half";
 			this.displayName = "a solid, oaken ring: not very useful, but wearing it gives you a feeling of fortitude";
 			this.shortName = "Wood Ring";

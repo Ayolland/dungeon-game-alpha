@@ -58,11 +58,18 @@ input {
     margin: 0.125em 0; }
   .button.inventory {
     width: 32px;
-    height: 32px;
+    height: 37px;
     border-color: gray; }
     .button.inventory canvas {
       width: 100%;
-      height: 100%; }
+      height: calc(100% - 5px); }
+    .button.inventory .use-bar {
+      opacity: 0;
+      width: calc(100% - 2px);
+      height: 1px;
+      margin: 2px 1px; }
+    .button.inventory.full .use-bar {
+      opacity: 1; }
   .button.dialog {
     width: 100%;
     text-align: center;
@@ -340,19 +347,19 @@ section#interface {
   0% {
     background-color: #750202; }
   12% {
-    background-color: #810a02; }
+    background-color: #b92d00; }
   25% {
     background-color: #BD3000; }
   37% {
-    background-color: #901301; }
+    background-color: #a52001; }
   50% {
     background-color: #750202; }
   62% {
-    background-color: #8f1301; }
+    background-color: #991901; }
   75% {
     background-color: #BD3000; }
   87% {
-    background-color: #ae2600; }
+    background-color: #780402; }
   100% {
     background-color: #750202; } }
   body.Forest #level {
@@ -413,18 +420,18 @@ section#interface {
   0% {
     background-color: #ac7c00; }
   12% {
-    background-color: #e4c059; }
+    background-color: #f1d06d; }
   25% {
     background-color: #f8d878; }
   37% {
-    background-color: #ba8d17; }
+    background-color: #b78a12; }
   50% {
     background-color: #ac7c00; }
   62% {
-    background-color: #c99f2e; }
+    background-color: #ac7c00; }
   75% {
     background-color: #f8d878; }
   87% {
-    background-color: #d8b146; }
+    background-color: #b78a12; }
   100% {
     background-color: #ac7c00; } }
