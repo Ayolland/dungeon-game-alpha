@@ -16,19 +16,23 @@ X 'Gravestone' death message
 X Add use bars to inventory
 - Add 'Talk' choice
 - Add merchants
+- Allow equipping from recieve dialog
 - Better death animations, other wiggles?
 - More Levels, More Monsters, More Items
 - Locations have levels that determine Monsters
 - Add Bosses
 - Intro Screen
-- Save Function
 - 'Graveyard' high scores
+- Beastiary
 - Cumulative Stats
+- Save Function
+
 
 Bugs:
 X Infinite Regen? (No not naturally)
 - Why does it draw you five times?
 X Wood ring gives infinite maxHP
+- Paralyzed not working
 - somehow gaining cha
 - Inventory goes through multiple uneccessary re-draws?
 - Possible to do negative physical damage (fighting Skele Monk)

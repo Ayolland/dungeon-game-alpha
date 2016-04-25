@@ -216,9 +216,10 @@ function Game (){
 		}
 	};
 	this.router = function(command){
+		var playerInput = "";
 		var inputElement = document.querySelector('#dialog-input');
 		if (inputElement !== null){
-			var playerInput = inputElement.value;
+			playerInput = inputElement.value;
 		}
 		this.dialog.close();
 		switch (command){
@@ -230,6 +231,13 @@ function Game (){
 			case 'chooseSorcerer':
 				var chosenClass = command.replace('choose','');
 				currentGame.initialize(playerInput,chosenClass);
+				break;
+			case 'nextMonster':
+				currentGame.currentMonster.addClass('dead');
+				currentGame.log.add('You continue on your journey...');
+				setTimeout(function(){
+					currentGame.switchMonster();
+				},1000);
 				break;
 			case 'unEquipleft':
 				this.playerHero.equip2( new Punch() );
@@ -251,13 +259,18 @@ function Game (){
 		}
 	};
 
+	this.talkRouter = function(convo_id){
+		this.dialog.close();
+		currentGame.currentMonster.talk(convo_id);
+	};
+
 	this.currentLocation = new Location();
 	this.playerHero = new Hero('TEMP');
 	this.currentMonster = new Monster();
 	this.previousMonsterName = "";
 
 	this.chooseClass = function(zilch){
-		var message = "Welcome to Crystals of Zoxx. <br> Enter your name and choose a class below. <br><br> Adventurer name:"
+		var message = "Welcome to Crystals of Zoxx. <br> Enter your name and choose a class below. <br><br> Adventurer name:";
 		currentGame.dialog.setText(message);
 		currentGame.dialog.addButton('Warrior','router chooseWarrior','suggest');
 		currentGame.dialog.addButton('Rogue','router chooseRogue','suggest');
@@ -266,7 +279,7 @@ function Game (){
 		var logo = new Illustration('#d800cc',"GwVgHiDsA+AM8MQgjM2r5rerH2cT0MyKTPPwK32wJsoeOopbNutV22/pNqpz9WFdv3Z1OjKR2GyS9PER5cc5HnI2at2nVoBMBwwkNHdZ1iYPHL522st7MDuy6c30zsw+/vYz1P7IPqZ+vtbB3uFGAe5BhnEmUVZICRHx8D44gcHYDkKCnIWpBrmRMYkeesVVGZb5RUV5aBFZNuUmGE1sDZxdLe3JA1XNdSI9fWmtidWddfkWc6H91bUdIx36i03ZadUl8ywTazsRezWaR/G9bWclPqSyl/tDU95nBxRPwyQndfcf5C+ihWQzub02ayWV0IIJmQwewiBYlhTRmEOhUJKbE8mUyF0WlQqiDyqxseLkXTcRKSNXuLQpBNeyVJ+0x8XpiMZTMcNNBVTSPIWkJhOK2bwFnOFIvc23FAsFgK5KFu0NRsupSEp3QF8N1L0VUu1OXWVzRhJCxKVKRVurZcW5ZC1Y3+dpNYKpFtdsj5try0xWvIByqRdoqAa9cl1QN+ySdwh6bu+ftizjj8fGYrWPQKknlefzfzKDQLJbzKpzKtLVfLCdrdfrCdRtbUDdbjTmcLrLbbbbVHa73R7rb7WYHrkOmYx468k6x05nkLT840CYrQeXLGza43ui3DR3u6KCCAA=");
 		currentGame.dialog.addImage(logo,65,57,2);
 		currentGame.dialog.open();
-	}
+	};
 
 	this.initialize = function(playerName,playerClass){
 		currentGame.playerHero = new Hero(playerName,playerClass);
@@ -519,10 +532,10 @@ Character.prototype.updateStatus = function(){
 	}
 	this.displayElement.name.innerHTML = this.shortName;
 	this.displayElement.hpText.innerHTML = this.stats.HP + "/" + this.stats.maxHP;
-	if (this.constructor !== 'Hero'){
-		var displayHostility = (this.hostility === true )? 0 : Math.round((100 - this.hostility)/10)*10
+	if (this.constructor.name !== 'Hero'){
+		var hostilityNum = (this.stats.hostility === true )? 0 : Math.round((100 - this.stats.hostility)/10)*10;
 		var orb = document.getElementById('monster-hostility-orb');
-		orb.className = 'hp-bar hp-'+displayHostility;
+		orb.className = 'hp-bar hp-'+hostilityNum;
 	}
 	var percentage = Math.floor((this.stats.HP / this.stats.maxHP)*100);
 	this.displayElement.hpBar.style.width = percentage + "%";
@@ -581,8 +594,8 @@ Character.prototype.wear = function(item){
 	} else if (item.itemType === "Accessory"){
 		this.accessory = item;
 	}
-	if (item.buffs !== []){
-		item.uses - 1;
+	if (item.buffs.length > 0){
+		item.modifyUses(-1);
 		for (var o = item.buffs.length - 1; o >= 0; o--) {
 			this.addBuff(item.buffs[o]);
 		}
@@ -695,7 +708,7 @@ Character.prototype.explode = function(num,type){
 	var resist = (typeof(this.resists[type]) !== 'undefined')? this.resists[type] : 1;
 	var def = this.defense();
 	var afterDef = (num - def) < 0 ? 0 : (num - def);
-	this.stats.HP -= Math.ceil(afterDef*resist);;
+	this.stats.HP -= Math.ceil(afterDef*resist);
 	this.lastHitBy = new Buff('Explode',this).attackObj();
 	this.updateStatus();
 };
@@ -717,14 +730,14 @@ Character.prototype.calcDodge = function(fleeing){
 };
 
 Character.prototype.calcBlock = function(){
-	if ((Object.keys(this.buffs).includes('Sedated'))||(Object.keys(this.buffs).includes('Paralyzed'))||(this.aiType == 'inanimate')){
+	if ((Object.keys(this.buffs).includes('Sedated'))||(Object.keys(this.buffs).includes('Paralyzed'))||(this.aiType === 'inanimate')){
 		return false;
 	}
 	var enemyRoll = roll('1d30');
 	var result = ( this.stats.block >= enemyRoll)? true : false;
 	if (result){
 		var equipArr = this.allEquipment();
-		var blockingArr = []
+		var blockingArr = [];
 		for (var i = equipArr.length - 1; i >= 0; i--) {
 			if(equipArr[i].stats.block > 0){
 				blockingArr.push(equipArr[i]);
@@ -737,7 +750,7 @@ Character.prototype.calcBlock = function(){
 
 Character.prototype.allEquipment = function(){
 	return [this.hand1,this.hand2,this.armor,this.accessory];
-}
+};
 
 Character.prototype.dodge = function(){
 	this.wiggle('dodge', 500);
@@ -894,8 +907,8 @@ Character.prototype.checkEquip = function(turnChoice){
 	for (var e = checkArr.length - 1; e >= 0; e--) {
 		if (typeof(checkArr[e]) !== 'undefined'){
 			if (checkArr[e].checkExhausted()) {
-				exhaustedArr.push(checkArr[e])
-			};
+				exhaustedArr.push(checkArr[e]);
+			}
 		}
 	}
 	switch (turnChoice){
@@ -994,13 +1007,13 @@ Character.prototype.freeze = function(){
 	this.offHand = "";
 	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('are')+' frozen and unable to move.' );
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
-}
+};
 
 Character.prototype.wait = function(){
 	this.offHand = "";
 	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('do')+' nothing.' );
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
-}
+};
 
 Character.prototype.activate1 = function(){
 	this.offHand = "";
@@ -1115,10 +1128,10 @@ Character.prototype.die = function(){
 			var graveSprite = "IwNgHqA+AMuwTIpcXSe5KnB7zb5ci94FjzhToSdDFdY9Lm6dHbCXPh2W+HqFcryECa9em0GixHOqykyiImdCA===";
 			var gravestone = new Illustration('#7c7c7c',graveSprite);
 			currentGame.dialog.addImage(gravestone,16,16,6);
-			var message2 = "Eventually your body is found and given an adventurer's grave:<br><br>"
+			var message2 = "Eventually your body is found and given an adventurer's grave:<br><br>";
 			message2 += "Here lies " + thisCharacter.shortName + ":<br>";
 			message2 += firstCap(diedByStr)+' in the '+currentGame.currentLocation.shortName.toLowerCase()+' after slaying '+ currentGame.playerHero.kills + ' monsters and finding '+currentGame.playerHero.gold+' gold.<br><br>';
-			message2 += 'May they find more peace in their next life than they did in this one.'
+			message2 += 'May they find more peace in the next life than in this one.';
 			currentGame.dialog.setText(message2);
 			currentGame.dialog.addButton('Try Again','router startOver');
 			currentGame.dialog.open();
@@ -1187,6 +1200,29 @@ Hero.prototype.debug = function(){
 	},1000);
 };
 
+Hero.prototype.talk = function(){
+	var monster = this.getEnemy();
+	if (['wild','inanimate','wildSimple','mimic'].includes(monster.aiType)){
+	} else {
+		var talkitude = roll( Math.floor((this.stats.cha + this.stats.agi)/8) + 'd12');
+		monster.stats.hostility -= talkitude;
+		monster.stats.hostility = (monster.stats.hostility < 0)? 0 : monster.stats.hostility;
+	}
+	currentGame.log.add('You attempt to talk to ' + monster.selfStr()+'.');
+	setTimeout(function(){
+		monster.updateStatus();
+		currentGame.log.add(monster.hostilityMsg());
+		if (monster.stats.hostility <= 0){
+			// var convo = randomEntry(monster.convos);
+			var convo = "smallTalk1";
+			monster.beginConversation(convo);
+			intervalRelay = "End round";
+		} else {
+			intervalRelay = "End turn";
+		}
+	},1000);
+};
+
 Hero.prototype.possesive = function(){
 	return "your";
 };
@@ -1248,7 +1284,7 @@ Hero.prototype.paint = function(){
 	if ((typeof(this.hand1.avatarSprite)!== "undefined")&&(this.hand1.avatarSprite!== "")&&(this.hand1.drawLvl === 'top')){
 		this.hand1.draw(this.canvas,this.hand1.avatarSprite);
 	}
-}
+};
 
 Hero.prototype.switchArmor = function(item){
 	if (typeof(item) === "undefined"){
@@ -1332,9 +1368,6 @@ Monster.prototype.possesive = function(){
 };
 
 Monster.prototype.ai = function(){
-	if (typeof(this.aiType) === 'undefined'){
-		this.aiType = 'simple';
-	}
 	switch(this.aiType){
 		case 'mimic':
 			if (this.stats.HP < this.stats.maxHP){
@@ -1342,8 +1375,10 @@ Monster.prototype.ai = function(){
 			}
 		case 'inanimate':
 			return 'wait';
+		case 'wildSimple':
 		case "simple":
 			return 'activate1';
+		case 'wild':
 		case "random":
 			return (Math.random() > 0.5)? 'activate1' : 'activate2';
 		case "switch":
@@ -1375,11 +1410,14 @@ Monster.prototype.announce = function(){
 
 Monster.prototype.appear = function(){
 	this.buffs = {};
-	this.hostility = 100;
+	this.stats.hostility = 100;
 	this.announce();
 	this.stats.block = 0;
 	this.immunities = this.naturalImmunities.slice(0);
 	this.inventory = [];
+	if (typeof(this.aiType) === 'undefined'){
+		this.aiType = 'wild';
+	}
 	if( typeof(this.item1) !== "undefined"){
 		this.addToInv(this.item1);
 	}
@@ -1422,10 +1460,10 @@ Monster.prototype.mimic = function(){
 	this.div.classList.remove('inanimate');
 	currentGame.log.add(firstCap(this.selfStr()) +' comes to life!' );
 	this.shortName = this.revealedName;
-	this.aiType = 'simple';
+	this.aiType = 'wild';
 	this.updateStatus();
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
-}
+};
 
 Monster.prototype.loot = function(){
 	var gotItem = (currentGame.playerHero.unlucky >= 4) ? true : (roll('1d20')<=this.lootChance);
@@ -1445,6 +1483,57 @@ Monster.prototype.loot = function(){
 			setTimeout(currentGame.switchMonster, 2000);
 		}
 	},1000);
+};
+
+Monster.prototype.hostilityMsg = function(){
+	this.updateStatus();
+	var message = "";
+	var roundedHostility = Math.round(this.stats.hostility/10);
+	switch (roundedHostility){
+		case 0:
+			message = 'engages you in coversation'
+			break;
+		case 1:
+		case 2:
+			message = 'seems confused';
+			break;
+		case 3:
+		case 4:
+		case 5:
+			message = 'hesistates momentarily';
+			break;
+		case 6:
+		case 7:
+		case 8:
+			message = 'regards you with suspicion';
+			break;
+		case 9:
+		default:
+			message = 'ignores you, enraged';
+			break;
+	}
+	var fullMessage = this.selfStr() + ' ' + message +'.';
+	if (['wild','inanimate','wildSimple','mimic'].includes(this.aiType)){
+		fullMessage = this.selfStr() + ' is unaffected by your words.';
+	}
+	return fullMessage;
+};
+
+Monster.prototype.beginConversation = function(convo_id) {
+	var talkObject = lookupConvo(convo_id);
+	var talkText = LZString.decompressFromBase64(talkObject.text).replace('XXXX',this.shortName);
+	var buttonArray = talkObject.buttons;
+	for (var i = buttonArray.length - 1; i >= 0; i--) {
+		var buttonText = buttonArray[i][0];
+		var buttonAction = buttonArray[i][1];
+		var buttonClass = "";
+		if (buttonArray[i].length > 2){
+			buttonClass = buttonArray[i][2];
+		}
+		currentGame.dialog.addButton(buttonText,buttonAction,buttonClass);
+	}
+	currentGame.dialog.setText(talkText);
+	currentGame.dialog.open();
 };
 
 // Types of Monsters
@@ -1629,6 +1718,7 @@ function Skele (type) {
 		magi: 0,
 		maxHP: 12
 	};
+	this.aiType = 'simple';
 	this.color = '#f0d0b0';
 	this.naturalResists = { fire: 1.25 };
 	this.purseStr = '1d10';
@@ -1764,6 +1854,7 @@ function Were (type) {
 		magi: 0,
 		maxHP: 20
 	};
+	this.aiType = 'wildSimple';
 	this.purseStr = '1d20';
 	this.lootChance = 19;
 	this.common = ['Food','Food Rotten','Buckler'];
@@ -1930,7 +2021,7 @@ Item.prototype.statsStr = function(){
 	}
 	str +='<br>';
 	return str;
-}
+};
 
 Item.prototype.resistsStr = function(){
 	if (Object.keys(this.resists).length === 0){
@@ -1939,14 +2030,14 @@ Item.prototype.resistsStr = function(){
 	var str = "";
 	var counter = 1 ;
 	for (var key in this.resists) {
-		signfier = (this.resists[key] > 0)? "" : "-";
-		joiner = (counter >= Object.keys(this.resists).length)? "" : ", ";
+		var signfier = (this.resists[key] > 0)? "" : "-";
+		var joiner = (counter >= Object.keys(this.resists).length)? "" : ", ";
 		str += key.toUpperCase() +": "+signfier+(this.resists[key]*100)+'%'+joiner;
 		counter++;
 	}
 	str +='<br>';
 	return str;
-}
+};
 
 Item.prototype.immunitiesStr = function(){
 	if (this.immunities.length === 0){
@@ -1954,12 +2045,12 @@ Item.prototype.immunitiesStr = function(){
 	}
 	var str = "Adds Immunity to: ";
 	for (var i = this.immunities.length - 1; i >= 0; i--) {
-		joiner = (i !== 1)? "" : ", ";
+		var joiner = (i !== 1)? "" : ", ";
 	 	str += this.immunities[i] + joiner;
 	}
 	str +='<br>';
 	return str;
-}
+};
 
 Item.prototype.buffsStr = function(){
 	if (this.buffs.length === 0){
@@ -1967,12 +2058,12 @@ Item.prototype.buffsStr = function(){
 	}
 	var str = "Equipping adds: ";
 	for (var i = this.buffs.length - 1; i >= 0; i--) {
-		joiner = (i !== 1)? "" : ", ";
+		var joiner = (i !== 1)? "" : ", ";
 	 	str += this.buffs[i] + joiner;
 	}
 	str +='<br>';
 	return str;
-}
+};
 
 Item.prototype.equippedStr = function(){
 	var equippedArr = [this.owner.armor,this.owner.accessory,this.owner.hand1,this.owner.hand2];
@@ -1993,7 +2084,7 @@ Item.prototype.equippedStr = function(){
 	}
 	str += '<br>';
 	return str;
-}
+};
 
 Item.prototype.invDialog = function(){
 	currentGame.foundItem = "";
@@ -2002,17 +2093,17 @@ Item.prototype.invDialog = function(){
 	} 
 	var message = this.shortName + ':<br>' + firstCap(this.displayName)+'.<br><br>';
 	var textBlock2 = this.equippedStr()+this.infoStr();
-	if (textBlock2 !== ""){ message += textBlock2 + '<br>'}
+	if (textBlock2 !== ""){ message += textBlock2 + '<br>'};
 	var textBlock3 = this.statsStr()+this.resistsStr()+this.immunitiesStr()+this.buffsStr();
-	if (textBlock3 !== ""){ message += textBlock3 + '<br>'}
+	if (textBlock3 !== ""){ message += textBlock3 + '<br>'};
 	message += 'Uses left: '+this.uses;
 	if ((this.owner.hand1 === this)||(this.owner.hand2 === this)){
 		var hand,activateNum;
 		if (this.owner.hand1 === this){
-			hand = 'right'
+			hand = 'right';
 			activateNum = 1;
 		} else {
-			hand = 'right'
+			hand = 'left';
 			activateNum = 2;
 		}
 		currentGame.dialog.addButton('Use this from your '+hand+' hand','runRound activate'+activateNum,"suggest");
@@ -2229,7 +2320,7 @@ function Sword (type) {
 	this.attackType = "physical";
 	this.verbs = ['slash','strike','stab','lance','wound','cut'];
 	var simpleSword = "IwNgHqA+AMt/DFOS18BMw20+7v9g9liDUijtpLsss17pjlgg";
-	var avatarSword1 = "IwNgHgLAHAPgDAxTktWtx0s1pPcL4FG4lZnoWrA0EIBMdDTLrb7HnX3PvfyVai0HZhYpiIETadRkzlwgA==="
+	var avatarSword1 = "IwNgHgLAHAPgDAxTktWtx0s1pPcL4FG4lZnoWrA0EIBMdDTLrb7HnX3PvfyVai0HZhYpiIETadRkzlwgA===";
 	this.smallSprite = simpleSword;
 	this.avatarSprite = avatarSword1;
 	this.userTraits = ['STR'];
@@ -2636,7 +2727,7 @@ function Bomb (type) {
 	switch (type){
 		case "Smoke":
 			this.maxUses = 1;
-			this.breakVerb = "is spent"
+			this.breakVerb = "is spent";
 			this.displayName = "small explosives that do no damage but create a distracting cloud of smoke";
 			this.shortName = "Smoke Bomb";
 			this.uniqueStr = "a smoke bomb";
@@ -2865,7 +2956,7 @@ function Cloth(type){
 	this.flammable = true;
 	this.breakVerb = "is shredded beyond recognition";
 	var shirtSprite = "IwNgHqA+AMt/DFOSlxbrcATMHek89tcjEiKz4DjToC4bL7MFLXz2O3nULYgA";
-	var avatarShirt = "IwNgHgLAHAPgDAxTktW9HNezzAmBAjYYPPE9Eqq464TGrRhi3N9jzr7n3v/gYIFEilUuXpo6zVNJaT52KkA="
+	var avatarShirt = "IwNgHgLAHAPgDAxTktW9HNezzAmBAjYYPPE9Eqq464TGrRhi3N9jzr7n3v/gYIFEilUuXpo6zVNJaT52KkA=";
 	var robe1Sprite = "IwNgHqA+AMt/DG2MJjgCYOrcrWddNtdoVtMUkVyKqEbGaHUnXCz3HPqmi2O8AYOTCRnNqW7QgA==";
 	var avatarRobe1 = "IwNgHgLAHAPgDAxTktW9HNezzwBM+weBRx6wlZ5Kld9qlcdCTy5h+iN3zDG9Ho35pBbYYNxTpM2XPkLFS5TlJDaa9Uioj2Y8duKdW64pOa0+LAbo3mJ/IA==";
 	this.stats = { phys: 1 };
@@ -2924,7 +3015,7 @@ function Plate(type){
 		case 'Brass':
 			this.color = "#f8d878";
 			this.maxUses = 15;
-			this.stats = { phys: 2, block: 2 };;
+			this.stats = { phys: 2, block: 2 };
 			this.displayName = "shiny, brass plates formed into a decorative, muscular, but somewhat flimsy chestplate";
 			this.shortName = "Brass Platemail";
 			break;
@@ -3044,6 +3135,30 @@ Effect.prototype.displayDamage = function(spriteName, color){
 Effect.prototype.clear = function(){
 	this.damageElement.className = "damage-sprite";
 };
+
+// Conversation Library
+
+var convoLib = {
+	testConvo: {
+		text: "DIewTgpgtgBAlgBwM4FdYBMQBtwyXAFxgEMoICAaGAYxADskJqDyUwT1E59q46BzGBCyEqjdDExC4KJFBASWUBLj69O6FHSIoiWYgCNwEIUUw5IMKMX51iJEQEcUxAHQwAqkQh04sYhJQfH4wAG4+cKRUztwwdCBIBGAoEhAAHhBgvATEBHD0MChY+lC0MPpGYLG++IVExE4oiEJpQva0UPJStAwQzrnuACJNSCS6JnDJluaqdDCQCJAAFj7omYTwc6HYKAg5LGHCGxBIjDRwxWiS2MZCKDAAZij8kUR0RfowCMRVuWzuAFE0tQIHsIGw8HwiCBqNRiExcjRdnB0LlEfE5osQCifJQ8FoiHwkVhvjAYjAQA8HnBePY1oxktorNgRPVfLAUUJEuVDOA0K4gA=",
+		buttons: [['Close Dialog','router zilch','suggest']]
+	},
+	smallTalk1: {
+		text: "MoewBAFiDuYIYCMQFcAuZUQJYGczQFM5MCAnfAgclIMjgDcsA7AcwH4wBxG4gGkmQQOAITT4IxMABNwASTABrJjH6zKAWzAArZDnRwwADWOGAdEA",
+		buttons: [['Uh huh...','router nextMonster'],['And so warm for April!','router nextMonster']]
+	}
+};
+
+function lookupConvo(convo_id){
+	var talkObject = {};
+	if(convoLib.hasOwnProperty(convo_id)){
+		talkObject = convoLib[convo_id];
+		return talkObject;
+	}else{
+
+	}
+}
+
 
 // event Listeners
 
