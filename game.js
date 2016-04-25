@@ -44,6 +44,8 @@ function rollHits(diceStr,target){
 // used to change the tense of used verbs
 function thirdPerson(verb){
 	switch (verb){
+		case 'catch':
+		case 'ambush':
 		case "bash":
 		case "punch":
 		case "slash":
@@ -1003,9 +1005,18 @@ Character.prototype.removeOffhand = function(){
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
 };
 
-Character.prototype.freeze = function(){
+Character.prototype.freeze = function(reason){
+	var message = "";
 	this.offHand = "";
-	currentGame.log.add(firstCap(this.selfStr()) +' '+ this.conjugate('are')+' frozen and unable to move.' );
+	switch (reason){
+		case 'Paralyzed':
+			message = firstCap(this.selfStr()) +' '+ this.conjugate('are')+' frozen and unable to move.';
+			break;
+		case 'Off-guard':
+			message = firstCap(this.getEnemy().selfStr()) +' '+ this.getEnemy().conjugate('catch')+' '+this.selfStr().toLowerCase()+' defenseless.';
+			break;
+	}
+	currentGame.log.add(message);
 	setTimeout(function(){intervalRelay = "Check equip";},1000);
 };
 
@@ -1057,8 +1068,16 @@ Character.prototype.runTurn = function(turnChoice){
 			thisCharacter.runBuffs();
 		} else if (intervalRelay === "Use equip"){
 			intervalRelay = "wait";
-			if (thisCharacter.turnChoice === 'freeze'){
-				thisCharacter.freeze();
+			var thisBuffs = Object.keys(thisCharacter.buffs);
+			var frozenBuffs = [];
+			if (thisBuffs.includes('Paralyzed')){
+				frozenBuffs.push('Paralyzed');
+			}
+			if (thisBuffs.includes('Off-guard')){
+				frozenBuffs.push('Off-guard');
+			}
+			if (frozenBuffs.length > 0){
+				thisCharacter.freeze(frozenBuffs[0]);
 			} else {
 				thisCharacter[turnChoice]();
 			}
@@ -2257,6 +2276,14 @@ function Buff(type,owner){
  			this.color = 'rgba(152,120,248,0.8)';
  			this.verbs = ['are'];
  			this.uniqueStr = 'enshrouded in smoke';
+ 			break;
+ 		case 'Off-guard':
+ 			this.noDamage = true;
+ 			this.timer = 2;
+ 			this.sprite = 'poof';
+ 			this.color = '#ff0000';
+ 			this.verbs = ['are'];
+ 			this.uniqueStr = 'ambushed';
  			break;
 	}
 }
