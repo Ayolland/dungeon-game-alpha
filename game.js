@@ -230,6 +230,7 @@ function Game (){
 				break;
 			case 'chooseWarrior':
 			case 'chooseRogue':
+			case 'chooseFool':
 			case 'chooseSorcerer':
 				var chosenClass = command.replace('choose','');
 				currentGame.initialize(playerInput,chosenClass);
@@ -277,6 +278,7 @@ function Game (){
 		currentGame.dialog.addButton('Warrior','router chooseWarrior','suggest');
 		currentGame.dialog.addButton('Rogue','router chooseRogue','suggest');
 		currentGame.dialog.addButton('Sorcerer','router chooseSorcerer','suggest');
+		currentGame.dialog.addButton('Fool (Random)','router chooseFool','suggest');
 		currentGame.dialog.addInput('Sandra');
 		var logo = new Illustration('#d800cc',"GwVgHiDsA+AM8MQgjM2r5rerH2cT0MyKTPPwK32wJsoeOopbNutV22/pNqpz9WFdv3Z1OjKR2GyS9PER5cc5HnI2at2nVoBMBwwkNHdZ1iYPHL522st7MDuy6c30zsw+/vYz1P7IPqZ+vtbB3uFGAe5BhnEmUVZICRHx8D44gcHYDkKCnIWpBrmRMYkeesVVGZb5RUV5aBFZNuUmGE1sDZxdLe3JA1XNdSI9fWmtidWddfkWc6H91bUdIx36i03ZadUl8ywTazsRezWaR/G9bWclPqSyl/tDU95nBxRPwyQndfcf5C+ihWQzub02ayWV0IIJmQwewiBYlhTRmEOhUJKbE8mUyF0WlQqiDyqxseLkXTcRKSNXuLQpBNeyVJ+0x8XpiMZTMcNNBVTSPIWkJhOK2bwFnOFIvc23FAsFgK5KFu0NRsupSEp3QF8N1L0VUu1OXWVzRhJCxKVKRVurZcW5ZC1Y3+dpNYKpFtdsj5try0xWvIByqRdoqAa9cl1QN+ySdwh6bu+ftizjj8fGYrWPQKknlefzfzKDQLJbzKpzKtLVfLCdrdfrCdRtbUDdbjTmcLrLbbbbVHa73R7rb7WYHrkOmYx468k6x05nkLT840CYrQeXLGza43ui3DR3u6KCCAA=");
 		currentGame.dialog.addImage(logo,65,57,2);
@@ -1113,6 +1115,28 @@ Character.prototype.addToInv = function(item){
 	}
 };
 
+Character.prototype.switchArmor = function(item){
+	if (typeof(item) === "undefined"){
+		item = new Nude();
+	}
+	this.remove(this.armor);
+	this.wear(item);
+	if (this.constructor.name === "Hero"){
+		currentGame.playerHero.paint();
+	}
+};
+
+Character.prototype.switchAccessory = function(item){
+	if (typeof(item) === "undefined"){
+		item = new Nothing();
+	}
+	this.remove(this.accessory);
+	this.wear(item);
+	if (this.constructor.name === "Hero"){
+		currentGame.playerHero.paint();
+	}
+};
+
 Character.prototype.die = function(){
 	intervalRelay = "End round";
 	this.addClass('dead');
@@ -1208,15 +1232,85 @@ Hero.prototype.drawInventory = function(){
 
 Hero.prototype.debug = function(){
 	// put some stuff you need to test here;
-	for (var i = this.inventory.length - 1; i >= 0; i--) {
-		this.inventory[i].uses = 0;
+	var dice = roll('1d10');
+	switch (dice){
+		case 1:
+			currentGame.log.add('Fire rains from the heavens, lighting everything ablaze!');
+			this.addToInv(new Sword('Flame'));
+			this.addBuff('Aflame');
+			this.getEnemy().addBuff('Aflame');
+			this.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
+			currentGame.currentMonster.effectController.displayDamage('flame', 'rgba(248,56,0,0.5)');
+			var heroDamage = roll('1d20');
+			var enemyDamage = roll('1d20');
+			setTimeout(function(){
+				currentGame.playerHero.smite(heroDamage);
+				currentGame.currentMonster.smite(enemyDamage);
+				intervalRelay = "End turn";
+			},1000);
+			break;
+		case 2:
+			for (var i = this.inventory.length - 1; i >= 0; i--) {
+				this.inventory[i].uses = 0;
+			}
+			currentGame.log.add('Your items crumble before your eyes!');
+			this.effectController.displayDamage('cloud', '#dddddd');
+			this.wiggle('hit', 250);
+			setTimeout(function(){
+				intervalRelay = "End turn";
+			},1000);
+			break;
+		case 3:
+			currentGame.log.add('The heavens smite you!');
+			var heroDamage = roll('1d20');
+			currentGame.playerHero.effectController.displayDamage('bolt', '#d800cc');
+			setTimeout(function(){
+				currentGame.playerHero.smite(heroDamage);
+				intervalRelay = "End turn";
+			},1000);
+			break;
+		case 4:
+			currentGame.log.add('The heavens curse you!');
+			var badBuffs = ['Aflame','Poisoned','Sedated','Paralyzed'];
+			currentGame.playerHero.addBuff(badBuffs[roll('1d4') - 1]);
+			setTimeout(function(){
+				intervalRelay = "End turn";
+			},1000);
+			break;
+		case 5:
+		case 6:
+		case 7:
+			currentGame.log.add('The heavens ignore your prayers...');
+			setTimeout(function(){
+				intervalRelay = "End turn";
+			},1000);
+			break;
+		case 8:
+			currentGame.log.add('The heavens grant you strength!');
+			currentGame.playerHero.stats.HP += roll('1d20');
+			currentGame.playerHero.updateStatus();
+			setTimeout(function(){
+				intervalRelay = "End turn";
+			},1000);
+			break;
+		case 9:
+			currentGame.log.add('The heavens bless you!');
+			var goodBuffs = ['Regenerating','Juiced','Obscured'];
+			currentGame.playerHero.addBuff(goodBuffs[roll('1d3') - 1]);
+			setTimeout(function(){
+				intervalRelay = "End turn";
+			},1000);
+			break;
+		case 10:
+			currentGame.log.add('The heavens smite your enemy!');
+			var enemyDamage = roll('1d20');
+			currentGame.currentMonster.effectController.displayDamage('bolt', '#d800cc');
+			setTimeout(function(){
+				currentGame.currentMonster.smite(enemyDamage);
+				intervalRelay = "End turn";
+			},1000);
+			break;
 	}
-	currentGame.log.add('Your items crumble before your eyes!');
-	this.effectController.displayDamage('cloud', '#dddddd');
-	this.wiggle('hit', 250);
-	setTimeout(function(){
-		intervalRelay = "End turn";
-	},1000);
 };
 
 Hero.prototype.talk = function(){
@@ -1250,6 +1344,16 @@ Hero.prototype.initialize = function(playerClass){
 	this.removeClass('dead');
 	this.inventory = [];
 	switch (playerClass){
+		case 'Fool':
+			var weapons = [new Bow(), new Sword(), new Axe(), new Staff(), new Hose(), new Claws()];
+			var consumables = [new Potion(), new Vial(), new Food()];
+			var clothes = [ new Cloth(), new Plate()];
+			var extras = [ new Bomb(), new Ring()];
+			this.addToInv(weapons[roll('1d6') - 1 ]);
+			this.addToInv(consumables[roll('1d3') - 1 ]);
+			this.addToInv(clothes[roll('1d2') - 1 ]);
+			this.addToInv(extras[roll('1d2') - 1 ]);
+			break;
 		case 'Rogue':
 			this.stats.agi = 9;
 			this.addToInv(new Bow('Wood'));
@@ -1305,27 +1409,27 @@ Hero.prototype.paint = function(){
 	}
 };
 
-Hero.prototype.switchArmor = function(item){
-	if (typeof(item) === "undefined"){
-		item = new Nude();
-	}
-	this.remove(this.armor);
-	this.wear(item);
-	if (this.constructor.name === "Hero"){
-		currentGame.playerHero.paint();
-	}
-};
+// Hero.prototype.switchArmor = function(item){
+// 	if (typeof(item) === "undefined"){
+// 		item = new Nude();
+// 	}
+// 	this.remove(this.armor);
+// 	this.wear(item);
+// 	if (this.constructor.name === "Hero"){
+// 		currentGame.playerHero.paint();
+// 	}
+// };
 
-Hero.prototype.switchAccessory = function(item){
-	if (typeof(item) === "undefined"){
-		item = new Nothing();
-	}
-	this.remove(this.accessory);
-	this.wear(item);
-	if (this.constructor.name === "Hero"){
-		currentGame.playerHero.paint();
-	}
-};
+// Hero.prototype.switchAccessory = function(item){
+// 	if (typeof(item) === "undefined"){
+// 		item = new Nothing();
+// 	}
+// 	this.remove(this.accessory);
+// 	this.wear(item);
+// 	if (this.constructor.name === "Hero"){
+// 		currentGame.playerHero.paint();
+// 	}
+// };
 
 Hero.prototype.receive = function(item,looted){
 	currentGame.foundItem = item;
@@ -1657,7 +1761,7 @@ function Chest (type) {
 			this.stats.agi = 8;
 			this.naturalResists = {};
 			this.item1 = (new Claws('Bone'));
-			this.common = ['Potion','Plate Brass',"Bomb"];
+			this.common = ['Potion','Plate',"Bomb"];
 			this.uncommon = ['Sword','Cloth Robes','Food','Ring'];
 			this.rare = ['Sword Fire','Bow Poison','Staff Thunder'];
 			break;
